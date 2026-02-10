@@ -17,7 +17,7 @@ This sample demonstrates:
 ```
 ┌─────────────────────┐
 │   .NET Aspire       │
-│   AppHost           │
+│   apphost.cs        │
 └──────┬──────────────┘
        │
        ├─────► MongoDB Container (port 27017)
@@ -73,8 +73,7 @@ This sample demonstrates:
 ### Start with Aspire
 
 ```bash
-cd AppHost
-dotnet run
+aspire run
 ```
 
 This will:
@@ -146,9 +145,9 @@ Ideas for expansion:
 
 ```
 flask-mongo-blog/
-├── AppHost/
-│   ├── Program.cs           # Aspire orchestration
-│   └── AppHost.csproj       # .NET project
+├── apphost.cs               # Aspire orchestration
+├── .aspire/
+│   └── settings.json        # Aspire configuration
 ├── src/
 │   ├── main.py              # Flask application
 │   ├── requirements.txt     # Python dependencies

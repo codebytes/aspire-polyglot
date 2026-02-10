@@ -1,3 +1,7 @@
+#:package Aspire.Hosting.Python@9.2.1
+#:package Aspire.Hosting.MongoDB@9.2.1
+#:sdk Aspire.AppHost.Sdk@9.2.1
+
 var builder = DistributedApplication.CreateBuilder(args);
 
 var mongo = builder.AddMongoDB("mongodb")
@@ -5,7 +9,7 @@ var mongo = builder.AddMongoDB("mongodb")
 
 var db = mongo.AddDatabase("blogdb");
 
-var blog = builder.AddPythonApp("blog", "../src", "main.py")
+builder.AddPythonApp("blog", "./src", "main.py")
     .WithReference(db)
     .WithHttpEndpoint(env: "PORT")
     .WithExternalHttpEndpoints();

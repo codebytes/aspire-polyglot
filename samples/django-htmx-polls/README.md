@@ -64,8 +64,7 @@ HTMX allows you to build interactive, modern web UIs using **server-rendered HTM
 
 2. **Run with Aspire:**
    ```bash
-   cd AppHost
-   dotnet run
+   aspire run
    ```
 
 3. **Access the app:**
@@ -107,9 +106,9 @@ No JSON, no JavaScript fetch, no state management — just HTML over the wire!
 
 ```
 django-htmx-polls/
-├── AppHost/
-│   ├── Program.cs              # Aspire orchestration
-│   └── AppHost.csproj
+├── apphost.cs                  # Aspire orchestration
+├── .aspire/
+│   └── settings.json
 ├── src/
 │   ├── run.py                  # Waitress WSGI entry point
 │   ├── manage.py               # Django management
@@ -131,7 +130,7 @@ django-htmx-polls/
 
 ## Key Files Explained
 
-### AppHost/Program.cs
+### apphost.cs
 
 Uses `AddPythonApp()` to run Django via the `run.py` wrapper script. Aspire sets the `PORT` environment variable, and the Python app binds to it.
 

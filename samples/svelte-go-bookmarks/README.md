@@ -6,7 +6,7 @@ A full-stack bookmark manager demonstrating how **.NET Aspire can orchestrate AN
 
 - **Backend**: Go HTTP server (stdlib `net/http`, no external dependencies)
 - **Frontend**: Svelte 4 SPA with Vite
-- **Orchestration**: .NET Aspire AppHost using `AddDockerfile` and `AddNpmApp`
+- **Orchestration**: .NET Aspire using standalone `apphost.cs` with `AddDockerfile` and `AddNpmApp`
 
 This sample proves that Aspire is a **polyglot orchestration platform** - it can manage Go, Node.js, Python, Ruby, or any containerized application.
 
@@ -23,9 +23,7 @@ This sample proves that Aspire is a **polyglot orchestration platform** - it can
 
 ```
 svelte-go-bookmarks/
-├── AppHost/              # .NET Aspire orchestration
-│   ├── Program.cs        # Defines api (Dockerfile) + frontend (npm)
-│   └── AppHost.csproj
+├── apphost.cs            # Standalone .NET Aspire orchestration
 ├── go-api/               # Go backend
 │   ├── main.go           # HTTP server with CRUD endpoints
 │   ├── go.mod
@@ -42,10 +40,10 @@ svelte-go-bookmarks/
 
 ## Key Aspire Pattern: AddDockerfile
 
-Since Aspire doesn't have `AddGoApp`, we use **`AddDockerfile`** to orchestrate the Go API:
+Since Aspire doesn't have `AddGoApp`, we use **`AddDockerfile`** to orchestrate the Go API in our standalone `apphost.cs`:
 
 ```csharp
-var api = builder.AddDockerfile("api", "../go-api")
+var api = builder.AddDockerfile("api", "./go-api")
     .WithHttpEndpoint(targetPort: 8080)
     .WithExternalHttpEndpoints();
 ```
@@ -65,13 +63,12 @@ This pattern works for **any language** that can be containerized!
 ## Running
 
 Prerequisites:
-- .NET 9 SDK
+- .NET 9 SDK with Aspire workload
 - Docker Desktop
 - Node.js 18+
 
 ```bash
-cd AppHost
-dotnet run
+aspire run
 ```
 
 Aspire will:

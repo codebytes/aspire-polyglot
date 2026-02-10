@@ -28,7 +28,7 @@ This sample demonstrates:
 ## Run
 
 ```bash
-cd AppHost && dotnet run
+aspire run
 ```
 
 The Aspire dashboard will open automatically. Click on the `api` endpoint to access the API.

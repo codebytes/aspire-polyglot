@@ -44,8 +44,7 @@ This sample showcases the **background worker pattern** for long-running tasks:
 ## Running with Aspire
 
 ```bash
-cd AppHost
-dotnet run
+aspire run
 ```
 
 The Aspire dashboard will show:

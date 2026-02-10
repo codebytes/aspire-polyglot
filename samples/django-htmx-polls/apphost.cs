@@ -1,6 +1,9 @@
+#:package Aspire.Hosting.Python@9.2.1
+#:sdk Aspire.AppHost.Sdk@9.2.1
+
 var builder = DistributedApplication.CreateBuilder(args);
 
-var wiki = builder.AddPythonApp("wiki", "../src", "main.py")
+builder.AddPythonApp("polls", "./src", "run.py")
     .WithHttpEndpoint(env: "PORT")
     .WithExternalHttpEndpoints();
 

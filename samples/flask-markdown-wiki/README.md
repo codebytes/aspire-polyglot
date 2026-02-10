@@ -14,9 +14,9 @@ A simple Markdown-based wiki application built with Flask and SQLite, orchestrat
 
 ```
 flask-markdown-wiki/
-├── AppHost/
-│   ├── Program.cs          # Aspire AppHost configuration
-│   └── AppHost.csproj      # AppHost project file
+├── apphost.cs              # Aspire AppHost configuration
+├── .aspire/
+│   └── settings.json       # Aspire settings
 ├── src/
 │   ├── main.py             # Flask application
 │   └── requirements.txt    # Python dependencies
@@ -33,19 +33,14 @@ flask-markdown-wiki/
 
 ### With .NET Aspire (Recommended)
 
-1. Navigate to the AppHost directory:
+1. From the sample root directory, run:
    ```bash
-   cd AppHost
+   aspire run
    ```
 
-2. Run the Aspire AppHost:
-   ```bash
-   dotnet run
-   ```
+2. Open the Aspire dashboard (URL will be displayed in the terminal)
 
-3. Open the Aspire dashboard (URL will be displayed in the terminal)
-
-4. Access the wiki application through the Aspire dashboard or directly at the assigned port
+3. Access the wiki application through the Aspire dashboard or directly at the assigned port
 
 ### Standalone (Development)
 
