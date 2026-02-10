@@ -14,7 +14,7 @@ A simple Markdown-based wiki application built with Flask and SQLite, orchestrat
 
 ```
 flask-markdown-wiki/
-├── apphost.cs              # Aspire AppHost configuration
+├── apphost.py              # Aspire AppHost configuration
 ├── .aspire/
 │   └── settings.json       # Aspire settings
 ├── src/

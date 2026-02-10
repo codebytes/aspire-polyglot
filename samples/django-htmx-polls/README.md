@@ -106,7 +106,7 @@ No JSON, no JavaScript fetch, no state management — just HTML over the wire!
 
 ```
 django-htmx-polls/
-├── apphost.cs                  # Aspire orchestration
+├── apphost.py                  # Aspire orchestration
 ├── .aspire/
 │   └── settings.json
 ├── src/
@@ -130,7 +130,7 @@ django-htmx-polls/
 
 ## Key Files Explained
 
-### apphost.cs
+### apphost.py
 
 Uses `AddPythonApp()` to run Django via the `run.py` wrapper script. Aspire sets the `PORT` environment variable, and the Python app binds to it.
 

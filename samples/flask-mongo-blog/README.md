@@ -17,7 +17,7 @@ This sample demonstrates:
 ```
 ┌─────────────────────┐
 │   .NET Aspire       │
-│   apphost.cs        │
+│   apphost.py        │
 └──────┬──────────────┘
        │
        ├─────► MongoDB Container (port 27017)
@@ -145,7 +145,7 @@ Ideas for expansion:
 
 ```
 flask-mongo-blog/
-├── apphost.cs               # Aspire orchestration
+├── apphost.py               # Aspire orchestration
 ├── .aspire/
 │   └── settings.json        # Aspire configuration
 ├── src/
