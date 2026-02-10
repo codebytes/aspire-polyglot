@@ -1,40 +1,36 @@
 ---
 marp: true
 theme: custom-default
-footer: 'Polyglot Aspire – .NET Aspire Polyglot Samples'
+footer: '@Chris_L_Ayers - https://chris-ayers.com'
 ---
 
-<!-- Mermaid setup - needed for diagrams -->
-<script type="module">
-  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
-  mermaid.initialize({ startOnLoad: true });
-</script>
+<!-- _footer: 'https://github.com/codebytes/aspire-polyglot' -->
 
 # <!--fit--> Polyglot Aspire
+
 ## Orchestrating Any Language with .NET Aspire
+## Chris Ayers
 
-🐍 Python • 📦 Node.js • 🦀 Go • 🔷 .NET
-
-<!-- Welcome! Today we'll explore how .NET Aspire can orchestrate applications written in ANY language, not just .NET. -->
-
----
-
-## About the Presenter
-
-**[Your Name]**
-**[Your Title/Role]**
-
-<i class="fa-brands fa-twitter"></i> Twitter: **[handle]**
-<i class="fa-brands fa-mastodon"></i> Mastodon: **[handle]**
-<i class="fa-brands fa-linkedin"></i> LinkedIn: **[profile]**
-<i class="fa-brands fa-github"></i> GitHub: **[username]**
-<i class="fa fa-window-maximize"></i> Blog: **[url]**
-
-<!-- Introduce yourself, your background with cloud-native development, and why polyglot orchestration matters to you. -->
+![bg right](./img/dotnet-logo.png)
 
 ---
 
-## Agenda
+![bg left:40%](./img/portrait.png)
+
+## Chris Ayers
+
+### Senior Software Engineer<br>Azure CXP AzRel<br>Microsoft
+
+<i class="fa-brands fa-bluesky"></i> BlueSky: [@chris-ayers.com](https://bsky.app/profile/chris-ayers.com)
+<i class="fa-brands fa-linkedin"></i> LinkedIn: - [chris\-l\-ayers](https://linkedin.com/in/chris-l-ayers/)
+<i class="fa fa-window-maximize"></i> Blog: [https://chris-ayers\.com/](https://chris-ayers.com/)
+<i class="fa-brands fa-github"></i> GitHub: [Codebytes](https://github.com/codebytes)
+<i class="fa-brands fa-mastodon"></i> Mastodon: [@Chrisayers@hachyderm.io](https://hachyderm.io/@Chrisayers)
+~~<i class="fa-brands fa-twitter"></i> Twitter: @Chris_L_Ayers~~
+
+---
+
+# Agenda
 
 <div class="columns">
 <div>
@@ -71,15 +67,15 @@ footer: 'Polyglot Aspire – .NET Aspire Polyglot Samples'
 
 ---
 
-## What is .NET Aspire?
+# What is .NET Aspire?
 
 **A cloud-native orchestration framework for building distributed applications**
 
-- 🚀 **Orchestration** — Start and manage multiple services
-- 🔌 **Service Discovery** — Connect services automatically
-- 📊 **Observability** — Unified logs, traces, and metrics
-- ⚙️ **Configuration** — Centralized environment management
-- 🐳 **Container-Ready** — Seamless Docker integration
+- **Orchestration** — Start and manage multiple services
+- **Service Discovery** — Connect services automatically
+- **Observability** — Unified logs, traces, and metrics
+- **Configuration** — Centralized environment management
+- **Container-Ready** — Seamless Docker integration
 
 **Key Insight:** Aspire isn't just for .NET apps — it can orchestrate **any language**!
 
@@ -87,7 +83,7 @@ footer: 'Polyglot Aspire – .NET Aspire Polyglot Samples'
 
 ---
 
-## The Polyglot Problem
+# The Polyglot Problem
 
 Modern applications use multiple languages:
 
@@ -95,40 +91,40 @@ Modern applications use multiple languages:
 <div>
 
 **Backend**
-- 🔷 .NET APIs
-- 🐍 Python ML
-- 🦀 Go services
+- .NET APIs
+- Python ML
+- Go services
 
 </div>
 <div>
 
 **Frontend**
-- ⚛️ React
-- 💚 Vue
-- 🔶 Svelte
+- React
+- Vue
+- Svelte
 
 </div>
 <div>
 
 **Infrastructure**
-- 🔶 Kafka
-- 🔴 Valkey
-- 🍃 MongoDB
+- Kafka
+- Valkey
+- MongoDB
 
 </div>
 </div>
 
 **Challenges:**
-- ❌ Service discovery chaos (hardcoded URLs everywhere)
-- ❌ Configuration fragmentation (`.env` files, YAML, JSON...)
-- ❌ Observability gaps (separate dashboards per language)
-- ❌ Complex local setup (15-step README to run locally)
+- Service discovery chaos (hardcoded URLs everywhere)
+- Configuration fragmentation (`.env` files, YAML, JSON...)
+- Observability gaps (separate dashboards per language)
+- Complex local setup (15-step README to run locally)
 
 <!-- We've all been there: README says "just run docker-compose up" but it never works the first time. -->
 
 ---
 
-## Aspire's Answer
+# Aspire's Answer
 
 **One orchestrator to rule them all** 🎯
 
@@ -157,22 +153,22 @@ builder.Build().Run();
 
 ---
 
-## Key Aspire Concepts
+# Key Aspire Concepts
 
 <div class="columns">
 <div>
 
-**AppHost** 🧠
+**AppHost**
 - Central orchestrator
 - Defines resources
 - Manages lifecycle
 
-**ServiceDefaults** 📦
+**ServiceDefaults**
 - Shared configuration
 - OpenTelemetry setup
 - Health checks
 
-**Resources** 🔗
+**Resources**
 - Services (APIs, apps)
 - Infrastructure (Redis, Postgres)
 - Executables, containers
@@ -180,17 +176,17 @@ builder.Build().Run();
 </div>
 <div>
 
-**Dashboard** 📊
+**Dashboard**
 - Real-time logs
 - Distributed traces
 - Metrics & health
 
-**References** 🔌
+**References**
 - Automatic service discovery
 - Connection string injection
 - Environment variables
 
-**Lifecycle** ♻️
+**Lifecycle**
 - Start dependencies first
 - Monitor health
 - Graceful shutdown
@@ -202,7 +198,7 @@ builder.Build().Run();
 
 ---
 
-## Aspire CLI Quick Start
+# Aspire CLI Quick Start
 
 Get started in 3 commands:
 
@@ -214,23 +210,21 @@ dotnet workload install aspire
 aspire init
 
 # 3. Run any sample
-cd samples/flask-markdown-wiki/AppHost
-dotnet run
-# OR use the Aspire CLI
+cd samples/flask-markdown-wiki
 aspire run
 ```
 
 **What happens:**
-- ✅ All services start in correct order
-- ✅ Dashboard opens at `http://localhost:15888`
-- ✅ Connection strings auto-injected
-- ✅ Logs/traces stream to dashboard
+- All services start in correct order
+- Dashboard opens at `http://localhost:15888`
+- Connection strings auto-injected
+- Logs/traces stream to dashboard
 
 <!-- The dashboard URL may vary, but Aspire will open it in your browser automatically. -->
 
 ---
 
-# Part 2: Architecture Deep Dive
+# <!--fit--> Architecture Deep Dive
 
 Understanding how Aspire orchestrates non-.NET services
 
@@ -238,14 +232,14 @@ Understanding how Aspire orchestrates non-.NET services
 
 ---
 
-## How Aspire Orchestrates Non-.NET Services
+# How Aspire Orchestrates Non-.NET Services
 
 Aspire provides extension methods for different language runtimes:
 
 <div class="columns">
 <div>
 
-**Python** 🐍
+**Python**
 ```csharp
 builder.AddPythonApp(
   "service", 
@@ -254,7 +248,7 @@ builder.AddPythonApp(
 );
 ```
 
-**Node.js** 📦
+**Node.js**
 ```csharp
 builder.AddNpmApp(
   "frontend",
@@ -266,7 +260,7 @@ builder.AddNpmApp(
 </div>
 <div>
 
-**Dockerfile** 🐳
+**Dockerfile**
 ```csharp
 builder.AddDockerfile(
   "go-api",
@@ -274,7 +268,7 @@ builder.AddDockerfile(
 );
 ```
 
-**Any Executable** ⚙️
+**Any Executable**
 ```csharp
 builder.AddExecutable(
   "rust-cli",
@@ -293,7 +287,7 @@ All get the same benefits: service discovery, observability, lifecycle managemen
 
 ---
 
-## Service Discovery via Environment Variables
+# Service Discovery via Environment Variables
 
 Aspire injects service endpoints as environment variables:
 
@@ -319,13 +313,13 @@ const apiUrl = process.env['services__api__http__0'];
 const response = await fetch(`${apiUrl}/data`);
 ```
 
-No hardcoded URLs! 🎉
+No hardcoded URLs!
 
 <!-- This is the magic that makes service discovery work across any language. -->
 
 ---
 
-## Connection String Injection
+# Connection String Injection
 
 Infrastructure resources get connection strings automatically:
 
@@ -357,21 +351,21 @@ const client = redis.createClient({
 
 ---
 
-## Architecture Overview
+# Architecture Overview
 
 <div class="mermaid">
 graph TD
-    AppHost[🧠 AppHost<br/>Orchestrator]
-    Dashboard[📊 Aspire Dashboard]
+    AppHost[AppHost<br/>Orchestrator]
+    Dashboard[Aspire Dashboard]
     
-    AppHost --> PythonApp[🐍 Python Service]
-    AppHost --> NodeApp[📦 Node.js Frontend]
-    AppHost --> DotNetAPI[🔷 .NET API]
-    AppHost --> GoService[🦀 Go Service]
+    AppHost --> PythonApp[Python Service]
+    AppHost --> NodeApp[Node.js Frontend]
+    AppHost --> DotNetAPI[.NET API]
+    AppHost --> GoService[Go Service]
     
-    AppHost --> Valkey[🔴 Valkey]
-    AppHost --> MongoDB[🍃 MongoDB]
-    AppHost --> Kafka[🔶 Kafka]
+    AppHost --> Valkey[Valkey]
+    AppHost --> MongoDB[MongoDB]
+    AppHost --> Kafka[Kafka]
     
     PythonApp --> MongoDB
     NodeApp --> Valkey
@@ -389,17 +383,17 @@ graph TD
 
 ---
 
-## The Aspire Dashboard
+# The Aspire Dashboard
 
-**A unified control center for ALL your services** 📊
+**A unified control center for ALL your services**
 
 Features:
-- 📋 **Resources Tab** — See all services, containers, and their status
-- 📜 **Console Logs** — Real-time stdout/stderr from every service
-- 📊 **Structured Logs** — Searchable, filterable logs with levels
-- 🔍 **Traces** — Distributed request tracing across services
-- 📈 **Metrics** — CPU, memory, request counts, custom metrics
-- 💚 **Health** — Status of health check endpoints
+- **Resources Tab** — See all services, containers, and their status
+- **Console Logs** — Real-time stdout/stderr from every service
+- **Structured Logs** — Searchable, filterable logs with levels
+- **Traces** — Distributed request tracing across services
+- **Metrics** — CPU, memory, request counts, custom metrics
+- **Health** — Status of health check endpoints
 
 **Runs on:** `http://localhost:15888` (by default)
 
@@ -409,7 +403,7 @@ Features:
 
 ---
 
-## Resource Lifecycle Management
+# Resource Lifecycle Management
 
 Aspire manages the complete lifecycle of your services:
 
@@ -441,7 +435,7 @@ Aspire manages the complete lifecycle of your services:
 
 ---
 
-## Health Checks Across Languages
+# Health Checks Across Languages
 
 Aspire can monitor health endpoints in any language:
 
@@ -465,13 +459,13 @@ builder.AddPythonApp("api", "../python", "app.py")
        .WithHealthCheck("/health");
 ```
 
-Dashboard shows health status in real-time! 💚❤️
+Dashboard shows health status in real-time!
 
 <!-- Health checks help Aspire know when a service is ready to receive traffic. -->
 
 ---
 
-## OpenTelemetry Integration
+# OpenTelemetry Integration
 
 Aspire uses **OpenTelemetry** for unified observability:
 
@@ -485,9 +479,9 @@ Aspire uses **OpenTelemetry** for unified observability:
 - Vendor-neutral
 
 **Aspire Provides:**
-- ✅ OTLP endpoint (dashboard)
-- ✅ Auto-instrumentation (.NET)
-- ✅ Easy manual setup (other languages)
+- OTLP endpoint (dashboard)
+- Auto-instrumentation (.NET)
+- Easy manual setup (other languages)
 
 </div>
 <div>
@@ -516,7 +510,7 @@ trace.set_tracer_provider(provider)
 
 ---
 
-# Part 3: Live Demo Walkthroughs
+# <!--fit--> Live Demo Walkthroughs
 
 8 real-world polyglot samples
 
@@ -524,28 +518,30 @@ trace.set_tracer_provider(provider)
 
 ---
 
-## Demo 1: Python Web App — Markdown Wiki
+# Demo 1: Python Web App — Markdown Wiki
 
 **What:** Flask web app with SQLite database
 
 **Use Case:** Python web services, simple CRUD apps, Markdown rendering
 
-**Key Code (AppHost):**
-```csharp
-var builder = DistributedApplication.CreateBuilder(args);
+**Key Code (apphost.py):**
+```python
+from aspire import DistributedApplication
 
-var wiki = builder.AddPythonApp("wiki", "../src", "app.py")
-                  .WithHttpEndpoint(port: 5000);
+app = DistributedApplication()
 
-builder.Build().Run();
+wiki = app.add_python_app("wiki", "../src", "app.py") \
+          .with_http_endpoint(port=5000)
+
+app.build().run()
 ```
 
-**That's it!** 🎉
+**That's it!**
 
 **Run it:**
 ```bash
-cd samples/flask-markdown-wiki/AppHost
-dotnet run
+cd samples/flask-markdown-wiki
+aspire run
 ```
 
 **Dashboard:** Shows Flask app with clickable link to `http://localhost:5000`
@@ -554,14 +550,14 @@ dotnet run
 
 ---
 
-## Demo 1: Flask Wiki — What You See
+# Demo 1: Flask Wiki — What You See
 
 **In the Aspire Dashboard:**
 
-- 📋 **Resources Tab:** `wiki` service with link to http://localhost:5000
-- 📜 **Console Logs:** Flask startup messages and request logs
-- ✅ **Status:** Running, healthy
-- 🔗 **Endpoint:** Clickable link to wiki UI
+- **Resources Tab:** `wiki` service with link to http://localhost:5000
+- **Console Logs:** Flask startup messages and request logs
+- **Status:** Running, healthy
+- **Endpoint:** Clickable link to wiki UI
 
 **Flask app (`app.py`):**
 ```python
@@ -590,7 +586,7 @@ if __name__ == '__main__':
 
 ---
 
-## Demo 2: Django + HTMX — Voting Polls
+# Demo 2: Django + HTMX — Voting Polls
 
 **What:** Django web app with HTMX for server-rendered interactivity + SQLite
 
@@ -599,39 +595,39 @@ if __name__ == '__main__':
 **Architecture:**
 ```
 ┌──────────────┐
-│  Django App  │ 🐍 Python + HTMX
+│  Django App  │ Python + HTMX
 │  Port: 8000  │
 └──────┬───────┘
        │
        ↓
 ┌──────────────┐
-│   SQLite     │ 💾 Database
+│   SQLite     │ Database
 └──────────────┘
 ```
 
-**AppHost:**
-```csharp
-builder.AddPythonApp("polls", "../src", "manage.py", "runserver", "0.0.0.0:8000")
-       .WithHttpEndpoint(port: 8000);
+**apphost.py:**
+```python
+app.add_python_app("polls", "../src", "manage.py", "runserver", "0.0.0.0:8000") \
+   .with_http_endpoint(port=8000)
 ```
 
 <!-- Django with HTMX shows modern server-rendered patterns without heavy frontend frameworks. -->
 
 ---
 
-## Demo 2: Django HTMX — Run It
+# Demo 2: Django HTMX — Run It
 
 **Commands:**
 ```bash
-cd samples/django-htmx-polls/AppHost
-dotnet run
+cd samples/django-htmx-polls
+aspire run
 ```
 
 **What happens:**
-1. ✅ Aspire installs Python dependencies (Django, django-htmx)
-2. ✅ Runs Django migrations automatically
-3. ✅ Starts Django dev server on port 8000
-4. ✅ Dashboard shows clickable link to `http://localhost:8000`
+1. Aspire installs Python dependencies (Django, django-htmx)
+2. Runs Django migrations automatically
+3. Starts Django dev server on port 8000
+4. Dashboard shows clickable link to `http://localhost:8000`
 
 **Key Django + HTMX Code:**
 ```python
@@ -653,7 +649,7 @@ def vote(request, question_id):
 
 ---
 
-## Demo 3: Flask + MongoDB — Blog
+# Demo 3: Flask + MongoDB — Blog
 
 **What:** Flask blog with MongoDB database and Mongo Express admin UI
 
@@ -662,28 +658,28 @@ def vote(request, question_id):
 **Architecture:**
 ```
 ┌─────────────┐         ┌──────────┐         ┌───────────────┐
-│  Flask Blog │ 🐍      │ MongoDB  │ 🍃      │ Mongo Express │ 🌐
+│  Flask Blog │         │ MongoDB  │         │ Mongo Express │
 │  Port: 5000 │ ───────>│ Port: 27017       │  Port: 8081   │
 └─────────────┘         └──────────┘         └───────────────┘
 ```
 
-**AppHost:**
-```csharp
-var mongo = builder.AddMongoDB("mongo")
-                   .AddDatabase("blog");
+**apphost.py:**
+```python
+mongo = app.add_mongodb("mongo") \
+           .add_database("blog")
 
-builder.AddPythonApp("blog", "../src", "app.py")
-       .WithHttpEndpoint(port: 5000)
-       .WithReference(mongo);
+app.add_python_app("blog", "../src", "app.py") \
+   .with_http_endpoint(port=5000) \
+   .with_reference(mongo)
 ```
 
-**Magic:** `AddMongoDB()` provides MongoDB connection string automatically!
+**Magic:** `add_mongodb()` provides MongoDB connection string automatically!
 
 <!-- MongoDB is a popular choice for Python web apps. Aspire makes it trivial to add. -->
 
 ---
 
-## Demo 3: Flask MongoDB Blog — Python Code
+# Demo 3: Flask MongoDB Blog — Python Code
 
 **Flask App (`app.py`):**
 ```python
@@ -716,13 +712,13 @@ if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
 ```
 
-**Run:** `cd samples/flask-mongo-blog/AppHost && dotnet run`
+**Run:** `cd samples/flask-mongo-blog && aspire run`
 
 <!-- MongoDB document model is perfect for blogs with flexible schemas. -->
 
 ---
 
-## Demo 4: Hono.js + Valkey — Rate Limiter
+# Demo 4: Hono.js + Valkey — Rate Limiter
 
 **What:** Hono.js API with Valkey-backed sliding window rate limiter
 
@@ -731,14 +727,14 @@ if __name__ == '__main__':
 **Architecture:**
 ```
 ┌─────────────┐         ┌─────────┐
-│  Hono.js    │ 📦      │  Valkey │ 🔴
+│  Hono.js    │         │  Valkey │
 │  Port: 3000 │ ───────>│ Port: 6379
 └─────────────┘         └─────────┘
 ```
 
-**AppHost:**
+**apphost.cs:**
 ```csharp
-var valkey = builder.AddValkey("cache");  // NOT AddRedis!
+var valkey = builder.AddValkey("cache");
 
 builder.AddNpmApp("api", "../src", "dev")
        .WithHttpEndpoint(port: 3000)
@@ -751,7 +747,7 @@ builder.AddNpmApp("api", "../src", "dev")
 
 ---
 
-## Demo 4: Hono Rate Limiter — Node.js Code
+# Demo 4: Hono Rate Limiter — Node.js Code
 
 **Hono.js App (`index.ts`):**
 ```typescript
@@ -786,19 +782,19 @@ app.listen(3000);
 
 ---
 
-## Demo 4: Hono Rate Limiter — Run It
+# Demo 4: Hono Rate Limiter — Run It
 
 **Commands:**
 ```bash
-cd samples/hono-valkey-ratelimiter/AppHost
-dotnet run
+cd samples/hono-valkey-ratelimiter
+aspire run
 ```
 
 **What you'll see:**
-1. 🔴 Valkey container starts first
-2. 📦 Node.js (Hono) dev server starts
-3. 📊 Dashboard shows both resources
-4. 🔗 API endpoint at `http://localhost:3000`
+1. Valkey container starts first
+2. Node.js (Hono) dev server starts
+3. Dashboard shows both resources
+4. API endpoint at `http://localhost:3000`
 
 **Test the rate limiter:**
 ```bash
@@ -816,7 +812,7 @@ for i in {1..150}; do curl http://localhost:3000/api/data; done
 
 ---
 
-## Demo 5: FastAPI + Celery — Background Reports
+# Demo 5: FastAPI + Celery — Background Reports
 
 **What:** FastAPI API with Celery workers processing background tasks via Redis
 
@@ -825,28 +821,28 @@ for i in {1..150}; do curl http://localhost:3000/api/data; done
 **Architecture:**
 ```
 ┌───────────┐     ┌─────────┐     ┌──────────────┐
-│ FastAPI   │ 🐍  │  Redis  │ 🔴  │ Celery Worker│ 🐍
+│ FastAPI   │     │  Redis  │     │ Celery Worker│
 │ Port: 8000│────>│ Port: 6379<────│  (no HTTP)   │
 └───────────┘     └─────────┘     └──────────────┘
 ```
 
-**AppHost:**
-```csharp
-var redis = builder.AddRedis("broker");
+**apphost.py:**
+```python
+redis = app.add_redis("broker")
 
-builder.AddPythonApp("api", "../api", "main.py")
-       .WithHttpEndpoint(port: 8000)
-       .WithReference(redis);
+app.add_python_app("api", "../api", "main.py") \
+   .with_http_endpoint(port=8000) \
+   .with_reference(redis)
 
-builder.AddPythonApp("worker", "../worker", "celery_worker.py")
-       .WithReference(redis);
+app.add_python_app("worker", "../worker", "celery_worker.py") \
+   .with_reference(redis)
 ```
 
 <!-- Both Python processes share the same Redis broker via Aspire! -->
 
 ---
 
-## Demo 5: Celery Reports — FastAPI Code
+# Demo 5: Celery Reports — FastAPI Code
 
 **FastAPI App (`main.py`):**
 ```python
@@ -874,13 +870,13 @@ if __name__ == '__main__':
     uvicorn.run(app, host='0.0.0.0', port=8000)
 ```
 
-**Run:** `cd samples/python-celery-reports/AppHost && dotnet run`
+**Run:** `cd samples/python-celery-reports && aspire run`
 
 <!-- FastAPI returns immediately; Celery processes in background. -->
 
 ---
 
-## Demo 6: .NET + Angular + CosmosDB
+# Demo 6: .NET + Angular + CosmosDB
 
 **What:** ASP.NET Core API + Angular 19 SPA + Azure CosmosDB Emulator
 
@@ -889,15 +885,17 @@ if __name__ == '__main__':
 **Architecture:**
 ```
 ┌────────────┐     ┌─────────────┐     ┌────────────┐
-│  Angular   │ ⚛️  │  .NET API   │ 🔷  │ CosmosDB   │ 🌌
+│  Angular   │     │  .NET API   │     │ CosmosDB   │
 │  Port: 4200│────>│  Port: 5000 │────>│ Emulator   │
 └────────────┘     └─────────────┘     └────────────┘
 ```
 
-**AppHost:**
+**AppHost/Program.cs:**
 ```csharp
+var builder = DistributedApplication.CreateBuilder(args);
+
 var cosmos = builder.AddAzureCosmosDB("cosmos")
-                    .RunAsEmulator()  // Local emulator!
+                    .RunAsEmulator()
                     .AddDatabase("products");
 
 var api = builder.AddProject<Projects.ProductApi>("api")
@@ -905,13 +903,17 @@ var api = builder.AddProject<Projects.ProductApi>("api")
 
 builder.AddNpmApp("frontend", "../frontend", "start")
        .WithReference(api);
+
+builder.Build().Run();
 ```
+
+**Run:** `cd samples/dotnet-angular-cosmos/AppHost && dotnet run`
 
 <!-- CosmosDB emulator runs locally via Docker, no Azure account needed! -->
 
 ---
 
-## Demo 6: .NET + Angular + CosmosDB — Code
+# Demo 6: .NET + Angular + CosmosDB — Code
 
 **.NET API (`Program.cs`):**
 ```csharp
@@ -951,7 +953,7 @@ ngOnInit() {
 
 ---
 
-## Demo 7: Go + Svelte — Bookmarks
+# Demo 7: Go + Svelte — Bookmarks
 
 **What:** Go HTTP server (via AddDockerfile) with Svelte frontend
 
@@ -960,12 +962,12 @@ ngOnInit() {
 **Architecture:**
 ```
 ┌──────────┐     ┌──────────────┐
-│  Svelte  │ 🔶  │   Go API     │ 🦀
+│  Svelte  │     │   Go API     │
 │ Port: 5173│────>│  Port: 8080  │
 └──────────┘     └──────────────┘
 ```
 
-**AppHost:**
+**apphost.cs:**
 ```csharp
 var api = builder.AddDockerfile("api", "../go-api")
                  .WithHttpEndpoint(port: 8080);
@@ -974,13 +976,13 @@ builder.AddNpmApp("frontend", "../frontend", "dev")
        .WithReference(api);
 ```
 
-**Go isn't natively supported, so we use AddDockerfile!** 🐳
+**Go isn't natively supported, so we use AddDockerfile!**
 
 <!-- AddDockerfile lets you run ANY language that you can containerize. -->
 
 ---
 
-## Demo 7: Bookmarks — Dockerfile & Go Code
+# Demo 7: Bookmarks — Dockerfile & Go Code
 
 **Dockerfile:**
 ```dockerfile
@@ -1013,15 +1015,15 @@ func bookmarksHandler(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-**Run:** `cd samples/svelte-go-bookmarks/AppHost && dotnet run`
+**Run:** `cd samples/svelte-go-bookmarks && aspire run`
 
 <!-- AddDockerfile is the escape hatch for any language Aspire doesn't support natively! -->
 
 ---
 
-## Demo 8: Polyglot Event Stream
+# Demo 8: Polyglot Event Stream
 
-**The Grand Finale:** C# + Python + Node.js + Kafka 🎉
+**The Grand Finale:** C# + Python + Node.js + Kafka
 
 **What:** Multi-language microservices with Kafka event streaming
 
@@ -1030,24 +1032,24 @@ func bookmarksHandler(w http.ResponseWriter, r *http.Request) {
 **Architecture:** (see next slide)
 
 **Components:**
-- 🔷 .NET Producer — generates events
-- 🐍 Python Consumer — processes events
-- 📦 Node.js Dashboard — real-time WebSocket UI
-- 🔶 Apache Kafka — event streaming platform
+- .NET Producer — generates events
+- Python Consumer — processes events
+- Node.js Dashboard — real-time WebSocket UI
+- Apache Kafka — event streaming platform
 
 <!-- This is the most complex demo — it shows how Aspire shines with multiple languages. -->
 
 ---
 
-## Demo 8: Polyglot Event Stream — Architecture
+# Demo 8: Polyglot Event Stream — Architecture
 
 <div class="mermaid">
 graph LR
-    Producer[🔷 .NET Producer<br/>Port: 5000] -->|publish events| Kafka[🔶 Apache Kafka<br/>Port: 9092]
-    Kafka -->|consume events| Consumer[🐍 Python Consumer]
+    Producer[.NET Producer<br/>Port: 5000] -->|publish events| Kafka[Apache Kafka<br/>Port: 9092]
+    Kafka -->|consume events| Consumer[Python Consumer]
     Consumer -->|processed data| Kafka
-    Kafka -->|stream updates| Dashboard[📦 Node.js Dashboard<br/>Port: 3000]
-    User[👤 User] -->|WebSocket| Dashboard
+    Kafka -->|stream updates| Dashboard[Node.js Dashboard<br/>Port: 3000]
+    User[User] -->|WebSocket| Dashboard
     
     style Producer fill:#512BD4
     style Consumer fill:#3776ab
@@ -1064,8 +1066,9 @@ graph LR
 
 ---
 
-## Demo 8: Polyglot Event Stream — AppHost
+# Demo 8: Polyglot Event Stream — AppHost
 
+**AppHost/Program.cs:**
 ```csharp
 var builder = DistributedApplication.CreateBuilder(args);
 
@@ -1084,16 +1087,18 @@ var dashboard = builder.AddNpmApp("dashboard", "../dashboard", "dev")
 builder.Build().Run();
 ```
 
+**Run:** `cd samples/polyglot-event-stream/AppHost && dotnet run`
+
 **All three services get:**
-- ✅ `CONNECTIONSTRINGS__messaging` (Kafka broker URL)
-- ✅ Service discovery for producer API
-- ✅ Unified observability in Aspire dashboard
+- `CONNECTIONSTRINGS__messaging` (Kafka broker URL)
+- Service discovery for producer API
+- Unified observability in Aspire dashboard
 
 <!-- Look how simple the orchestration code is! Aspire handles all the complexity. -->
 
 ---
 
-## Demo 8: Event Stream — .NET Producer
+# Demo 8: Event Stream — .NET Producer
 
 **Program.cs:**
 ```csharp
@@ -1125,7 +1130,7 @@ app.Run();
 
 ---
 
-## Demo 8: Event Stream — Python Consumer
+# Demo 8: Event Stream — Python Consumer
 
 **Consumer (`consumer.py`):**
 ```python
@@ -1164,7 +1169,7 @@ for message in consumer:
 
 ---
 
-## Demo 8: Event Stream — Node.js Dashboard
+# Demo 8: Event Stream — Node.js Dashboard
 
 **Dashboard (`server.js`):**
 ```javascript
@@ -1204,31 +1209,31 @@ server.listen(3000);
 
 ---
 
-## Demo 8: Live Dashboard Experience
+# Demo 8: Live Dashboard Experience
 
 **In the Aspire Dashboard, you'll see:**
 
-📋 **Resources Tab:**
-- ✅ `producer` (.NET) — Running, port 5000
-- ✅ `consumer` (Python) — Running
-- ✅ `dashboard` (Node.js) — Running, port 3000
-- ✅ `messaging` (Kafka) — Running, port 9092
+**Resources Tab:**
+- `producer` (.NET) — Running, port 5000
+- `consumer` (Python) — Running
+- `dashboard` (Node.js) — Running, port 3000
+- `messaging` (Kafka) — Running, port 9092
 
-🔍 **Traces Tab:**
+**Traces Tab:**
 - Event flow: HTTP → .NET → Kafka → Python → Kafka → Node.js → WebSocket
 - End-to-end latency visible!
 
-📜 **Logs Tab:**
+**Logs Tab:**
 - All services' logs in one place
 - Filter by service, level, time range
 
-**This is the power of Aspire!** 💪
+**This is the power of Aspire!**
 
 <!-- One unified view of everything, regardless of language. This is transformative. -->
 
 ---
 
-# Part 4: Observability & Service Discovery
+# <!--fit--> Observability & Service Discovery
 
 Deep dive into cross-language tracing and configuration
 
@@ -1506,10 +1511,10 @@ azd up
 ```
 
 **Aspire generates:**
-- ✅ Container images for all services (Python, Node.js, .NET, etc.)
-- ✅ Azure Container Apps resources
-- ✅ Azure infrastructure (Redis, PostgreSQL, etc.)
-- ✅ Service connections and environment variables
+- Container images for all services (Python, Node.js, .NET, etc.)
+- Azure Container Apps resources
+- Azure infrastructure (Redis, PostgreSQL, etc.)
+- Service connections and environment variables
 
 **Alternative: aspirate (community tool):**
 ```bash
@@ -1524,7 +1529,7 @@ Generates Kubernetes manifests!
 
 ---
 
-# Part 5: Wrap-Up & Resources
+# <!--fit--> Wrap-Up & Resources
 
 Bringing it all together
 
@@ -1532,7 +1537,7 @@ Bringing it all together
 
 ---
 
-## Aspire Polyglot Cheat Sheet
+# Aspire Polyglot Cheat Sheet
 
 <div class="columns3">
 <div>
@@ -1613,15 +1618,15 @@ AddExecutable()
 - 🐙 [github.com/dotnet/aspire](https://github.com/dotnet/aspire) — Source code
 
 **Sample Code:**
-- 🐙 [github.com/codemonkey85/polyglot-aspire](https://github.com/codemonkey85/polyglot-aspire) — This repo!
+- 🐙 [github.com/codebytes/aspire-polyglot](https://github.com/codebytes/aspire-polyglot) — This repo!
 
 **Community:**
 - 💬 [Discord: .NET Aspire channel](https://aka.ms/dotnet-discord)
 - 🐦 [Twitter: #dotnetaspire](https://twitter.com/search?q=%23dotnetaspire)
 
 **Tools:**
-- 🚀 [aspirate](https://github.com/prom3theu5/aspirate) — Kubernetes deployment
-- 🔧 [azd](https://learn.microsoft.com/azure/developer/azure-developer-cli/) — Azure deployment
+- [aspirate](https://github.com/prom3theu5/aspirate) — Kubernetes deployment
+- [azd](https://learn.microsoft.com/azure/developer/azure-developer-cli/) — Azure deployment
 
 <!-- Join the community! Aspire is open source and very active. -->
 
@@ -1630,17 +1635,17 @@ AddExecutable()
 ## What's Next: Aspire Roadmap
 
 **Current (Aspire 8.0):**
-- ✅ Python, Node.js support
-- ✅ Dockerfile support (any language)
-- ✅ Azure deployment via azd
-- ✅ Kubernetes via aspirate
+- Python, Node.js support
+- Dockerfile support (any language)
+- Azure deployment via azd
+- Kubernetes via aspirate
 
 **Coming Soon:**
-- 🔜 More language integrations (Java, Ruby)
-- 🔜 Better IDE support (Visual Studio, VS Code)
-- 🔜 Production dashboard (not just local)
-- 🔜 Service mesh integration
-- 🔜 More cloud providers (AWS, GCP)
+- More language integrations (Java, Ruby)
+- Better IDE support (Visual Studio, VS Code)
+- Production dashboard (not just local)
+- Service mesh integration
+- More cloud providers (AWS, GCP)
 
 **Community Contributions Welcome!**
 
@@ -1650,117 +1655,65 @@ GitHub: [github.com/dotnet/aspire](https://github.com/dotnet/aspire)
 
 ---
 
-## Key Takeaways
+# Key Takeaways
 
-✅ **Aspire orchestrates ANY language** — Python, Node.js, Go, Rust, Java, not just .NET
+**Aspire orchestrates ANY language** — Python, Node.js, Go, Rust, Java, not just .NET
 
-✅ **Unified observability** — One dashboard for logs, traces, metrics across all services
+**Unified observability** — One dashboard for logs, traces, metrics across all services
 
-✅ **Automatic service discovery** — No hardcoded URLs via environment variables
+**Automatic service discovery** — No hardcoded URLs via environment variables
 
-✅ **Connection string injection** — Redis, PostgreSQL, RabbitMQ connections auto-wired
+**Connection string injection** — Redis, PostgreSQL, RabbitMQ connections auto-wired
 
-✅ **Simple AppHost code** — 10 lines to orchestrate 5 services
+**Simple AppHost code** — 10 lines to orchestrate 5 services
 
-✅ **Deploy to production** — Azure, Kubernetes, anywhere containers run
+**Deploy to production** — Azure, Kubernetes, anywhere containers run
 
-✅ **Open source** — MIT license, community-driven
+**Open source** — MIT license, community-driven
 
-**Start today:** `dotnet workload install aspire` 🚀
+**Start today:** `dotnet workload install aspire`
 
 <!-- Aspire solves real problems: local dev complexity, observability fragmentation, deployment. -->
 
 ---
 
-## Thank You!
+![bg right](./img/dotnet-logo.png)
+
+# DEMOS
+
+---
 
 # Questions?
+
+![bg right](./img/owl.png)
+
+---
+
+# Resources
 
 <div class="columns">
 <div>
 
-**Contact:**
-- <i class="fa-brands fa-twitter"></i> **[Your Twitter]**
-- <i class="fa-brands fa-github"></i> **[Your GitHub]**
-- <i class="fa fa-envelope"></i> **[Your Email]**
-- <i class="fa fa-window-maximize"></i> **[Your Blog]**
+## Links
+
+- [Aspire](https://aspire.dev)
+- [Aspire Docs](https://learn.microsoft.com/en-us/dotnet/aspire/get-started/aspire-overview)
+- [Aspire Samples](https://github.com/dotnet/aspire-samples)
+- [Polyglot Aspire Samples](https://github.com/codebytes/aspire-polyglot)
+- [Aspire Community Toolkit](https://github.com/CommunityToolkit/Aspire)
 
 </div>
 <div>
 
-**Resources:**
-- 🌐 [aspire.dev](https://aspire.dev)
-- 🐙 [github.com/codemonkey85/polyglot-aspire](https://github.com/codemonkey85/polyglot-aspire)
-- 📖 [Aspire Docs](https://learn.microsoft.com/dotnet/aspire)
+## Follow Chris Ayers
+
+![w:400px](./img/chris_ayers.svg)
 
 </div>
 </div>
 
-**Slides available at:** [your-slides-url.com]
-
-<!-- Thank you for attending! Feel free to reach out with questions. -->
-
----
-
-## Bonus: Quick Start Commands
-
-```bash
-# Install Aspire workload
-dotnet workload install aspire
-
-# Create new Aspire app
-aspire init
-
-# Or clone samples
-git clone https://github.com/codemonkey85/polyglot-aspire.git
-cd polyglot-aspire
-
-# Run any sample (examples)
-cd samples/flask-markdown-wiki/AppHost
-dotnet run
-
-cd samples/hono-valkey-ratelimiter/AppHost
-dotnet run
-
-cd samples/polyglot-event-stream/AppHost
-dotnet run
-
-# Dashboard opens at http://localhost:15888
-```
-
-**Try it yourself!** All samples in the repo are ready to run. 🚀
-
-<!-- Experiment with the samples after this session! -->
-
----
-
-## Bonus: Common Patterns
-
-**Pattern 1: API + Database**
-```csharp
-var db = builder.AddPostgres("db").AddDatabase("mydb");
-builder.AddPythonApp("api", "../src", "app.py").WithReference(db);
-```
-
-**Pattern 2: Frontend + Backend**
-```csharp
-var api = builder.AddProject<Projects.Api>("api");
-builder.AddNpmApp("web", "../web", "dev").WithReference(api);
-```
-
-**Pattern 3: Event Streaming Workers**
-```csharp
-var kafka = builder.AddKafka("events");
-builder.AddProject<Projects.Producer>("producer").WithReference(kafka);
-builder.AddPythonApp("consumer", "../consumer", "consumer.py").WithReference(kafka);
-```
-
-**Pattern 4: Microservices**
-```csharp
-var redis = builder.AddRedis("cache");
-builder.AddProject<Projects.ServiceA>("svc-a").WithReference(redis);
-builder.AddPythonApp("svc-b", "../svc-b", "app.py").WithReference(redis);
-builder.AddNpmApp("svc-c", "../svc-c", "index.js").WithReference(redis);
-```
-
-<!-- These patterns cover 90% of use cases. -->
+<!-- Needed for mermaid, can be anywhere in file except frontmatter -->
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true });
+</script>
