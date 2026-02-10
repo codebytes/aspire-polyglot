@@ -1,67 +1,48 @@
-# Marp Slides Template
+# Polyglot Aspire
 
-[Use this template!](https://github.com/codebytes/marp-slides-template/generate)
+Polyglot samples for .NET Aspire 13 — demonstrating service orchestration across TypeScript, Python, C#, and mixed-language applications.
 
-Create a Marp presentation site that can be built and published on [GitHub Pages] using this minimal template. The site features:
+**Quick Start:** `cd samples/<sample> && aspire run`
 
-- Marp integration
-- A GitHub Pages / Actions workflow for build and publish ([See a preview](http://chris-ayers.com/marp-slides-template/))
-- A DevContainer/CodeSpace configuration with Marp and Markdown preview extensions
-- Chrome installation for PDF and PowerPoint slide creation on Linux
+**Prerequisites:** [Aspire CLI](https://aspire.dev/get-started/install-cli/), [Docker](https://docs.docker.com/get-docker/)
 
-## Customization
+## Samples
 
-Feel free to customize the sites created with this template as you like!
+### TypeScript
 
-## Getting Started
+| Sample | Description |
+|--------|-------------|
+| [node-express-redis](./samples/node-express-redis) | Express + Redis + Vite frontend — visit counter with real-time updates |
+| [vite-react-fastapi-ts](./samples/vite-react-fastapi-ts) | React + API fullstack with TypeScript frontend |
 
-1. Click "[use this template]" to create a new site.
-2. Update the content of `slides/Slides.md` with your own presentation.
+### Python
 
-## Custom Themes
+| Sample | Description |
+|--------|-------------|
+| [python-fastapi-postgres](./samples/python-fastapi-postgres) | FastAPI + PostgreSQL + pgAdmin — async CRUD API |
+| [python-script](./samples/python-script) | Minimal Python script — simplest possible Aspire app |
+| [python-openai-agent](./samples/python-openai-agent) | OpenAI chat agent with streaming responses |
 
-This template includes four custom themes in the `slides/themes` folder:
+### C# / .NET
 
-- custom
-- custom-default (based on the built-in default theme)
-- custom-gaia (based on the built-in gaia theme)
-- custom-uncover (based on the built-in uncover theme)
+| Sample | Description |
+|--------|-------------|
+| [vite-csharp-postgres](./samples/vite-csharp-postgres) | Minimal API + PostgreSQL + Vite React frontend |
 
-To use a custom theme, edit the relevant css file and add its reference in the front matter of `Slides.md`. For example, to use `custom-default` add the following to the `Slides.md` front matter:
+### Mixed / Polyglot
 
-```markdown
----
-marp: true
-theme: custom-default
----
-```
+| Sample | Description |
+|--------|-------------|
+| [polyglot-task-queue](./samples/polyglot-task-queue) | Multi-language task queue — Python, C#, Node.js workers with RabbitMQ |
+| [rag-document-qa-svelte](./samples/rag-document-qa-svelte) | RAG document Q&A — Svelte frontend, Python backend, Qdrant vectors |
 
-For additional themes, add them to the devcontainer and follow the [Marp custom theme documentation](https://marpit.marp.app/theme-css).
+## Slides
 
-## Publishing on GitHub Pages
+Presentation slides are in the [slides/](./slides/) directory, built with [Marp](https://marp.app/).
 
-1. In your GitHub repo, navigate to `Settings` > `Pages` > `Build and deployment`.
-2. Select `Source`: `GitHub Actions`.
-3. If any Actions failed, go to the `Actions` tab and click on `Re-run jobs`.
+## Learn More
 
-## Local Build and Preview
-
-1. Install [Visual Studio Code](https://code.visualstudio.com/).
-2. Install the [Marp for VS Code extension](https://marketplace.visualstudio.com/items?itemName=marp-team.marp-vscode).
-3. Open `slides/Slides.md` in VS Code.
-
-## Licensing and Attribution
-
-This repository is licensed under the [MIT License]. Reuse or extend the code as you wish, but include the original license. The deployment GitHub Actions workflow is based on GitHub's starter workflows.
-
-## Resources
-
-- [Use this template](https://github.com/codebytes/marp-slides-template/generate)
-
-- GitHub Pages: [https://docs.github.com/en/pages](https://docs.github.com/en/pages)
-
-- CommonMark markdown syntax: [https://commonmark.org/help/](https://commonmark.org/help/)
-
-- Marp Official Repository: [https://github.com/marp-team/marp](https://github.com/marp-team/marp)
-- Marp Official Documentation: [https://marpit.marp.app/markdown](https://marpit.marp.app/markdown)
-- Marp for VS Code Documentation: [https://marketplace.visualstudio.com/items?itemName=marp-team.marp-vscode](https://marketplace.visualstudio.com/items?itemName=marp-team.marp-vscode)
+- [Aspire Documentation](https://aspire.dev/docs/)
+- [Aspire VS Code Extension](https://marketplace.visualstudio.com/items?itemName=microsoft-aspire.aspire-vscode)
+- [Aspire GitHub](https://github.com/dotnet/aspire)
+- [David Fowler's Aspire 13 Samples](https://github.com/davidfowl/aspire-13-samples)
