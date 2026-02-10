@@ -1,0 +1,21 @@
+<h2>Current Results</h2>
+
+{% for item in choices_with_percentages %}
+<div class="result-item">
+    <div class="result-label">
+        <span>{{ item.choice.text }}</span>
+        <span>{{ item.choice.votes }} vote{{ item.choice.votes|pluralize }}</span>
+    </div>
+    <div class="result-bar-bg">
+        <div class="result-bar" style="width: {{ item.percentage }}%">
+            {% if item.percentage > 0 %}
+                {{ item.percentage|floatformat:1 }}%
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<div class="total-votes">
+    <strong>Total Votes:</strong> {{ total_votes }}
+</div>

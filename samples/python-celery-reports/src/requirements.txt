@@ -1,0 +1,4 @@
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+celery[redis]==5.4.0
+redis==5.2.0

@@ -1,0 +1,1 @@
+# Pollsite Django project

@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}New Post - Flask + MongoDB Blog{% endblock %}
+
+{% block content %}
+<h2 style="margin-bottom: 30px;">Create New Post</h2>
+
+<form method="POST" action="/new" style="max-width: 600px;">
+    <div style="margin-bottom: 20px;">
+        <label for="title" style="display: block; margin-bottom: 8px; font-weight: bold;">
+            Title
+        </label>
+        <input 
+            type="text" 
+            id="title" 
+            name="title" 
+            required 
+            style="width: 100%; padding: 10px; font-size: 1em; border: 1px solid #ccc; border-radius: 4px; font-family: inherit;"
+            placeholder="Enter post title"
+        >
+    </div>
+    
+    <div style="margin-bottom: 20px;">
+        <label for="author" style="display: block; margin-bottom: 8px; font-weight: bold;">
+            Author
+        </label>
+        <input 
+            type="text" 
+            id="author" 
+            name="author" 
+            required 
+            style="width: 100%; padding: 10px; font-size: 1em; border: 1px solid #ccc; border-radius: 4px; font-family: inherit;"
+            placeholder="Your name"
+        >
+    </div>
+    
+    <div style="margin-bottom: 20px;">
+        <label for="tags" style="display: block; margin-bottom: 8px; font-weight: bold;">
+            Tags <span style="font-weight: normal; color: #666; font-size: 0.9em;">(comma-separated)</span>
+        </label>
+        <input 
+            type="text" 
+            id="tags" 
+            name="tags" 
+            style="width: 100%; padding: 10px; font-size: 1em; border: 1px solid #ccc; border-radius: 4px; font-family: inherit;"
+            placeholder="python, flask, mongodb"
+        >
+    </div>
+    
+    <div style="margin-bottom: 20px;">
+        <label for="content" style="display: block; margin-bottom: 8px; font-weight: bold;">
+            Content <span style="font-weight: normal; color: #666; font-size: 0.9em;">(Markdown supported)</span>
+        </label>
+        <textarea 
+            id="content" 
+            name="content" 
+            required 
+            rows="15" 
+            style="width: 100%; padding: 10px; font-size: 1em; border: 1px solid #ccc; border-radius: 4px; font-family: 'Courier New', monospace; resize: vertical;"
+            placeholder="# Your Post Title&#10;&#10;Write your content here using **Markdown** formatting...&#10;&#10;- Bullet points&#10;- Are supported&#10;&#10;```python&#10;# Code blocks too!&#10;print('Hello, World!')&#10;```"
+        ></textarea>
+    </div>
+    
+    <div style="margin-top: 30px;">
+        <button 
+            type="submit" 
+            style="background: #007bff; color: white; padding: 12px 30px; border: none; border-radius: 4px; font-size: 1.1em; cursor: pointer; font-family: inherit;"
+        >
+            Publish Post
+        </button>
+        
+        <a 
+            href="/" 
+            style="margin-left: 15px; color: #666; text-decoration: none;"
+        >
+            Cancel
+        </a>
+    </div>
+</form>
+
+<style>
+    button:hover {
+        background: #0056b3 !important;
+    }
+    
+    input:focus, textarea:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+    }
+</style>
+{% endblock %}

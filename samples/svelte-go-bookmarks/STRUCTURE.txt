@@ -1,0 +1,51 @@
+# Svelte-Go Bookmarks Sample - File Structure
+
+Created: All files successfully generated
+Build Status: ✅ AppHost builds successfully
+
+## Files Created:
+
+1. AppHost/
+   - AppHost.csproj (net9.0, Aspire 9.2.1, includes Aspire.Hosting.AppHost + NodeJs)
+   - Program.cs (AddDockerfile for Go API, AddNpmApp for Svelte frontend)
+
+2. go-api/
+   - main.go (HTTP server with CRUD endpoints, in-memory storage, 3 seeded bookmarks)
+   - go.mod (Go 1.22 module)
+   - Dockerfile (multi-stage Alpine-based build)
+
+3. frontend/
+   - package.json (Svelte 4, Vite 5, svelte-vite-plugin)
+   - vite.config.js (proxy /api to backend via services__api__http__0)
+   - index.html (entry point)
+   - src/
+     - main.js (Svelte app bootstrap)
+     - app.css (global styles)
+     - App.svelte (full bookmark manager UI with add/search/delete)
+
+4. Root files:
+   - README.md (comprehensive documentation)
+   - .gitignore (excludes bin/obj/node_modules/dist)
+
+## Key Features:
+
+✅ Go HTTP server (stdlib only, no external deps)
+✅ Full CRUD API (GET/POST/DELETE/search)
+✅ Svelte SPA with modern card-based UI
+✅ Real-time search functionality
+✅ Tag-based organization with colored badges
+✅ Aspire orchestration via AddDockerfile + AddNpmApp
+✅ Service discovery via environment variables
+✅ CORS enabled for local development
+
+## API Endpoints:
+- GET    /api/bookmarks          (list all)
+- POST   /api/bookmarks          (create)
+- DELETE /api/bookmarks/{id}     (delete)
+- GET    /api/bookmarks/search?q= (search)
+- GET    /health                  (health check)
+
+## Running:
+cd AppHost && dotnet run
+
+This demonstrates Aspire's polyglot capabilities - orchestrating Go + Node.js/Svelte!

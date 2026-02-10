@@ -1,0 +1,34 @@
+{% extends 'polls/base.html' %}
+
+{% block title %}Polls - Home{% endblock %}
+
+{% block content %}
+<h1>📊 Django + HTMX Polls</h1>
+
+<p style="margin-bottom: 30px; color: #666;">
+    Vote on polls with real-time updates powered by HTMX — no JavaScript frameworks needed!
+</p>
+
+{% if polls %}
+<ul class="poll-list">
+    {% for poll in polls %}
+    <li class="poll-item">
+        <a href="{% url 'detail' poll.id %}">{{ poll.question }}</a>
+        <div style="font-size: 0.9em; color: #666; margin-top: 5px;">
+            {{ poll.choices.count }} choice{{ poll.choices.count|pluralize }}
+            • {{ poll.created_at|date:"M d, Y" }}
+        </div>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<div style="text-align: center; padding: 40px; color: #666;">
+    <p style="font-size: 1.2em; margin-bottom: 20px;">No polls yet!</p>
+    <a href="{% url 'create' %}" class="btn">Create Your First Poll</a>
+</div>
+{% endif %}
+
+<div style="margin-top: 40px; text-align: center;">
+    <a href="{% url 'create' %}" class="btn">➕ Create New Poll</a>
+</div>
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends 'polls/base.html' %}
+
+{% block title %}Create Poll{% endblock %}
+
+{% block content %}
+<h1>Create a New Poll</h1>
+
+<form method="post">
+    {% csrf_token %}
+    
+    <div style="margin-bottom: 30px;">
+        <label for="question" style="display: block; margin-bottom: 8px; font-weight: 500;">
+            Poll Question:
+        </label>
+        <input 
+            type="text" 
+            id="question" 
+            name="question" 
+            class="input" 
+            placeholder="What's your favorite programming language?"
+            required
+        >
+    </div>
+    
+    <div style="margin-bottom: 20px;">
+        <label style="display: block; margin-bottom: 8px; font-weight: 500;">
+            Answer Choices:
+        </label>
+        <div id="choices-container">
+            <div class="choice-input">
+                <input type="text" name="choice_1" placeholder="Choice 1" class="input" required>
+            </div>
+            <div class="choice-input">
+                <input type="text" name="choice_2" placeholder="Choice 2" class="input" required>
+            </div>
+            <div class="choice-input">
+                <input type="text" name="choice_3" placeholder="Choice 3" class="input">
+            </div>
+            <div class="choice-input">
+                <input type="text" name="choice_4" placeholder="Choice 4" class="input">
+            </div>
+        </div>
+    </div>
+    
+    <div style="margin-bottom: 30px;">
+        <button 
+            type="button" 
+            class="btn btn-small"
+            hx-get="{% url 'add_choice_input' %}?num=5"
+            hx-target="#choices-container"
+            hx-swap="beforeend"
+            onclick="this.setAttribute('hx-get', '{% url 'add_choice_input' %}?num=' + (document.querySelectorAll('.choice-input').length + 1))"
+        >
+            ➕ Add Another Choice
+        </button>
+    </div>
+    
+    <div>
+        <button type="submit" class="btn">Create Poll</button>
+        <a href="{% url 'index' %}" style="margin-left: 15px; color: #666; text-decoration: none;">Cancel</a>
+    </div>
+</form>
+{% endblock %}

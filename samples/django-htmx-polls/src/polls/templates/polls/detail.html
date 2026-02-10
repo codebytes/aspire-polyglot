@@ -1,0 +1,37 @@
+{% extends 'polls/base.html' %}
+
+{% block title %}{{ poll.question }}{% endblock %}
+
+{% block content %}
+<h1>{{ poll.question }}</h1>
+
+<div style="margin-bottom: 30px;">
+    <p style="color: #666;">Click a button to cast your vote:</p>
+</div>
+
+<ul class="choice-list">
+    {% for choice in poll.choices.all %}
+    <li class="choice-item">
+        <span class="choice-text">{{ choice.text }}</span>
+        <button 
+            class="btn btn-small"
+            hx-post="{% url 'vote' poll.id choice.id %}"
+            hx-target="#results"
+            hx-swap="innerHTML"
+        >
+            Vote
+            <span class="htmx-indicator spinner"></span>
+        </button>
+    </li>
+    {% endfor %}
+</ul>
+
+<div id="results" class="results-container">
+    <!-- Results will be loaded here via HTMX -->
+    {% include 'polls/results_partial.html' with poll=poll %}
+</div>
+
+<div style="margin-top: 40px;">
+    <a href="{% url 'index' %}" class="btn">← Back to All Polls</a>
+</div>
+{% endblock %}

@@ -8,33 +8,33 @@ Polyglot samples for .NET Aspire 13 — demonstrating service orchestration acro
 
 ## Samples
 
-### TypeScript
+### TypeScript / Node.js
 
 | Sample | Description |
 |--------|-------------|
-| [node-express-redis](./samples/node-express-redis) | Express + Redis + Vite frontend — visit counter with real-time updates |
-| [vite-react-fastapi-ts](./samples/vite-react-fastapi-ts) | React + API fullstack with TypeScript frontend |
+| [hono-valkey-ratelimiter](./samples/hono-valkey-ratelimiter) | Hono.js + Valkey — sliding-window API rate limiter with quote endpoint |
+| [svelte-go-bookmarks](./samples/svelte-go-bookmarks) | Svelte SPA + Go API via `AddDockerfile` — bookmark manager with tagging |
 
 ### Python
 
 | Sample | Description |
 |--------|-------------|
-| [python-fastapi-postgres](./samples/python-fastapi-postgres) | FastAPI + PostgreSQL + pgAdmin — async CRUD API |
-| [python-script](./samples/python-script) | Minimal Python script — simplest possible Aspire app |
-| [python-openai-agent](./samples/python-openai-agent) | OpenAI chat agent with streaming responses |
+| [flask-markdown-wiki](./samples/flask-markdown-wiki) | Flask + SQLite — Markdown wiki with create/edit/render pages |
+| [flask-mongo-blog](./samples/flask-mongo-blog) | Flask + MongoDB + Mongo Express — blog engine with Markdown posts and tags |
+| [django-htmx-polls](./samples/django-htmx-polls) | Django + HTMX — interactive voting polls with real-time bar charts, no SPA |
+| [python-celery-reports](./samples/python-celery-reports) | FastAPI + Celery + Redis — async background report generation |
 
 ### C# / .NET
 
 | Sample | Description |
 |--------|-------------|
-| [vite-csharp-postgres](./samples/vite-csharp-postgres) | Minimal API + PostgreSQL + Vite React frontend |
+| [dotnet-angular-cosmos](./samples/dotnet-angular-cosmos) | ASP.NET Core + Angular 19 + CosmosDB emulator — recipe manager |
 
 ### Mixed / Polyglot
 
 | Sample | Description |
 |--------|-------------|
-| [polyglot-task-queue](./samples/polyglot-task-queue) | Multi-language task queue — Python, C#, Node.js workers with RabbitMQ |
-| [rag-document-qa-svelte](./samples/rag-document-qa-svelte) | RAG document Q&A — Svelte frontend, Python backend, Qdrant vectors |
+| [polyglot-event-stream](./samples/polyglot-event-stream) | C# producer + Python consumer + Node.js dashboard + Kafka — IoT sensor streaming |
 
 ## Slides
 

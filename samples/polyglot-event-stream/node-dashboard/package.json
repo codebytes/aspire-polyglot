@@ -1,0 +1,14 @@
+{
+  "name": "iot-dashboard",
+  "version": "1.0.0",
+  "description": "IoT Sensor Dashboard",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "kafkajs": "^2.2.4",
+    "ejs": "^3.1.10"
+  }
+}
