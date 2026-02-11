@@ -49,8 +49,8 @@ footer: '@Chris_L_Ayers - https://chris-ayers.com'
 <div>
 
 **Part 3: Live Demos** (25 min)
-- 8 Sample Applications
-- Python, Node.js, Go, .NET
+- 7 Sample Applications
+- Python, JavaScript, Go, Java, .NET
 - Real-World Patterns
 
 **Part 4: Observability** (10 min)
@@ -108,8 +108,9 @@ Modern applications use multiple languages:
 
 **Infrastructure**
 - Kafka
-- Valkey
-- MongoDB
+- Redis
+- PostgreSQL
+- CosmosDB
 
 </div>
 </div>
@@ -359,23 +360,26 @@ graph TD
     Dashboard[Aspire Dashboard]
     
     AppHost --> PythonApp[Python Service]
-    AppHost --> NodeApp[Node.js Frontend]
+    AppHost --> ReactApp[React/Vite Frontend]
     AppHost --> DotNetAPI[.NET API]
+    AppHost --> JavaAPI[Java Spring Boot]
     AppHost --> GoService[Go Service]
     
-    AppHost --> Valkey[Valkey]
-    AppHost --> MongoDB[MongoDB]
+    AppHost --> Redis[Redis]
+    AppHost --> Postgres[PostgreSQL]
+    AppHost --> Cosmos[CosmosDB]
     AppHost --> Kafka[Kafka]
     
-    PythonApp --> MongoDB
-    NodeApp --> Valkey
-    DotNetAPI --> Valkey
-    DotNetAPI --> MongoDB
+    PythonApp --> Redis
+    ReactApp --> PythonApp
+    JavaAPI --> Postgres
+    DotNetAPI --> Cosmos
     GoService --> Kafka
     
     PythonApp -.logs/traces.-> Dashboard
-    NodeApp -.logs/traces.-> Dashboard
+    ReactApp -.logs/traces.-> Dashboard
     DotNetAPI -.logs/traces.-> Dashboard
+    JavaAPI -.logs/traces.-> Dashboard
     GoService -.logs/traces.-> Dashboard
 </div>
 
@@ -512,9 +516,9 @@ trace.set_tracer_provider(provider)
 
 # <!--fit--> Live Demo Walkthroughs
 
-8 real-world polyglot samples
+7 real-world polyglot samples
 
-<!-- Time to see Aspire in action! We'll walk through 8 samples that showcase different patterns. -->
+<!-- Time to see Aspire in action! We'll walk through 7 samples that showcase different patterns. -->
 
 ---
 
@@ -649,234 +653,176 @@ def vote(request, question_id):
 
 ---
 
-# Demo 3: Flask + MongoDB — Blog
+# Demo 3: Vite + React + FastAPI — TODO App
 
-**What:** Flask blog with MongoDB database and Mongo Express admin UI
+**What:** Vite + React frontend with FastAPI backend and Redis caching
 
-**Use Case:** Python + NoSQL databases, document storage, admin interfaces
-
-**Architecture:**
-```
-┌─────────────┐         ┌──────────┐         ┌───────────────┐
-│  Flask Blog │         │ MongoDB  │         │ Mongo Express │
-│  Port: 5000 │ ───────>│ Port: 27017       │  Port: 8081   │
-└─────────────┘         └──────────┘         └───────────────┘
-```
-
-**apphost.py:**
-```python
-mongo = app.add_mongodb("mongo") \
-           .add_database("blog")
-
-app.add_python_app("blog", "../src", "app.py") \
-   .with_http_endpoint(port=5000) \
-   .with_reference(mongo)
-```
-
-**Magic:** `add_mongodb()` provides MongoDB connection string automatically!
-
-<!-- MongoDB is a popular choice for Python web apps. Aspire makes it trivial to add. -->
-
----
-
-# Demo 3: Flask MongoDB Blog — Python Code
-
-**Flask App (`app.py`):**
-```python
-from flask import Flask, request, render_template_string
-from pymongo import MongoClient
-import os
-
-app = Flask(__name__)
-
-# Aspire injects MongoDB connection string
-mongo_conn = os.environ['CONNECTIONSTRINGS__blog']
-client = MongoClient(mongo_conn)
-db = client.blog
-
-@app.route('/')
-def index():
-    posts = list(db.posts.find().sort('created_at', -1))
-    return render_template_string(blog_template, posts=posts)
-
-@app.route('/post', methods=['POST'])
-def create_post():
-    db.posts.insert_one({
-        'title': request.form['title'],
-        'content': request.form['content'],
-        'created_at': datetime.now()
-    })
-    return redirect('/')
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
-```
-
-**Run:** `cd samples/flask-mongo-blog && aspire run`
-
-<!-- MongoDB document model is perfect for blogs with flexible schemas. -->
-
----
-
-# Demo 4: Hono.js + Valkey — Rate Limiter
-
-**What:** Hono.js API with Valkey-backed sliding window rate limiter
-
-**Use Case:** Node.js services, API rate limiting, Redis-compatible caching
+**Use Case:** Modern JavaScript frontends with Python APIs, Redis caching layer
 
 **Architecture:**
 ```
-┌─────────────┐         ┌─────────┐
-│  Hono.js    │         │  Valkey │
-│  Port: 3000 │ ───────>│ Port: 6379
-└─────────────┘         └─────────┘
+┌───────────┐     ┌──────────┐     ┌─────────┐
+│  Vite +   │     │ FastAPI  │     │  Redis  │
+│  React    │────>│ Backend  │────>│ Cache   │
+│ Port: 5173│     │ Port: 8000     │ Port: 6379
+└───────────┘     └──────────┘     └─────────┘
 ```
 
 **apphost.cs:**
 ```csharp
-var valkey = builder.AddValkey("cache");
+var redis = builder.AddRedis("cache");
 
-builder.AddNpmApp("api", "../src", "dev")
-       .WithHttpEndpoint(port: 3000)
-       .WithReference(valkey);
+var api = builder.AddPythonApp("api", "../backend", "main.py")
+               .WithHttpEndpoint(port: 8000)
+               .WithReference(redis);
+
+builder.AddNpmApp("frontend", "../frontend", "dev")
+       .WithHttpEndpoint(port: 5173)
+       .WithReference(api);
 ```
 
-**Magic:** `AddValkey()` provides Valkey (Redis fork) connection string!
+**Key Pattern:** Vite's dev server proxies API requests automatically!
 
-<!-- Valkey is the open-source Redis fork. Hono.js is a fast Node.js framework. -->
+<!-- This shows the modern pattern: Vite for fast React dev + Python API backend. -->
 
 ---
 
-# Demo 4: Hono Rate Limiter — Node.js Code
+# Demo 3: Vite React TODO — Code
 
-**Hono.js App (`index.ts`):**
-```typescript
-import { Hono } from 'hono';
-import { createClient } from 'redis';
-
-const app = new Hono();
-
-// Aspire injects Valkey connection string
-const valkeyUrl = `redis://${process.env.CONNECTIONSTRINGS__cache}`;
-const redis = createClient({ url: valkeyUrl });
-await redis.connect();
-
-// Sliding window rate limiter middleware
-app.use('*', async (c, next) => {
-  const ip = c.req.header('x-forwarded-for') || 'unknown';
-  const key = `ratelimit:${ip}`;
-  
-  const count = await redis.incr(key);
-  if (count === 1) await redis.expire(key, 60); // 60 second window
-  
-  if (count > 100) return c.json({ error: 'Rate limit exceeded' }, 429);
-  
-  await next();
-});
-
-app.get('/api/data', (c) => c.json({ data: 'success' }));
-app.listen(3000);
-```
-
-<!-- Sliding window rate limiting is a common API protection pattern. -->
-
----
-
-# Demo 4: Hono Rate Limiter — Run It
-
-**Commands:**
-```bash
-cd samples/hono-valkey-ratelimiter
-aspire run
-```
-
-**What you'll see:**
-1. Valkey container starts first
-2. Node.js (Hono) dev server starts
-3. Dashboard shows both resources
-4. API endpoint at `http://localhost:3000`
-
-**Test the rate limiter:**
-```bash
-# Works fine (within limit)
-curl http://localhost:3000/api/data
-
-# Spam requests (will hit rate limit)
-for i in {1..150}; do curl http://localhost:3000/api/data; done
-# After ~100 requests, you'll see: {"error":"Rate limit exceeded"}
-```
-
-**Valkey tracks request counts** per IP with sliding window!
-
-<!-- Rate limiting prevents API abuse and protects your backend services. -->
-
----
-
-# Demo 5: FastAPI + Celery — Background Reports
-
-**What:** FastAPI API with Celery workers processing background tasks via Redis
-
-**Use Case:** Async job processing, background workers, task queues
-
-**Architecture:**
-```
-┌───────────┐     ┌─────────┐     ┌──────────────┐
-│ FastAPI   │     │  Redis  │     │ Celery Worker│
-│ Port: 8000│────>│ Port: 6379<────│  (no HTTP)   │
-└───────────┘     └─────────┘     └──────────────┘
-```
-
-**apphost.py:**
-```python
-redis = app.add_redis("broker")
-
-app.add_python_app("api", "../api", "main.py") \
-   .with_http_endpoint(port=8000) \
-   .with_reference(redis)
-
-app.add_python_app("worker", "../worker", "celery_worker.py") \
-   .with_reference(redis)
-```
-
-<!-- Both Python processes share the same Redis broker via Aspire! -->
-
----
-
-# Demo 5: Celery Reports — FastAPI Code
-
-**FastAPI App (`main.py`):**
+**FastAPI Backend (`backend/main.py`):**
 ```python
 from fastapi import FastAPI
-from celery_app import generate_report_task
+from fastapi.middleware.cors import CORSMiddleware
+import redis
 import os
 
 app = FastAPI()
+app.add_middleware(CORSMiddleware, allow_origins=["*"])
 
-@app.post('/generate-report')
-async def generate_report(report_type: str):
-    # Enqueue task asynchronously
-    task = generate_report_task.delay(report_type)
-    return {'task_id': task.id, 'status': 'queued'}
+# Aspire injects Redis connection
+redis_conn = os.environ.get('CONNECTIONSTRINGS__cache')
+cache = redis.from_url(redis_conn)
 
-@app.get('/report/{task_id}')
-async def get_report_status(task_id: str):
-    task = generate_report_task.AsyncResult(task_id)
-    if task.ready():
-        return {'status': 'completed', 'result': task.result}
-    return {'status': task.state}
-
-if __name__ == '__main__':
-    import uvicorn
-    uvicorn.run(app, host='0.0.0.0', port=8000)
+@app.get('/api/todos')
+async def get_todos():
+    cached = cache.get('todos')
+    if cached:
+        return json.loads(cached)
+    todos = [{"id": 1, "title": "Learn Aspire", "done": False}]
+    cache.setex('todos', 60, json.dumps(todos))
+    return todos
 ```
 
-**Run:** `cd samples/python-celery-reports && aspire run`
+**React Frontend (`frontend/src/App.tsx`):**
+```typescript
+const apiUrl = import.meta.env.VITE_services__api__http__0;
 
-<!-- FastAPI returns immediately; Celery processes in background. -->
+useEffect(() => {
+  fetch(`${apiUrl}/api/todos`)
+    .then(res => res.json())
+    .then(data => setTodos(data));
+}, []);
+```
+
+**Run:** `cd samples/vite-react-api && aspire run`
+
+<!-- Vite + React with Python backend is a popular stack. Aspire makes it seamless! -->
 
 ---
 
-# Demo 6: .NET + Angular + CosmosDB
+# Demo 4: Spring Boot + PostgreSQL — Notes App
+
+**What:** Java Spring Boot REST API with PostgreSQL database and pgAdmin
+
+**Use Case:** Java microservices, relational databases, enterprise patterns
+
+**Architecture:**
+```
+┌──────────────┐     ┌────────────┐     ┌─────────┐
+│ Spring Boot  │     │ PostgreSQL │     │ pgAdmin │
+│   REST API   │────>│ Database   │<────│ Web UI  │
+│  Port: 8080  │     │ Port: 5432 │     │ Port: 5050
+└──────────────┘     └────────────┘     └─────────┘
+```
+
+**apphost.cs:**
+```csharp
+var postgres = builder.AddPostgres("db")
+                      .WithPgAdmin()
+                      .AddDatabase("notes");
+
+builder.AddDockerfile("api", "../api")
+       .WithHttpEndpoint(port: 8080)
+       .WithReference(postgres);
+```
+
+**Key Pattern:** `AddDockerfile` builds multi-stage Java container!
+
+<!-- Spring Boot is the dominant Java framework. AddDockerfile lets Aspire run it! -->
+
+---
+
+# Demo 4: Spring Boot Notes — Java Code
+
+**Spring Boot App (`Application.java`):**
+```java
+@SpringBootApplication
+@RestController
+public class NotesApplication {
+    
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+    
+    @GetMapping("/api/notes")
+    public List<Note> getNotes() {
+        return jdbcTemplate.query(
+            "SELECT id, title, content FROM notes",
+            (rs, rowNum) -> new Note(
+                rs.getLong("id"),
+                rs.getString("title"),
+                rs.getString("content")
+            )
+        );
+    }
+    
+    @PostMapping("/api/notes")
+    public Note createNote(@RequestBody Note note) {
+        jdbcTemplate.update(
+            "INSERT INTO notes (title, content) VALUES (?, ?)",
+            note.getTitle(), note.getContent()
+        );
+        return note;
+    }
+    
+    public static void main(String[] args) {
+        SpringApplication.run(NotesApplication.class, args);
+    }
+}
+```
+
+**Dockerfile (multi-stage build):**
+```dockerfile
+FROM maven:3.9-eclipse-temurin-21 AS build
+WORKDIR /app
+COPY pom.xml .
+COPY src ./src
+RUN mvn clean package -DskipTests
+
+FROM eclipse-temurin:21-jre-alpine
+WORKDIR /app
+COPY --from=build /app/target/*.jar app.jar
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]
+```
+
+**Run:** `cd samples/spring-boot-postgres && aspire run`
+
+**Connection string injected** as `spring.datasource.url` environment variable!
+
+<!-- Multi-stage Docker builds keep production images small. Aspire handles Dockerfile orchestration! -->
+
+---
+# Demo 5: .NET + Angular + CosmosDB
 
 **What:** ASP.NET Core API + Angular 19 SPA + Azure CosmosDB Emulator
 
@@ -913,7 +859,7 @@ builder.Build().Run();
 
 ---
 
-# Demo 6: .NET + Angular + CosmosDB — Code
+# Demo 5: .NET + Angular + CosmosDB — Code
 
 **.NET API (`Program.cs`):**
 ```csharp
@@ -953,7 +899,7 @@ ngOnInit() {
 
 ---
 
-# Demo 7: Go + Svelte — Bookmarks
+# Demo 6: Go + Svelte — Bookmarks
 
 **What:** Go HTTP server (via AddDockerfile) with Svelte frontend
 
@@ -982,7 +928,7 @@ builder.AddNpmApp("frontend", "../frontend", "dev")
 
 ---
 
-# Demo 7: Bookmarks — Dockerfile & Go Code
+# Demo 6: Bookmarks — Dockerfile & Go Code
 
 **Dockerfile:**
 ```dockerfile
@@ -1021,7 +967,7 @@ func bookmarksHandler(w http.ResponseWriter, r *http.Request) {
 
 ---
 
-# Demo 8: Polyglot Event Stream
+# Demo 7: Polyglot Event Stream
 
 **The Grand Finale:** C# + Python + Node.js + Kafka
 
@@ -1041,7 +987,7 @@ func bookmarksHandler(w http.ResponseWriter, r *http.Request) {
 
 ---
 
-# Demo 8: Polyglot Event Stream — Architecture
+# Demo 7: Polyglot Event Stream — Architecture
 
 <div class="mermaid">
 graph LR
@@ -1066,7 +1012,7 @@ graph LR
 
 ---
 
-# Demo 8: Polyglot Event Stream — AppHost
+# Demo 7: Polyglot Event Stream — AppHost
 
 **AppHost/Program.cs:**
 ```csharp
@@ -1098,7 +1044,7 @@ builder.Build().Run();
 
 ---
 
-# Demo 8: Event Stream — .NET Producer
+# Demo 7: Event Stream — .NET Producer
 
 **Program.cs:**
 ```csharp
@@ -1130,7 +1076,7 @@ app.Run();
 
 ---
 
-# Demo 8: Event Stream — Python Consumer
+# Demo 7: Event Stream — Python Consumer
 
 **Consumer (`consumer.py`):**
 ```python
@@ -1169,7 +1115,7 @@ for message in consumer:
 
 ---
 
-# Demo 8: Event Stream — Node.js Dashboard
+# Demo 7: Event Stream — Node.js Dashboard
 
 **Dashboard (`server.js`):**
 ```javascript
@@ -1209,7 +1155,7 @@ server.listen(3000);
 
 ---
 
-# Demo 8: Live Dashboard Experience
+# Demo 7: Live Dashboard Experience
 
 **In the Aspire Dashboard, you'll see:**
 
@@ -1600,11 +1546,10 @@ AddExecutable()
 </div>
 
 **Infrastructure:**
-- Valkey: `AddValkey("name")` (Redis fork)
-- MongoDB: `AddMongoDB("name").AddDatabase("db")`
+- Redis: `AddRedis("name")` (for caching)
+- PostgreSQL: `AddPostgres("name").WithPgAdmin().AddDatabase("db")`
 - Kafka: `AddKafka("name")`
 - CosmosDB: `AddAzureCosmosDB("name").RunAsEmulator()`
-- Redis: `AddRedis("name")` (for Celery sample)
 
 <!-- Keep this slide handy as a quick reference! -->
 

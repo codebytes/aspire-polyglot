@@ -1,6 +1,6 @@
 # Polyglot Aspire
 
-Polyglot samples for .NET Aspire 13 — demonstrating service orchestration across TypeScript, Python, C#, and mixed-language applications.
+Polyglot samples for .NET Aspire — demonstrating service orchestration across Python, JavaScript/Vite, Go, Java, C#, and mixed-language applications.
 
 **Quick Start:** `cd samples/<sample> && aspire run`
 
@@ -8,33 +8,42 @@ Polyglot samples for .NET Aspire 13 — demonstrating service orchestration acro
 
 ## Samples
 
-### TypeScript / Node.js
-
-| Sample | Description |
-|--------|-------------|
-| [hono-valkey-ratelimiter](./samples/hono-valkey-ratelimiter) | Hono.js + Valkey — sliding-window API rate limiter with quote endpoint |
-| [svelte-go-bookmarks](./samples/svelte-go-bookmarks) | Svelte SPA + Go API via `AddDockerfile` — bookmark manager with tagging |
-
 ### Python
 
-| Sample | Description |
-|--------|-------------|
-| [flask-markdown-wiki](./samples/flask-markdown-wiki) | Flask + SQLite — Markdown wiki with create/edit/render pages |
-| [flask-mongo-blog](./samples/flask-mongo-blog) | Flask + MongoDB + Mongo Express — blog engine with Markdown posts and tags |
-| [django-htmx-polls](./samples/django-htmx-polls) | Django + HTMX — interactive voting polls with real-time bar charts, no SPA |
-| [python-celery-reports](./samples/python-celery-reports) | FastAPI + Celery + Redis — async background report generation |
+| Sample | AppHost | Description |
+|--------|---------|-------------|
+| [flask-markdown-wiki](./samples/flask-markdown-wiki) | `apphost.py` | Flask + SQLite — Markdown wiki with create/edit/render pages |
+| [django-htmx-polls](./samples/django-htmx-polls) | `apphost.py` | Django + HTMX — interactive voting polls with real-time bar charts |
+
+### JavaScript / Vite
+
+| Sample | AppHost | Description |
+|--------|---------|-------------|
+| [vite-react-api](./samples/vite-react-api) | `apphost.cs` | Vite + React + FastAPI + Redis — TODO app with caching |
+
+### Go
+
+| Sample | AppHost | Description |
+|--------|---------|-------------|
+| [svelte-go-bookmarks](./samples/svelte-go-bookmarks) | `apphost.cs` | Svelte SPA + Go API via `AddDockerfile` — bookmark manager with tagging |
+
+### Java
+
+| Sample | AppHost | Description |
+|--------|---------|-------------|
+| [spring-boot-postgres](./samples/spring-boot-postgres) | `apphost.cs` | Spring Boot + PostgreSQL + pgAdmin — notes REST API via `AddDockerfile` |
 
 ### C# / .NET
 
-| Sample | Description |
-|--------|-------------|
-| [dotnet-angular-cosmos](./samples/dotnet-angular-cosmos) | ASP.NET Core + Angular 19 + CosmosDB emulator — recipe manager |
+| Sample | AppHost | Description |
+|--------|---------|-------------|
+| [dotnet-angular-cosmos](./samples/dotnet-angular-cosmos) | `AppHost/` | ASP.NET Core + Angular 19 + CosmosDB emulator — recipe manager |
 
 ### Mixed / Polyglot
 
-| Sample | Description |
-|--------|-------------|
-| [polyglot-event-stream](./samples/polyglot-event-stream) | C# producer + Python consumer + Node.js dashboard + Kafka — IoT sensor streaming |
+| Sample | AppHost | Description |
+|--------|---------|-------------|
+| [polyglot-event-stream](./samples/polyglot-event-stream) | `AppHost/` | C# producer + Python consumer + Node.js dashboard + Kafka — IoT sensor streaming |
 
 ## Slides
 
