@@ -1,0 +1,32 @@
+{
+  "agents": {
+    "lando": {
+      "persistent_name": "Lando",
+      "universe": "Star Wars",
+      "created_at": "2026-02-20T02:26:49Z",
+      "legacy_named": false,
+      "status": "active"
+    },
+    "wedge": {
+      "persistent_name": "Wedge",
+      "universe": "Star Wars",
+      "created_at": "2026-02-20T02:26:49Z",
+      "legacy_named": false,
+      "status": "active"
+    },
+    "biggs": {
+      "persistent_name": "Biggs",
+      "universe": "Star Wars",
+      "created_at": "2026-02-20T02:26:49Z",
+      "legacy_named": false,
+      "status": "active"
+    },
+    "bossk": {
+      "persistent_name": "Bossk",
+      "universe": "Star Wars",
+      "created_at": "2026-02-20T02:26:49Z",
+      "legacy_named": false,
+      "status": "active"
+    }
+  }
+}

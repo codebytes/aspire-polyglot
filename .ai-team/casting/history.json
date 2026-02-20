@@ -1,0 +1,21 @@
+{
+  "universe_usage_history": [
+    {
+      "assignment_id": "aspire-polyglot-001",
+      "universe": "Star Wars",
+      "timestamp": "2026-02-20T02:26:49Z"
+    }
+  ],
+  "assignment_cast_snapshots": {
+    "aspire-polyglot-001": {
+      "universe": "Star Wars",
+      "agent_map": {
+        "lando": "Lando",
+        "wedge": "Wedge",
+        "biggs": "Biggs",
+        "bossk": "Bossk"
+      },
+      "created_at": "2026-02-20T02:26:49Z"
+    }
+  }
+}
