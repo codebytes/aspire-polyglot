@@ -2,6 +2,13 @@
 
 Polyglot samples for Aspire — demonstrating service orchestration across Python, JavaScript/Vite, Go, Java, C#, and mixed-language applications.
 
+## Slides
+
+The hosted slides for the related talk can be found at:\
+[https://chris-ayers.com/aspire-polyglot/](https://chris-ayers.com/aspire-polyglot/)
+
+The source deck for this presentation lives in [slides/](./slides/) and is built with [Marp](https://marp.app/).
+
 **Quick Start:** `cd samples/<sample> && aspire run`
 
 **Prerequisites:** [Aspire CLI](https://aspire.dev/get-started/install-cli/), [Docker](https://docs.docker.com/get-docker/)
@@ -44,10 +51,6 @@ Polyglot samples for Aspire — demonstrating service orchestration across Pytho
 | Sample | AppHost | Description |
 |--------|---------|-------------|
 | [polyglot-event-stream](./samples/polyglot-event-stream) | `AppHost/` | C# producer + Python consumer + Node.js dashboard + Kafka — IoT sensor streaming |
-
-## Slides
-
-Presentation slides are in the [slides/](./slides/) directory, built with [Marp](https://marp.app/).
 
 ## Learn More
 
