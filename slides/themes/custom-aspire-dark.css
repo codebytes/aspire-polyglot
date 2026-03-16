@@ -5,18 +5,19 @@
 
 /* ── Aspire Brand Colors ── */
 :root {
-  --aspire-purple: #512bd4;
+  --aspire-surface: #f9f8ff;
+  --aspire-purple: #864df5;
   --aspire-primary: #7455dd;
-  --aspire-secondary: #b9aaee;
-  --aspire-muted: #dcd5f6;
-  --aspire-black: #1f1e33;
-  --aspire-grey: #dce0e8;
-  --aspire-white: #ffffff;
-  --aspire-magenta: #d600aa;
-  --aspire-flamingo: #f65163;
+  --aspire-secondary: #b9aaed;
+  --aspire-muted: #dbd3f4;
+  --aspire-black: #1f1e31;
+  --aspire-grey: #dcdfe6;
+  --aspire-white: #fefffe;
+  --aspire-magenta: #9d72f8;
+  --aspire-flamingo: #b793fa;
   --aspire-blue: #0078d7;
   --aspire-cyan: #28c2d1;
-  --aspire-dotnet-purple: #2c256b;
+  --aspire-dotnet-purple: #1f1e31;
 
   --aspire-gray-1: #eceef1;
   --aspire-gray-2: #c6c8cc;
@@ -36,34 +37,34 @@ section {
   background-color: var(--aspire-black);
   color: var(--aspire-gray-1);
   font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  font-size: 28px;
-  padding: 40px 60px;
-  line-height: 1.5;
+  font-size: 26px;
+  padding: 36px 52px;
+  line-height: 1.4;
   letter-spacing: -0.01em;
 }
 
 /* ── Headings ── */
 section h1 {
   color: var(--aspire-white);
-  font-weight: 700;
-  font-size: 2.2em;
+  font-weight: 600;
+  font-size: 2em;
   border-bottom: 3px solid var(--aspire-primary);
   padding-bottom: 0.2em;
-  margin-bottom: 0.5em;
+  margin-bottom: 0.4em;
 }
 
 section h2 {
   color: var(--aspire-secondary);
   font-weight: 600;
-  font-size: 1.5em;
-  margin-bottom: 0.4em;
+  font-size: 1.35em;
+  margin-bottom: 0.3em;
 }
 
 section h3 {
   color: var(--aspire-muted);
   font-weight: 600;
-  font-size: 1.15em;
-  margin-bottom: 0.3em;
+  font-size: 1.05em;
+  margin-bottom: 0.2em;
 }
 
 section h4,
@@ -104,22 +105,85 @@ section code {
   color: var(--aspire-secondary);
   padding: 0.15em 0.4em;
   border-radius: 0.25rem;
-  font-size: 0.85em;
+  font-size: 0.8em;
 }
 
 section pre {
   background: var(--aspire-gray-6) !important;
   border-radius: 0.5rem;
   border: 1px solid var(--aspire-gray-5);
-  padding: 1em;
+  padding: 0.85em;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
 section pre code {
   background: transparent;
   color: var(--aspire-gray-1);
-  font-size: 0.75em;
+  font-size: 0.7em;
+  line-height: 1.24;
   padding: 0;
+}
+
+section pre code .hljs,
+section pre code .hljs-subst {
+  color: #f4f7ff;
+}
+
+section pre code .hljs-comment,
+section pre code .hljs-quote,
+section pre code .hljs-code,
+section pre code .hljs-formula {
+  color: #8f97b2;
+}
+
+section pre code .hljs-keyword,
+section pre code .hljs-doctag,
+section pre code .hljs-template-tag,
+section pre code .hljs-template-variable,
+section pre code .hljs-type {
+  color: #c792ea;
+}
+
+section pre code .hljs-title,
+section pre code .hljs-title.function_,
+section pre code .hljs-title.class_,
+section pre code .hljs-title.class_.inherited__,
+section pre code .hljs-function {
+  color: #82aaff;
+}
+
+section pre code .hljs-params,
+section pre code .hljs-property,
+section pre code .hljs-variable,
+section pre code .hljs-variable.language_,
+section pre code .hljs-built_in,
+section pre code .hljs-symbol,
+section pre code .hljs-attr,
+section pre code .hljs-attribute,
+section pre code .hljs-name {
+  color: #ffd580;
+}
+
+section pre code .hljs-string,
+section pre code .hljs-regexp {
+  color: #c3e88d;
+}
+
+section pre code .hljs-number,
+section pre code .hljs-literal {
+  color: #f78c6c;
+}
+
+section pre code .hljs-meta {
+  color: #89ddff;
+}
+
+section pre code .hljs-addition {
+  color: #8bd49c;
+}
+
+section pre code .hljs-deletion {
+  color: #ff9b9b;
 }
 
 /* ── Lists ── */
@@ -129,7 +193,7 @@ section ol {
 }
 
 section li {
-  margin-bottom: 0.3em;
+  margin-bottom: 0.18em;
 }
 
 section li::marker {
@@ -196,30 +260,131 @@ footer {
 }
 
 /* ═══════════════════════════════════════
-   LEAD SLIDE — deep purple gradient
+   PPTX-STYLE BACKGROUNDS
    ═══════════════════════════════════════ */
-section.lead {
-  background: linear-gradient(160deg, var(--aspire-dotnet-purple) 0%, var(--aspire-black) 100%);
-  color: var(--aspire-white);
+section.cover,
+section.lead,
+section.section-break,
+section.closing {
   display: flex;
   flex-direction: column;
   justify-content: center;
   text-align: left;
+  background-repeat: no-repeat;
 }
 
-section.lead h1 {
+section.cover,
+section.lead {
+  padding-right: 38%;
+  background-size: cover;
+}
+
+section.cover {
+  background-color: var(--aspire-black);
+  background-image:
+    linear-gradient(90deg, rgba(31, 30, 49, 0.78) 0%, rgba(31, 30, 49, 0.58) 40%, rgba(31, 30, 49, 0.18) 100%),
+    url('../img/backgrounds/aspire-cover.png');
+  background-position: center;
+  color: var(--aspire-white);
+}
+
+section.lead {
+  background-color: var(--aspire-black);
+  background-image: url('../img/backgrounds/aspire-dark-title.png');
+  background-position: center;
+  color: var(--aspire-white);
+}
+
+section.section-break,
+section.closing {
+  padding-right: 42%;
+  color: var(--aspire-white);
+}
+
+section.section-break {
+  background-color: #000000;
+  background-image: url('../img/backgrounds/aspire-dark-section.png');
+  background-position: right top;
+  background-size: 64% 100%;
+}
+
+section.closing {
+  background-color: #000000;
+  background-image: url('../img/backgrounds/aspire-dark-closing.png');
+  background-position: right center;
+  background-size: 63% auto;
+}
+
+section.cover h1,
+section.lead h1,
+section.section-break h1,
+section.closing h1 {
   color: var(--aspire-white);
   border-bottom-color: var(--aspire-primary);
-  font-size: 2.4em;
+  font-size: 2.3em;
 }
 
-section.lead h2 {
+section.cover h2,
+section.lead h2,
+section.section-break h2,
+section.closing h2 {
   color: var(--aspire-secondary);
-  font-weight: 400;
+  font-weight: 500;
 }
 
-section.lead h3 {
+section.cover h3,
+section.lead h3,
+section.section-break h3,
+section.closing h3 {
   color: var(--aspire-gray-2);
+}
+
+section.cover a,
+section.lead a,
+section.section-break a,
+section.closing a {
+  color: var(--aspire-secondary);
+  text-decoration-color: rgba(185, 170, 237, 0.35);
+}
+
+section.cover strong,
+section.lead strong,
+section.section-break strong,
+section.closing strong {
+  color: var(--aspire-secondary);
+}
+
+section.cover code,
+section.lead code,
+section.section-break code,
+section.closing code {
+  background: rgba(31, 30, 49, 0.72);
+  color: var(--aspire-secondary);
+}
+
+section.cover li::marker,
+section.lead li::marker,
+section.section-break li::marker,
+section.closing li::marker {
+  color: var(--aspire-secondary);
+}
+
+section.cover::after,
+section.cover footer,
+section.lead::after,
+section.lead footer,
+section.section-break::after,
+section.section-break footer,
+section.closing::after,
+section.closing footer {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+section.cover .fa-github,
+section.lead .fa-github,
+section.section-break .fa-github,
+section.closing .fa-github {
+  color: var(--aspire-white);
 }
 
 /* ═══════════════════════════════════════
@@ -275,7 +440,7 @@ section.purple footer {
    GRADIENT SLIDE
    ═══════════════════════════════════════ */
 section.gradient {
-  background: linear-gradient(135deg, var(--aspire-purple) 0%, var(--aspire-magenta) 100%);
+  background: linear-gradient(135deg, var(--aspire-primary) 0%, var(--aspire-magenta) 100%);
   color: var(--aspire-white);
 }
 
@@ -312,13 +477,132 @@ section.gradient footer {
 .columns {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
+  gap: 0.85rem;
 }
 
 .columns3 {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem;
+  gap: 0.75rem;
+}
+
+section:has(pre),
+section:has(.mermaid),
+section:has(.columns),
+section:has(.columns3) {
+  font-size: 24px;
+  line-height: 1.3;
+}
+
+section:has(pre) {
+  padding: 30px 42px;
+}
+
+section:has(pre) h1,
+section:has(.mermaid) h1,
+section:has(.columns) h1,
+section:has(.columns3) h1 {
+  font-size: 1.8em;
+  margin-bottom: 0.28em;
+}
+
+section:has(pre) h2,
+section:has(.mermaid) h2,
+section:has(.columns) h2,
+section:has(.columns3) h2 {
+  font-size: 1.2em;
+  margin-bottom: 0.18em;
+}
+
+section:has(pre) h3,
+section:has(.columns) h3,
+section:has(.columns3) h3 {
+  font-size: 0.98em;
+}
+
+section:has(pre) pre {
+  padding: 0.65em 0.75em;
+}
+
+section:has(pre) pre code {
+  font-size: 0.58em;
+  line-height: 1.15;
+}
+
+section:has(.columns) .columns,
+section:has(.columns3) .columns3 {
+  gap: 0.6rem;
+}
+
+section.compact {
+  font-size: 23px;
+  line-height: 1.24;
+  padding: 28px 40px;
+}
+
+section.compact h1 {
+  font-size: 1.68em;
+  margin-bottom: 0.24em;
+}
+
+section.compact h2 {
+  font-size: 1.12em;
+  margin-bottom: 0.14em;
+}
+
+section.compact h3 {
+  font-size: 0.94em;
+  margin-bottom: 0.12em;
+}
+
+section.compact li {
+  margin-bottom: 0.1em;
+}
+
+section.compact pre {
+  padding: 0.55em 0.65em;
+}
+
+section.compact pre code {
+  font-size: 0.54em;
+  line-height: 1.12;
+}
+
+section.compact .columns,
+section.compact .columns3 {
+  gap: 0.45rem;
+}
+
+section.dense {
+  font-size: 21px;
+  line-height: 1.18;
+  padding: 24px 34px;
+}
+
+section.dense h1 {
+  font-size: 1.55em;
+}
+
+section.dense h2 {
+  font-size: 1.02em;
+}
+
+section.dense h3 {
+  font-size: 0.88em;
+}
+
+section.dense pre {
+  padding: 0.45em 0.55em;
+}
+
+section.dense pre code {
+  font-size: 0.47em;
+  line-height: 1.08;
+}
+
+section.code-compact pre code {
+  font-size: 0.5em;
+  line-height: 1.08;
 }
 
 img[alt~="center"] {
@@ -348,10 +632,13 @@ section::before {
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(90deg, var(--aspire-purple), var(--aspire-magenta), var(--aspire-flamingo));
+  background: linear-gradient(90deg, var(--aspire-primary), var(--aspire-purple), var(--aspire-magenta));
 }
 
+section.cover::before,
 section.lead::before,
+section.section-break::before,
+section.closing::before,
 section.purple::before,
 section.gradient::before {
   background: linear-gradient(90deg, var(--aspire-secondary), var(--aspire-muted), var(--aspire-secondary));
