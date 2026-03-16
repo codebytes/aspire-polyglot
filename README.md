@@ -1,6 +1,6 @@
 # Polyglot Aspire
 
-Polyglot samples for .NET Aspire — demonstrating service orchestration across Python, JavaScript/Vite, Go, Java, C#, and mixed-language applications.
+Polyglot samples for Aspire — demonstrating service orchestration across Python, JavaScript/Vite, Go, Java, C#, and mixed-language applications.
 
 **Quick Start:** `cd samples/<sample> && aspire run`
 

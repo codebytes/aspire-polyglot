@@ -1,6 +1,6 @@
 # Django + HTMX Polls App
 
-A modern voting polls application demonstrating **server-rendered interactivity** using Django and HTMX, orchestrated by .NET Aspire.
+A modern voting polls application demonstrating **server-rendered interactivity** using Django and HTMX, orchestrated by Aspire.
 
 ## What's Special About This Sample?
 
@@ -9,7 +9,7 @@ This sample showcases:
 - **Django** web framework for rapid Python-based web development
 - **HTMX** for interactive UI updates without writing JavaScript
 - **Waitress** WSGI server for production-ready Python hosting
-- **.NET Aspire** orchestration of Python applications
+- **Aspire** orchestration of Python applications
 
 ### Why HTMX?
 
@@ -19,7 +19,7 @@ HTMX allows you to build interactive, modern web UIs using **server-rendered HTM
 
 ```
 ┌─────────────────────────────────────────┐
-│         .NET Aspire AppHost             │
+│         Aspire AppHost             │
 │   (Orchestration & Service Discovery)   │
 └────────────────┬────────────────────────┘
                  │
@@ -159,14 +159,14 @@ The poll detail page uses HTMX attributes:
 - **Frontend:** HTMX 2.0, vanilla CSS
 - **Server:** Waitress WSGI server
 - **Database:** SQLite
-- **Orchestration:** .NET Aspire 9.2
+- **Orchestration:** Aspire 9.2
 - **Static Files:** WhiteNoise
 
 ## Learn More
 
 - [HTMX Documentation](https://htmx.org/docs/)
 - [Django Documentation](https://docs.djangoproject.com/)
-- [.NET Aspire Documentation](https://learn.microsoft.com/en-us/dotnet/aspire/)
+- [Aspire Documentation](https://learn.microsoft.com/en-us/dotnet/aspire/)
 - [Waitress WSGI Server](https://docs.pylonsproject.org/projects/waitress/)
 
 ## Why This Approach?

@@ -1,3 +1,7 @@
 {
-  "appHostPath": "../apphost.cs"
+  "appHostPath": "../apphost.py",
+  "features": {
+    "polyglotSupportEnabled": "true",
+    "experimentalPolyglot:python": "true"
+  }
 }

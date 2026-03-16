@@ -100,7 +100,7 @@
   <div class="container">
     <header>
       <h1>📚 Bookmark Manager</h1>
-      <p class="subtitle">Powered by .NET Aspire + Go + Svelte</p>
+      <p class="subtitle">Powered by Aspire + Go + Svelte</p>
     </header>
 
     {#if error}

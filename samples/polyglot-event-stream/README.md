@@ -1,6 +1,6 @@
 # Polyglot Event Streaming with Kafka
 
-This sample demonstrates **event streaming** using Kafka with a polyglot architecture orchestrated by .NET Aspire. Unlike task queues (like RabbitMQ), event streaming allows multiple consumers to independently process the same events for different purposes.
+This sample demonstrates **event streaming** using Kafka with a polyglot architecture orchestrated by Aspire. Unlike task queues (like RabbitMQ), event streaming allows multiple consumers to independently process the same events for different purposes.
 
 ## Architecture
 
@@ -202,5 +202,5 @@ Integrate with Kafka Streams or Apache Flink for complex event processing:
 ## Learn More
 
 - [Apache Kafka Documentation](https://kafka.apache.org/documentation/)
-- [.NET Aspire Kafka Integration](https://learn.microsoft.com/en-us/dotnet/aspire/messaging/kafka-integration)
+- [Aspire Kafka Integration](https://learn.microsoft.com/en-us/dotnet/aspire/messaging/kafka-integration)
 - [Event Streaming vs Message Queuing](https://www.confluent.io/blog/kafka-vs-rabbitmq/)

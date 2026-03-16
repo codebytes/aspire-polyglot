@@ -1,0 +1,369 @@
+/* custom-aspire-dark.css */
+/* @theme custom-aspire-dark */
+
+@import 'default';
+
+/* ── Aspire Brand Colors ── */
+:root {
+  --aspire-purple: #512bd4;
+  --aspire-primary: #7455dd;
+  --aspire-secondary: #b9aaee;
+  --aspire-muted: #dcd5f6;
+  --aspire-black: #1f1e33;
+  --aspire-grey: #dce0e8;
+  --aspire-white: #ffffff;
+  --aspire-magenta: #d600aa;
+  --aspire-flamingo: #f65163;
+  --aspire-blue: #0078d7;
+  --aspire-cyan: #28c2d1;
+  --aspire-dotnet-purple: #2c256b;
+
+  --aspire-gray-1: #eceef1;
+  --aspire-gray-2: #c6c8cc;
+  --aspire-gray-3: #a0a4ab;
+  --aspire-gray-4: #55585f;
+  --aspire-gray-5: #35383e;
+  --aspire-gray-6: #24272d;
+}
+
+/* ── Fonts ── */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&display=swap');
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css');
+
+/* ── Base Slide ── */
+section {
+  background-color: var(--aspire-black);
+  color: var(--aspire-gray-1);
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 28px;
+  padding: 40px 60px;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+}
+
+/* ── Headings ── */
+section h1 {
+  color: var(--aspire-white);
+  font-weight: 700;
+  font-size: 2.2em;
+  border-bottom: 3px solid var(--aspire-primary);
+  padding-bottom: 0.2em;
+  margin-bottom: 0.5em;
+}
+
+section h2 {
+  color: var(--aspire-secondary);
+  font-weight: 600;
+  font-size: 1.5em;
+  margin-bottom: 0.4em;
+}
+
+section h3 {
+  color: var(--aspire-muted);
+  font-weight: 600;
+  font-size: 1.15em;
+  margin-bottom: 0.3em;
+}
+
+section h4,
+section h5,
+section h6 {
+  color: var(--aspire-gray-2);
+  font-weight: 500;
+}
+
+/* ── Links ── */
+section a {
+  color: var(--aspire-secondary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--aspire-gray-5);
+  transition: color 0.2s, text-decoration-color 0.2s;
+}
+
+section a:hover {
+  color: var(--aspire-muted);
+  text-decoration-color: var(--aspire-primary);
+}
+
+/* ── Strong / Emphasis ── */
+section strong {
+  color: var(--aspire-secondary);
+  font-weight: 600;
+}
+
+section em {
+  color: var(--aspire-gray-2);
+}
+
+/* ── Code ── */
+section code {
+  font-family: 'Fira Code', monospace;
+  background: var(--aspire-gray-6);
+  color: var(--aspire-secondary);
+  padding: 0.15em 0.4em;
+  border-radius: 0.25rem;
+  font-size: 0.85em;
+}
+
+section pre {
+  background: var(--aspire-gray-6) !important;
+  border-radius: 0.5rem;
+  border: 1px solid var(--aspire-gray-5);
+  padding: 1em;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+section pre code {
+  background: transparent;
+  color: var(--aspire-gray-1);
+  font-size: 0.75em;
+  padding: 0;
+}
+
+/* ── Lists ── */
+section ul,
+section ol {
+  margin-left: 0.2em;
+}
+
+section li {
+  margin-bottom: 0.3em;
+}
+
+section li::marker {
+  color: var(--aspire-secondary);
+  font-weight: 600;
+}
+
+/* ── Blockquote ── */
+section blockquote {
+  border-left: 4px solid var(--aspire-primary);
+  background: linear-gradient(90deg, rgba(185, 170, 238, 0.12) 0%, transparent 100%);
+  padding: 0.6em 1em;
+  border-radius: 0 0.5rem 0.5rem 0;
+  color: var(--aspire-gray-2);
+  font-style: italic;
+}
+
+section blockquote strong {
+  color: var(--aspire-secondary);
+}
+
+/* ── Tables ── */
+section table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.85em;
+}
+
+section table th {
+  background: var(--aspire-purple);
+  color: var(--aspire-white);
+  font-weight: 600;
+  padding: 0.5em 0.8em;
+  text-align: left;
+}
+
+section table td {
+  padding: 0.45em 0.8em;
+  border-bottom: 1px solid var(--aspire-gray-5);
+  color: var(--aspire-gray-1);
+}
+
+section table tr:nth-child(even) {
+  background: rgba(116, 85, 221, 0.08);
+}
+
+section table tr:hover {
+  background: rgba(116, 85, 221, 0.14);
+}
+
+/* ── Footer / Header ── */
+section::after {
+  color: var(--aspire-gray-4);
+  font-size: 0.5em;
+}
+
+header {
+  color: var(--aspire-gray-4);
+}
+
+footer {
+  color: var(--aspire-gray-4);
+  font-size: 0.55em;
+}
+
+/* ═══════════════════════════════════════
+   LEAD SLIDE — deep purple gradient
+   ═══════════════════════════════════════ */
+section.lead {
+  background: linear-gradient(160deg, var(--aspire-dotnet-purple) 0%, var(--aspire-black) 100%);
+  color: var(--aspire-white);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: left;
+}
+
+section.lead h1 {
+  color: var(--aspire-white);
+  border-bottom-color: var(--aspire-primary);
+  font-size: 2.4em;
+}
+
+section.lead h2 {
+  color: var(--aspire-secondary);
+  font-weight: 400;
+}
+
+section.lead h3 {
+  color: var(--aspire-gray-2);
+}
+
+/* ═══════════════════════════════════════
+   PURPLE ACCENT SLIDE
+   ═══════════════════════════════════════ */
+section.purple {
+  background: var(--aspire-primary);
+  color: var(--aspire-white);
+}
+
+section.purple h1 {
+  color: var(--aspire-white);
+  border-bottom-color: var(--aspire-muted);
+}
+
+section.purple h2 {
+  color: var(--aspire-muted);
+}
+
+section.purple h3 {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+section.purple a {
+  color: var(--aspire-muted);
+  text-decoration-color: rgba(255, 255, 255, 0.4);
+}
+
+section.purple strong {
+  color: var(--aspire-white);
+}
+
+section.purple code {
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--aspire-white);
+}
+
+section.purple pre {
+  background: var(--aspire-dotnet-purple) !important;
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+section.purple li::marker {
+  color: var(--aspire-muted);
+}
+
+section.purple::after,
+section.purple footer {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* ═══════════════════════════════════════
+   GRADIENT SLIDE
+   ═══════════════════════════════════════ */
+section.gradient {
+  background: linear-gradient(135deg, var(--aspire-purple) 0%, var(--aspire-magenta) 100%);
+  color: var(--aspire-white);
+}
+
+section.gradient h1 {
+  color: var(--aspire-white);
+  border-bottom-color: rgba(255, 255, 255, 0.3);
+}
+
+section.gradient h2 {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+section.gradient a {
+  color: var(--aspire-muted);
+}
+
+section.gradient strong {
+  color: var(--aspire-white);
+}
+
+section.gradient code {
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--aspire-white);
+}
+
+section.gradient::after,
+section.gradient footer {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* ═══════════════════════════════════════
+   UTILITIES
+   ═══════════════════════════════════════ */
+.columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.columns3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+img[alt~="center"] {
+  display: block;
+  margin: 0 auto;
+}
+
+/* ── Social Icons ── */
+.fa-twitter { color: #1da1f2; }
+.fa-mastodon { color: #6364ff; }
+.fa-linkedin { color: #0a66c2; }
+.fa-bluesky { color: #0085ff; }
+.fa-github { color: var(--aspire-white); }
+.fa-window-maximize { color: var(--aspire-secondary); }
+
+/* ── Mermaid Diagrams ── */
+svg[id^="mermaid-"] {
+  max-width: 960px;
+  max-height: 600px;
+}
+
+/* ── Top-border gradient accent ── */
+section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--aspire-purple), var(--aspire-magenta), var(--aspire-flamingo));
+}
+
+section.lead::before,
+section.purple::before,
+section.gradient::before {
+  background: linear-gradient(90deg, var(--aspire-secondary), var(--aspire-muted), var(--aspire-secondary));
+  opacity: 0.5;
+}
+
+/* ── Images ── */
+section img {
+  border-radius: 0.375rem;
+}
+
+section[data-background-image] {
+  color: var(--aspire-white);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}

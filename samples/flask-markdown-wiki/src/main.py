@@ -42,7 +42,7 @@ def init_db():
         """, (
             "home",
             "Home",
-            "# Welcome to the Markdown Wiki\n\nThis is your home page. Click **Edit** to modify it!\n\n## Features\n\n- Simple Markdown editing\n- SQLite backend\n- Orchestrated by .NET Aspire\n- Create new pages\n- Edit existing pages",
+            "# Welcome to the Markdown Wiki\n\nThis is your home page. Click **Edit** to modify it!\n\n## Features\n\n- Simple Markdown editing\n- SQLite backend\n- Orchestrated by Aspire\n- Create new pages\n- Edit existing pages",
             datetime.now()
         ))
     

@@ -1,6 +1,6 @@
 # Recipe Manager - ASP.NET Core + Angular + Azure CosmosDB
 
-A modern recipe management application demonstrating .NET Aspire orchestration with:
+A modern recipe management application demonstrating Aspire orchestration with:
 - **ASP.NET Core** Minimal API backend
 - **Angular 19** standalone component frontend  
 - **Azure CosmosDB Emulator** (no Azure subscription needed)
@@ -77,7 +77,7 @@ This will:
 
 ```
 dotnet-angular-cosmos/
-├── AppHost/               # .NET Aspire orchestration
+├── AppHost/               # Aspire orchestration
 │   ├── Program.cs        # Defines cosmos, api, frontend resources
 │   └── AppHost.csproj
 ├── Api/                   # ASP.NET Core Web API
@@ -182,7 +182,7 @@ public record Recipe
 - **ASP.NET Core Minimal APIs** - Lightweight HTTP API
 - **Angular 19** - Modern standalone components
 - **Azure Cosmos DB SDK** - NoSQL document database client
-- **.NET Aspire 9.2.1** - Cloud-native orchestration
+- **Aspire 9.2.1** - Cloud-native orchestration
 - **OpenTelemetry** - Distributed tracing & metrics
 
 ## Differences from David Fowler's Samples
@@ -197,7 +197,7 @@ public record Recipe
 
 ## Learn More
 
-- [.NET Aspire Documentation](https://learn.microsoft.com/dotnet/aspire/)
+- [Aspire Documentation](https://learn.microsoft.com/dotnet/aspire/)
 - [Azure Cosmos DB Documentation](https://learn.microsoft.com/azure/cosmos-db/)
 - [Angular Documentation](https://angular.dev)
 - [ASP.NET Core Minimal APIs](https://learn.microsoft.com/aspnet/core/fundamentals/minimal-apis)

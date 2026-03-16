@@ -1,6 +1,6 @@
 # Flask Markdown Wiki
 
-A simple Markdown-based wiki application built with Flask and SQLite, orchestrated by .NET Aspire.
+A simple Markdown-based wiki application built with Flask and SQLite, orchestrated by Aspire.
 
 ## Features
 
@@ -8,7 +8,7 @@ A simple Markdown-based wiki application built with Flask and SQLite, orchestrat
 - **SQLite Backend**: Lightweight database for storing wiki pages
 - **Simple UI**: Clean, responsive interface for viewing and editing pages
 - **Page Management**: Create new pages, edit existing ones, and view all pages
-- **Aspire Orchestration**: Managed by .NET Aspire for easy deployment and monitoring
+- **Aspire Orchestration**: Managed by Aspire for easy deployment and monitoring
 
 ## Project Structure
 
@@ -27,11 +27,11 @@ flask-markdown-wiki/
 
 - .NET 9.0 SDK
 - Python 3.8+
-- .NET Aspire workload
+- Aspire workload
 
 ## Running the Application
 
-### With .NET Aspire (Recommended)
+### With Aspire (Recommended)
 
 1. From the sample root directory, run:
    ```bash
@@ -140,4 +140,4 @@ To modify the application:
 
 ## License
 
-This is a sample application for demonstrating .NET Aspire orchestration with Python applications.
+This is a sample application for demonstrating Aspire orchestration with Python applications.

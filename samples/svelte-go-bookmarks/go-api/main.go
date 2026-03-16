@@ -34,7 +34,7 @@ func init() {
 		{
 			ID:        store.nextID,
 			URL:       "https://dotnet.microsoft.com/apps/aspire",
-			Title:     ".NET Aspire",
+			Title:     "Aspire",
 			Tags:      "dotnet,aspire,cloud",
 			CreatedAt: time.Now().Format(time.RFC3339),
 		},

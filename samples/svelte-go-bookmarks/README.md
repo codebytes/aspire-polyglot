@@ -1,12 +1,12 @@
-# Bookmark Manager - Go + Svelte + .NET Aspire
+# Bookmark Manager - Go + Svelte + Aspire
 
-A full-stack bookmark manager demonstrating how **.NET Aspire can orchestrate ANY executable** - not just .NET apps!
+A full-stack bookmark manager demonstrating how **Aspire can orchestrate ANY executable** - not just .NET apps!
 
 ## Architecture
 
 - **Backend**: Go HTTP server (stdlib `net/http`, no external dependencies)
 - **Frontend**: Svelte 4 SPA with Vite
-- **Orchestration**: .NET Aspire using standalone `apphost.cs` with `AddDockerfile` and `AddNpmApp`
+- **Orchestration**: Aspire using standalone `apphost.cs` with `AddDockerfile` and `AddNpmApp`
 
 This sample proves that Aspire is a **polyglot orchestration platform** - it can manage Go, Node.js, Python, Ruby, or any containerized application.
 
@@ -23,7 +23,7 @@ This sample proves that Aspire is a **polyglot orchestration platform** - it can
 
 ```
 svelte-go-bookmarks/
-├── apphost.cs            # Standalone .NET Aspire orchestration
+├── apphost.cs            # Standalone Aspire orchestration
 ├── go-api/               # Go backend
 │   ├── main.go           # HTTP server with CRUD endpoints
 │   ├── go.mod
@@ -92,7 +92,7 @@ This sample demonstrates:
 
 ## Technologies
 
-- [.NET Aspire 9.2.1](https://learn.microsoft.com/dotnet/aspire/)
+- [Aspire 9.2.1](https://learn.microsoft.com/dotnet/aspire/)
 - [Go 1.22](https://go.dev/)
 - [Svelte 4](https://svelte.dev/)
 - [Vite 5](https://vitejs.dev/)
