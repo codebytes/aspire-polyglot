@@ -504,6 +504,8 @@ def view_page(title):
 
 ---
 
+<!-- _class: compact code-compact -->
+
 # Demo 2: Django + HTMX — Voting Polls
 
 **What:** Django web app with HTMX for server-rendered interactivity + SQLite
@@ -511,17 +513,7 @@ def view_page(title):
 **Use Case:** Python web frameworks, server-rendered UIs, progressive enhancement
 
 **Architecture:**
-```
-┌──────────────┐
-│  Django App  │ Python + HTMX
-│  Port: 8000  │
-└──────┬───────┘
-       │
-       ↓
-┌──────────────┐
-│   SQLite     │ Database
-└──────────────┘
-```
+![w:860px center](./img/django-htmx-voting-polls.drawio.svg)
 
 **apphost.py:**
 ```python
@@ -766,12 +758,7 @@ ngOnInit() {
 **Use Case:** Any language via Docker, custom build processes
 
 **Architecture:**
-```
-┌──────────┐     ┌──────────────┐
-│  Svelte  │     │   Go API     │
-│ Port: 5173│────>│  Port: 8080  │
-└──────────┘     └──────────────┘
-```
+![w:680px center](./img/go-svelte-bookmarks.drawio.svg)
 
 **apphost.go:**
 ```go
@@ -780,12 +767,10 @@ api.WithHttpEndpoint(8080, "http")
 api.WithExternalHttpEndpoints()
 
 frontend, _ := builder.AddNpmApp("frontend", "./frontend", "dev")
-frontend.WithEnvironment(
-  "services__api__http__0", api.GetEndpoint("http"),
-)
+frontend.WithEnvironment("services__api__http__0", api.GetEndpoint("http"))
 ```
 
-**Go AppHost orchestrates Go API via Dockerfile + Svelte via npm!**
+**Go AppHost orchestrates Dockerized Go + npm-based Svelte together.**
 
 <!-- AddDockerfile lets you run ANY language that you can containerize. -->
 
