@@ -441,532 +441,9 @@ trace.set_tracer_provider(provider)
 
 ---
 
-# <!--fit--> Live Demo Walkthroughs
+# <!--fit--> Demos
 
-7 real-world polyglot samples
-
-<!-- Time to see Aspire in action! We'll walk through 7 samples that showcase different patterns. -->
-
----
-
-# Demo 1: Python Web App — Markdown Wiki
-
-**What:** Flask web app with SQLite database
-
-**Use Case:** Python web services, simple CRUD apps, Markdown rendering
-
-**Key Code (apphost.py):**
-```python
-builder.add_python_app("wiki", "./src", "main.py") \
-    .with_http_endpoint(env="PORT") \
-    .with_external_http_endpoints()
-```
-
-**That's it!**
-
-**Run it:**
-```bash
-cd samples/flask-markdown-wiki
-aspire run
-```
-
-**Dashboard:** Shows Flask app with clickable link to `http://localhost:5000`
-
-<!-- This demo shows the simplest Python web app pattern with Aspire. -->
-
----
-
-<!-- _class: compact code-compact -->
-
-# Demo 1: Flask Wiki — What You See
-
-**Dashboard view**
-- `wiki` resource with a clickable local URL
-- Flask console logs + health status
-- Request history for each page load
-
-**Flask app (`app.py`):**
-```python
-app = Flask(__name__)
-
-@app.route('/')
-def index():
-    return render_template_string(wiki_template, pages=pages)
-
-@app.route('/page/<title>')
-def view_page(title):
-    return render_page(title)
-```
-
-**Pattern:** tiny Python web app + SQLite, ideal for docs and internal tools.
-
-<!-- Flask + SQLite is a great pattern for simple CRUD apps. -->
-
----
-
-<!-- _class: compact code-compact -->
-
-# Demo 2: Django + HTMX — Voting Polls
-
-**What:** Django web app with HTMX for server-rendered interactivity + SQLite
-
-**Use Case:** Python web frameworks, server-rendered UIs, progressive enhancement
-
-**Architecture:**
-![w:860px center](./img/django-htmx-voting-polls.drawio.svg)
-
-**apphost.py:**
-```python
-builder.add_python_app("polls", "./src", "run.py") \
-    .with_http_endpoint(env="PORT") \
-    .with_external_http_endpoints()
-```
-
-<!-- Django with HTMX shows modern server-rendered patterns without heavy frontend frameworks. -->
-
----
-
-<!-- _class: compact code-compact -->
-
-# Demo 2: Django HTMX — Run It
-
-**Command**
-```bash
-cd samples/django-htmx-polls
-aspire run
-```
-
-**What Aspire does**
-- Installs Python deps
-- Runs migrations
-- Starts Django on `:8000`
-- Exposes a clickable dashboard link
-
-**HTMX view logic**
-```python
-def vote(request, question_id):
-    question = get_object_or_404(Question, pk=question_id)
-    question.votes += 1
-    question.save()
-    template = 'polls/_results.html' if request.htmx else 'polls/results.html'
-    return render(request, template, {'question': question})
-```
-
-<!-- HTMX lets you build interactive UIs with server-side rendering, no React needed! -->
-
----
-
-<!-- _class: compact code-compact -->
-
-# Demo 3: Vite + React + FastAPI — TODO App
-
-**Stack**
-- Vite + React frontend
-- FastAPI backend
-- Redis cache
-
-**apphost.py**
-```python
-cache = builder.add_redis("cache")
-
-api = builder.add_python_app("api", "./src/api", "main.py").with_reference(cache)
-builder.add_npm_app("web", "./src/web", "dev").with_reference(api)
-```
-
-**Pattern:** Vite proxies API calls while Aspire wires service discovery.
-
-<!-- This shows the modern pattern: Vite for fast React dev + Python API backend. -->
-
----
-
-<!-- _class: compact code-compact -->
-
-# Demo 3: FastAPI + Redis — Code
-
-```python
-app = FastAPI()
-redis_conn = os.environ['CONNECTIONSTRINGS__cache']
-cache = redis.from_url(redis_conn)
-
-@app.get('/api/todos')
-async def get_todos():
-    if cached := cache.get('todos'):
-        return json.loads(cached)
-    todos = [{"id": 1, "title": "Learn Aspire", "done": False}]
-    cache.setex('todos', 60, json.dumps(todos))
-    return todos
-```
-
----
-
-<!-- _class: compact code-compact -->
-
-# Demo 3: React Client — Code
-
-```typescript
-const apiUrl = import.meta.env.VITE_services__api__http__0;
-
-useEffect(() => {
-  fetch(`${apiUrl}/api/todos`)
-    .then(res => res.json())
-    .then(setTodos);
-}, []);
-```
-
-**Takeaway:** the frontend reads the Aspire-injected API URL from Vite env.
-
-<!-- Vite + React with Python backend is a popular stack. Aspire makes it seamless! -->
-
----
-
-<!-- _class: compact code-compact -->
-
-# Demo 4: Spring Boot + PostgreSQL — Notes App
-
-**Stack**
-- Spring Boot REST API
-- PostgreSQL database
-- pgAdmin UI
-
-**AppHost.java**
-```java
-var pg = builder.addPostgres("pg", null, null);
-var db = pg.addDatabase("notesdb");
-
-builder.addDockerfile("api", "./src")
-  .withReference(db)
-  .withHttpEndpoint(8080, "PORT")
-  .withExternalHttpEndpoints();
-```
-
-**Pattern:** use `AddDockerfile` when the service already has a container build.
-
-<!-- Spring Boot is the dominant Java framework. AddDockerfile lets Aspire run it! -->
-
----
-
-<!-- _class: compact code-compact -->
-
-# Demo 4: Spring Boot API — Code
-
-```java
-@RestController
-class NotesController {
-  @GetMapping("/api/notes")
-  List<Note> getNotes(JdbcTemplate db) {
-    return db.query(
-      "SELECT id, title, content FROM notes",
-      (rs, _) -> new Note(rs.getLong("id"), rs.getString("title"), rs.getString("content"))
-    );
-  }
-}
-```
-
----
-
-<!-- _class: compact code-compact -->
-
-# Demo 4: Dockerfile — Code
-
-```dockerfile
-FROM maven:3.9-eclipse-temurin-21 AS build
-WORKDIR /app
-COPY pom.xml ./
-COPY src ./src
-RUN mvn clean package -DskipTests
-
-FROM eclipse-temurin:21-jre-alpine
-COPY --from=build /app/target/*.jar /app/app.jar
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
-```
-
-**Aspire injects** the datasource settings at runtime.
-
-<!-- Multi-stage Docker builds keep production images small. Aspire handles Dockerfile orchestration! -->
-
----
-<!-- _class: compact code-compact -->
-
-# Demo 5: .NET + Angular + CosmosDB
-
-**Stack**
-- ASP.NET Core API
-- Angular SPA
-- Cosmos DB Emulator
-
-**AppHost**
-```csharp
-var cosmos = builder.AddAzureCosmosDB("cosmos").RunAsEmulator();
-var db = cosmos.AddCosmosDatabase("recipesdb");
-
-var api = builder.AddProject<Projects.Api>("api").WithReference(db);
-builder.AddNpmApp("frontend", "../frontend", "start")
-       .WithReference(api)
-       .WithHttpEndpoint(env: "PORT");
-```
-
-**Run:** `cd samples/dotnet-angular-cosmos && aspire run`
-
-<!-- CosmosDB emulator runs locally via Docker, no Azure account needed! -->
-
----
-
-<!-- _class: compact code-compact -->
-
-# Demo 5: .NET API — Code
-
-```csharp
-var builder = WebApplication.CreateBuilder(args);
-builder.AddServiceDefaults();
-builder.AddAzureCosmosClient("cosmos");
-
-var app = builder.Build();
-app.MapGet("/products", async (CosmosClient client) =>
-{
-    var container = client.GetDatabase("products").GetContainer("items");
-    return await container.GetItemQueryIterator<Product>("SELECT * FROM c").ReadNextAsync();
-});
-```
-
----
-
-<!-- _class: compact code-compact -->
-
-# Demo 5: Angular Client — Code
-
-```typescript
-ngOnInit() {
-  const apiUrl = environment.services__api__http__0;
-  this.http.get(`${apiUrl}/products`).subscribe(data => {
-    this.products = data;
-  });
-}
-```
-
-**Pattern:** Aspire injects the backend URL into the SPA environment.
-
-<!-- CosmosDB provides NoSQL document storage with global distribution (emulator for local dev). -->
-
----
-
-<!-- _class: compact code-compact -->
-
-# Demo 6: Go + Svelte — Bookmarks
-
-**What:** Go HTTP server (via AddDockerfile) with Svelte frontend
-
-**Use Case:** Any language via Docker, custom build processes
-
-**Architecture:**
-![w:680px center](./img/go-svelte-bookmarks.drawio.svg)
-
-**apphost.go:**
-```go
-api, _ := builder.AddDockerfile("api", "./go-api")
-api.WithHttpEndpoint(8080, "http")
-api.WithExternalHttpEndpoints()
-
-frontend, _ := builder.AddNpmApp("frontend", "./frontend", "dev")
-frontend.WithEnvironment("services__api__http__0", api.GetEndpoint("http"))
-```
-
-**Go AppHost orchestrates Dockerized Go + npm-based Svelte together.**
-
-<!-- AddDockerfile lets you run ANY language that you can containerize. -->
-
----
-
-<!-- _class: compact code-compact -->
-
-# Demo 6: Bookmarks — Dockerfile & Go Code
-
-```dockerfile
-FROM golang:1.23-alpine
-WORKDIR /app
-COPY . .
-RUN go build -o main .
-CMD ["./main"]
-```
-
-```go
-func bookmarksHandler(w http.ResponseWriter, r *http.Request) {
-    bookmarks := []string{"https://aspire.dev", "https://github.com"}
-    json.NewEncoder(w).Encode(bookmarks)
-}
-```
-
-**Run:** `cd samples/svelte-go-bookmarks && aspire run`
-
-<!-- AddDockerfile is the escape hatch for any language Aspire doesn't support natively! -->
-
----
-
-# Demo 7: Polyglot Event Stream
-
-**The Grand Finale:** C# + Python + Node.js + Kafka
-
-**What:** Multi-language microservices with Kafka event streaming
-
-**Use Case:** Event-driven architectures, real-world microservices
-
-**Architecture:** (see next slide)
-
-**Components:**
-- .NET Producer — generates events
-- Python Consumer — processes events
-- Node.js Dashboard — real-time WebSocket UI
-- Apache Kafka — event streaming platform
-
-<!-- This is the most complex demo — it shows how Aspire shines with multiple languages. -->
-
----
-
-<!-- _class: compact -->
-
-# Demo 7: Polyglot Event Stream — Architecture
-
-![w:900px center](./img/event-stream-architecture.drawio.svg)
-
-**Event Flow:**
-1. .NET producer publishes events into Kafka
-2. Python consumer enriches them and writes processed events back
-3. Node.js dashboard streams updates to the browser over WebSocket
-
-<!-- Kafka provides high-throughput event streaming across all three services! -->
-
----
-
-<!-- _class: compact dense code-compact -->
-
-# Demo 7: Polyglot Event Stream — AppHost
-
-```csharp
-var kafka = builder.AddKafka("messaging").WithKafkaUI();
-
-builder.AddProject<Projects.EventProducer>("producer")
-       .WithReference(kafka);
-
-builder.AddPythonApp("consumer", "../python-consumer", "main.py")
-       .WithReference(kafka);
-
-builder.AddNpmApp("dashboard", "../node-dashboard", "start")
-       .WithReference(kafka)
-       .WithHttpEndpoint(env: "PORT");
-```
-
-**Shared wiring:** `CONNECTIONSTRINGS__messaging`, service discovery, unified telemetry.
-
-<!-- Look how simple the orchestration code is! Aspire handles all the complexity. -->
-
----
-
-<!-- _class: compact code-compact -->
-
-# Demo 7: Event Stream — .NET Producer
-
-**Program.cs:**
-```csharp
-var builder = WebApplication.CreateBuilder(args);
-builder.AddServiceDefaults();
-builder.AddKafkaProducer<string, string>("messaging");
-
-var app = builder.Build();
-
-app.MapPost("/publish", async (string message, IProducer<string, string> producer) =>
-{
-    var kafkaMessage = new Message<string, string>
-    {
-        Key = Guid.NewGuid().ToString(),
-        Value = JsonSerializer.Serialize(new { text = message, timestamp = DateTime.UtcNow })
-    };
-    
-    await producer.ProduceAsync("events", kafkaMessage);
-    
-    return Results.Accepted();
-});
-
-app.Run();
-```
-
-**Publishes to Kafka, returns immediately** — fire and forget!
-
-<!-- The producer doesn't wait for consumers. Kafka buffers all events. -->
-
----
-
-<!-- _class: compact code-compact -->
-
-# Demo 7: Event Stream — Python Consumer
-```python
-from kafka import KafkaConsumer, KafkaProducer
-import json
-import os
-
-# Aspire injects Kafka connection
-kafka_url = os.environ['CONNECTIONSTRINGS__messaging']
-
-consumer = KafkaConsumer(
-    'events',
-    bootstrap_servers=kafka_url,
-    value_deserializer=lambda m: json.loads(m.decode('utf-8'))
-)
-
-producer = KafkaProducer(
-    bootstrap_servers=kafka_url,
-    value_serializer=lambda v: json.dumps(v).encode('utf-8')
-)
-
-for message in consumer:
-    event = message.value
-    
-    # Process event (e.g., enrich with ML prediction)
-    processed = {
-        **event,
-        'sentiment': analyze_sentiment(event['text']),
-        'processed_at': datetime.utcnow().isoformat()
-    }
-    
-    producer.send('processed-events', processed)
-```
-
-<!-- The Python consumer enriches events with ML predictions, analytics, etc. -->
-
----
-
-<!-- _class: compact code-compact -->
-
-# Demo 7: Event Stream — Node.js Dashboard
-
-```javascript
-const io = new Server(http.createServer(app));
-const kafka = new Kafka({ brokers: [process.env.CONNECTIONSTRINGS__messaging] });
-const consumer = kafka.consumer({ groupId: 'dashboard' });
-
-await consumer.subscribe({ topic: 'processed-events' });
-await consumer.run({
-  eachMessage: async ({ message }) =>
-    io.emit('event', JSON.parse(message.value.toString()))
-});
-```
-
-**Run:** `cd samples/polyglot-event-stream/AppHost && dotnet run`
-
-<!-- Three languages, real-time streaming via Kafka + WebSocket! -->
-
----
-
-<!-- _class: compact -->
-
-# Demo 7: Live Dashboard Experience
-
-**You can watch**
-- `producer`, `consumer`, `dashboard`, and `messaging` start together
-- End-to-end traces: HTTP → .NET → Kafka → Python → Node.js → browser
-- Unified logs per service with filters by level and time
-
-**This is the payoff:** one dashboard across every language in the stack.
-
-<!-- One unified view of everything, regardless of language. This is transformative. -->
+<!-- Live demos of 7 real-world polyglot samples -->
 
 ---
 
@@ -1038,48 +515,36 @@ provider.register();
 
 <!-- _class: compact -->
 
-## Aspire Dashboard Features Walkthrough
+## Aspire Dashboard Features
 
-**Resources Tab** 📋
-- List of all services, containers, executables
-- Status: Running, Stopped, Exited
-- Endpoints (clickable links)
-- Source code location
+<div class="columns">
+<div>
 
-**Console Logs Tab** 📜
-- Raw stdout/stderr from each process
-- Real-time streaming
-- Filter by resource
+**Resources** 📋
+Services, containers, status, endpoints
 
-**Structured Logs Tab** 📊
-- Parsed JSON logs (if emitted as JSON)
-- Filter by level, timestamp, message
-- Search across all services
+**Console Logs** 📜
+Real-time stdout/stderr per process
+
+**Structured Logs** 📊
+Parsed JSON logs, filter by level
+
+</div>
+<div>
+
+**Traces** 🔍
+Distributed request traces, waterfall view
+
+**Metrics** 📈
+Latency, CPU/memory, custom metrics
+
+**Environment** ⚙️
+Env vars, connection strings, discovery URLs
+
+</div>
+</div>
 
 <!-- The dashboard is more powerful than just docker-compose logs. -->
-
----
-
-<!-- _class: compact -->
-
-## Aspire Dashboard Features (continued)
-
-**Traces Tab** 🔍
-- Distributed request traces
-- Waterfall view across services
-- Span details: tags, events, errors
-
-**Metrics Tab** 📈
-- Request latency + counts
-- CPU / memory graphs
-- Custom metrics when instrumented
-
-**Environment Tab** ⚙️
-- Environment variables
-- Connection strings
-- Service discovery URLs
-
-<!-- The environment tab is great for debugging "why isn't this service connecting?" -->
 
 ---
 
@@ -1425,3 +890,543 @@ AddDockerfile()
 </div>
 </div>
 
+
+<!--
+============================================================
+  DEMO SLIDES (commented out — uncomment to include in deck)
+============================================================
+
+---
+
+# <!~~fit~~> Live Demo Walkthroughs
+
+7 real-world polyglot samples
+
+<!~~ Time to see Aspire in action! We'll walk through 7 samples that showcase different patterns. ~~>
+
+---
+
+# Demo 1: Python Web App — Markdown Wiki
+
+**What:** Flask web app with SQLite database
+
+**Use Case:** Python web services, simple CRUD apps, Markdown rendering
+
+**Key Code (apphost.py):**
+```python
+builder.add_python_app("wiki", "./src", "main.py") \
+    .with_http_endpoint(env="PORT") \
+    .with_external_http_endpoints()
+```
+
+**That's it!**
+
+**Run it:**
+```bash
+cd samples/flask-markdown-wiki
+aspire run
+```
+
+**Dashboard:** Shows Flask app with clickable link to `http://localhost:5000`
+
+<!~~ This demo shows the simplest Python web app pattern with Aspire. ~~>
+
+---
+
+<!~~ _class: compact code-compact ~~>
+
+# Demo 1: Flask Wiki — What You See
+
+**Dashboard view**
+- `wiki` resource with a clickable local URL
+- Flask console logs + health status
+- Request history for each page load
+
+**Flask app (`app.py`):**
+```python
+app = Flask(__name__)
+
+@app.route('/')
+def index():
+    return render_template_string(wiki_template, pages=pages)
+
+@app.route('/page/<title>')
+def view_page(title):
+    return render_page(title)
+```
+
+**Pattern:** tiny Python web app + SQLite, ideal for docs and internal tools.
+
+<!~~ Flask + SQLite is a great pattern for simple CRUD apps. ~~>
+
+---
+
+<!~~ _class: compact code-compact ~~>
+
+# Demo 2: Django + HTMX — Voting Polls
+
+**What:** Django web app with HTMX for server-rendered interactivity + SQLite
+
+**Use Case:** Python web frameworks, server-rendered UIs, progressive enhancement
+
+**Architecture:**
+![w:860px center](./img/django-htmx-voting-polls.drawio.svg)
+
+**apphost.py:**
+```python
+builder.add_python_app("polls", "./src", "run.py") \
+    .with_http_endpoint(env="PORT") \
+    .with_external_http_endpoints()
+```
+
+<!~~ Django with HTMX shows modern server-rendered patterns without heavy frontend frameworks. ~~>
+
+---
+
+<!~~ _class: compact code-compact ~~>
+
+# Demo 2: Django HTMX — Run It
+
+**Command**
+```bash
+cd samples/django-htmx-polls
+aspire run
+```
+
+**What Aspire does**
+- Installs Python deps
+- Runs migrations
+- Starts Django on `:8000`
+- Exposes a clickable dashboard link
+
+**HTMX view logic**
+```python
+def vote(request, question_id):
+    question = get_object_or_404(Question, pk=question_id)
+    question.votes += 1
+    question.save()
+    template = 'polls/_results.html' if request.htmx else 'polls/results.html'
+    return render(request, template, {'question': question})
+```
+
+<!~~ HTMX lets you build interactive UIs with server-side rendering, no React needed! ~~>
+
+---
+
+<!~~ _class: compact code-compact ~~>
+
+# Demo 3: Vite + React + FastAPI — TODO App
+
+**Stack**
+- Vite + React frontend
+- FastAPI backend
+- Redis cache
+
+**apphost.py**
+```python
+cache = builder.add_redis("cache")
+
+api = builder.add_python_app("api", "./src/api", "main.py").with_reference(cache)
+builder.add_npm_app("web", "./src/web", "dev").with_reference(api)
+```
+
+**Pattern:** Vite proxies API calls while Aspire wires service discovery.
+
+<!~~ This shows the modern pattern: Vite for fast React dev + Python API backend. ~~>
+
+---
+
+<!~~ _class: compact code-compact ~~>
+
+# Demo 3: FastAPI + Redis — Code
+
+```python
+app = FastAPI()
+redis_conn = os.environ['CONNECTIONSTRINGS__cache']
+cache = redis.from_url(redis_conn)
+
+@app.get('/api/todos')
+async def get_todos():
+    if cached := cache.get('todos'):
+        return json.loads(cached)
+    todos = [{"id": 1, "title": "Learn Aspire", "done": False}]
+    cache.setex('todos', 60, json.dumps(todos))
+    return todos
+```
+
+---
+
+<!~~ _class: compact code-compact ~~>
+
+# Demo 3: React Client — Code
+
+```typescript
+const apiUrl = import.meta.env.VITE_services__api__http__0;
+
+useEffect(() => {
+  fetch(`${apiUrl}/api/todos`)
+    .then(res => res.json())
+    .then(setTodos);
+}, []);
+```
+
+**Takeaway:** the frontend reads the Aspire-injected API URL from Vite env.
+
+<!~~ Vite + React with Python backend is a popular stack. Aspire makes it seamless! ~~>
+
+---
+
+<!~~ _class: compact code-compact ~~>
+
+# Demo 4: Spring Boot + PostgreSQL — Notes App
+
+**Stack**
+- Spring Boot REST API
+- PostgreSQL database
+- pgAdmin UI
+
+**AppHost.java**
+```java
+var pg = builder.addPostgres("pg", null, null);
+var db = pg.addDatabase("notesdb");
+
+builder.addDockerfile("api", "./src")
+  .withReference(db)
+  .withHttpEndpoint(8080, "PORT")
+  .withExternalHttpEndpoints();
+```
+
+**Pattern:** use `AddDockerfile` when the service already has a container build.
+
+<!~~ Spring Boot is the dominant Java framework. AddDockerfile lets Aspire run it! ~~>
+
+---
+
+<!~~ _class: compact code-compact ~~>
+
+# Demo 4: Spring Boot API — Code
+
+```java
+@RestController
+class NotesController {
+  @GetMapping("/api/notes")
+  List<Note> getNotes(JdbcTemplate db) {
+    return db.query(
+      "SELECT id, title, content FROM notes",
+      (rs, _) -> new Note(rs.getLong("id"), rs.getString("title"), rs.getString("content"))
+    );
+  }
+}
+```
+
+---
+
+<!~~ _class: compact code-compact ~~>
+
+# Demo 4: Dockerfile — Code
+
+```dockerfile
+FROM maven:3.9-eclipse-temurin-21 AS build
+WORKDIR /app
+COPY pom.xml ./
+COPY src ./src
+RUN mvn clean package -DskipTests
+
+FROM eclipse-temurin:21-jre-alpine
+COPY --from=build /app/target/*.jar /app/app.jar
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+```
+
+**Aspire injects** the datasource settings at runtime.
+
+<!~~ Multi-stage Docker builds keep production images small. Aspire handles Dockerfile orchestration! ~~>
+
+---
+<!~~ _class: compact code-compact ~~>
+
+# Demo 5: .NET + Angular + CosmosDB
+
+**Stack**
+- ASP.NET Core API
+- Angular SPA
+- Cosmos DB Emulator
+
+**AppHost**
+```csharp
+var cosmos = builder.AddAzureCosmosDB("cosmos").RunAsEmulator();
+var db = cosmos.AddCosmosDatabase("recipesdb");
+
+var api = builder.AddProject<Projects.Api>("api").WithReference(db);
+builder.AddNpmApp("frontend", "../frontend", "start")
+       .WithReference(api)
+       .WithHttpEndpoint(env: "PORT");
+```
+
+**Run:** `cd samples/dotnet-angular-cosmos && aspire run`
+
+<!~~ CosmosDB emulator runs locally via Docker, no Azure account needed! ~~>
+
+---
+
+<!~~ _class: compact code-compact ~~>
+
+# Demo 5: .NET API — Code
+
+```csharp
+var builder = WebApplication.CreateBuilder(args);
+builder.AddServiceDefaults();
+builder.AddAzureCosmosClient("cosmos");
+
+var app = builder.Build();
+app.MapGet("/products", async (CosmosClient client) =>
+{
+    var container = client.GetDatabase("products").GetContainer("items");
+    return await container.GetItemQueryIterator<Product>("SELECT * FROM c").ReadNextAsync();
+});
+```
+
+---
+
+<!~~ _class: compact code-compact ~~>
+
+# Demo 5: Angular Client — Code
+
+```typescript
+ngOnInit() {
+  const apiUrl = environment.services__api__http__0;
+  this.http.get(`${apiUrl}/products`).subscribe(data => {
+    this.products = data;
+  });
+}
+```
+
+**Pattern:** Aspire injects the backend URL into the SPA environment.
+
+<!~~ CosmosDB provides NoSQL document storage with global distribution (emulator for local dev). ~~>
+
+---
+
+<!~~ _class: compact dense code-compact ~~>
+
+# Demo 6: Go + Svelte — Bookmarks
+
+**What:** Go HTTP server (via AddDockerfile) with Svelte frontend
+
+**Use Case:** Any language via Docker, custom build processes
+
+**Architecture:**
+![w:680px center](./img/go-svelte-bookmarks.drawio.svg)
+
+**apphost.go:**
+```go
+api, _ := builder.AddDockerfile("api", "./go-api")
+api.WithHttpEndpoint(8080, "http")
+api.WithExternalHttpEndpoints()
+
+frontend, _ := builder.AddNpmApp("frontend", "./frontend", "dev")
+frontend.WithEnvironment("services__api__http__0", api.GetEndpoint("http"))
+```
+
+**Go AppHost orchestrates Dockerized Go + npm-based Svelte together.**
+
+<!~~ AddDockerfile lets you run ANY language that you can containerize. ~~>
+
+---
+
+<!~~ _class: compact code-compact ~~>
+
+# Demo 6: Bookmarks — Dockerfile & Go Code
+
+```dockerfile
+FROM golang:1.23-alpine
+WORKDIR /app
+COPY . .
+RUN go build -o main .
+CMD ["./main"]
+```
+
+```go
+func bookmarksHandler(w http.ResponseWriter, r *http.Request) {
+    bookmarks := []string{"https://aspire.dev", "https://github.com"}
+    json.NewEncoder(w).Encode(bookmarks)
+}
+```
+
+**Run:** `cd samples/svelte-go-bookmarks && aspire run`
+
+<!~~ AddDockerfile is the escape hatch for any language Aspire doesn't support natively! ~~>
+
+---
+
+# Demo 7: Polyglot Event Stream
+
+**The Grand Finale:** C# + Python + Node.js + Kafka
+
+**What:** Multi-language microservices with Kafka event streaming
+
+**Use Case:** Event-driven architectures, real-world microservices
+
+**Architecture:** (see next slide)
+
+**Components:**
+- .NET Producer — generates events
+- Python Consumer — processes events
+- Node.js Dashboard — real-time WebSocket UI
+- Apache Kafka — event streaming platform
+
+<!~~ This is the most complex demo — it shows how Aspire shines with multiple languages. ~~>
+
+---
+
+<!~~ _class: compact ~~>
+
+# Demo 7: Polyglot Event Stream — Architecture
+
+![w:900px center](./img/event-stream-architecture.drawio.svg)
+
+**Event Flow:**
+1. .NET producer publishes events into Kafka
+2. Python consumer enriches them and writes processed events back
+3. Node.js dashboard streams updates to the browser over WebSocket
+
+<!~~ Kafka provides high-throughput event streaming across all three services! ~~>
+
+---
+
+<!~~ _class: compact dense code-compact ~~>
+
+# Demo 7: Polyglot Event Stream — AppHost
+
+```csharp
+var kafka = builder.AddKafka("messaging").WithKafkaUI();
+
+builder.AddProject<Projects.EventProducer>("producer")
+       .WithReference(kafka);
+
+builder.AddPythonApp("consumer", "../python-consumer", "main.py")
+       .WithReference(kafka);
+
+builder.AddNpmApp("dashboard", "../node-dashboard", "start")
+       .WithReference(kafka)
+       .WithHttpEndpoint(env: "PORT");
+```
+
+**Shared wiring:** `CONNECTIONSTRINGS__messaging`, service discovery, unified telemetry.
+
+<!~~ Look how simple the orchestration code is! Aspire handles all the complexity. ~~>
+
+---
+
+<!~~ _class: compact code-compact ~~>
+
+# Demo 7: Event Stream — .NET Producer
+
+**Program.cs:**
+```csharp
+var builder = WebApplication.CreateBuilder(args);
+builder.AddServiceDefaults();
+builder.AddKafkaProducer<string, string>("messaging");
+
+var app = builder.Build();
+
+app.MapPost("/publish", async (string message, IProducer<string, string> producer) =>
+{
+    var kafkaMessage = new Message<string, string>
+    {
+        Key = Guid.NewGuid().ToString(),
+        Value = JsonSerializer.Serialize(new { text = message, timestamp = DateTime.UtcNow })
+    };
+    
+    await producer.ProduceAsync("events", kafkaMessage);
+    
+    return Results.Accepted();
+});
+
+app.Run();
+```
+
+**Publishes to Kafka, returns immediately** — fire and forget!
+
+<!~~ The producer doesn't wait for consumers. Kafka buffers all events. ~~>
+
+---
+
+<!~~ _class: compact code-compact ~~>
+
+# Demo 7: Event Stream — Python Consumer
+```python
+from kafka import KafkaConsumer, KafkaProducer
+import json
+import os
+
+# Aspire injects Kafka connection
+kafka_url = os.environ['CONNECTIONSTRINGS__messaging']
+
+consumer = KafkaConsumer(
+    'events',
+    bootstrap_servers=kafka_url,
+    value_deserializer=lambda m: json.loads(m.decode('utf-8'))
+)
+
+producer = KafkaProducer(
+    bootstrap_servers=kafka_url,
+    value_serializer=lambda v: json.dumps(v).encode('utf-8')
+)
+
+for message in consumer:
+    event = message.value
+    
+    # Process event (e.g., enrich with ML prediction)
+    processed = {
+        **event,
+        'sentiment': analyze_sentiment(event['text']),
+        'processed_at': datetime.utcnow().isoformat()
+    }
+    
+    producer.send('processed-events', processed)
+```
+
+<!~~ The Python consumer enriches events with ML predictions, analytics, etc. ~~>
+
+---
+
+<!~~ _class: compact code-compact ~~>
+
+# Demo 7: Event Stream — Node.js Dashboard
+
+```javascript
+const io = new Server(http.createServer(app));
+const kafka = new Kafka({ brokers: [process.env.CONNECTIONSTRINGS__messaging] });
+const consumer = kafka.consumer({ groupId: 'dashboard' });
+
+await consumer.subscribe({ topic: 'processed-events' });
+await consumer.run({
+  eachMessage: async ({ message }) =>
+    io.emit('event', JSON.parse(message.value.toString()))
+});
+```
+
+**Run:** `cd samples/polyglot-event-stream/AppHost && dotnet run`
+
+<!~~ Three languages, real-time streaming via Kafka + WebSocket! ~~>
+
+---
+
+<!~~ _class: compact ~~>
+
+# Demo 7: Live Dashboard Experience
+
+**You can watch**
+- `producer`, `consumer`, `dashboard`, and `messaging` start together
+- End-to-end traces: HTTP → .NET → Kafka → Python → Node.js → browser
+- Unified logs per service with filters by level and time
+
+**This is the payoff:** one dashboard across every language in the stack.
+
+<!~~ One unified view of everything, regardless of language. This is transformative. ~~>
+
+
+============================================================
+  END DEMO SLIDES
+============================================================
+-->
