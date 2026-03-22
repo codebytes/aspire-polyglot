@@ -1,0 +1,5 @@
+{
+  "universe_allowlist": ["Marvel Avengers"],
+  "max_agents_per_universe": 25,
+  "overflow_strategy": "diegetic_expansion"
+}

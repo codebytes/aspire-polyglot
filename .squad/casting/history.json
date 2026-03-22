@@ -1,0 +1,10 @@
+{
+  "assignments": [
+    {
+      "assignment_id": "aspire-polyglot-marvel-001",
+      "universe": "Marvel Avengers",
+      "created_at": "2026-03-22T15:22:00Z",
+      "agents": ["Stark", "Parker", "Banner", "Rogers", "Thor", "Romanoff", "Strange", "Barton"]
+    }
+  ]
+}

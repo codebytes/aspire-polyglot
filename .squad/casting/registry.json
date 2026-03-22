@@ -1,0 +1,12 @@
+{
+  "agents": [
+    { "persistent_name": "Stark", "universe": "Marvel Avengers", "role": "Lead", "created_at": "2026-03-22T15:22:00Z", "legacy_named": false, "status": "active" },
+    { "persistent_name": "Parker", "universe": "Marvel Avengers", "role": "JS/TS Dev", "created_at": "2026-03-22T15:22:00Z", "legacy_named": false, "status": "active" },
+    { "persistent_name": "Banner", "universe": "Marvel Avengers", "role": "Python Dev", "created_at": "2026-03-22T15:22:00Z", "legacy_named": false, "status": "active" },
+    { "persistent_name": "Rogers", "universe": "Marvel Avengers", "role": "C#/.NET Dev", "created_at": "2026-03-22T15:22:00Z", "legacy_named": false, "status": "active" },
+    { "persistent_name": "Thor", "universe": "Marvel Avengers", "role": "Java Dev", "created_at": "2026-03-22T15:22:00Z", "legacy_named": false, "status": "active" },
+    { "persistent_name": "Romanoff", "universe": "Marvel Avengers", "role": "Go Dev", "created_at": "2026-03-22T15:22:00Z", "legacy_named": false, "status": "active" },
+    { "persistent_name": "Strange", "universe": "Marvel Avengers", "role": "Content Dev", "created_at": "2026-03-22T15:22:00Z", "legacy_named": false, "status": "active" },
+    { "persistent_name": "Barton", "universe": "Marvel Avengers", "role": "Tester", "created_at": "2026-03-22T15:22:00Z", "legacy_named": false, "status": "active" }
+  ]
+}
