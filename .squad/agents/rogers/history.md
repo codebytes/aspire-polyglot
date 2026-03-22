@@ -44,6 +44,23 @@
 - No API changes required — pure version bump, no code modifications needed
 - NuGet flat container API requires fully lowercase package IDs (case matters for REST API, not for dotnet CLI)
 
+### 2026-03-22 — Major Upgrade: .NET 10 + Aspire 13.1.3
+
+- **Framework**: Upgraded all 6 .csproj files from `net9.0` → `net10.0`
+- **Aspire SDK**: `Aspire.AppHost.Sdk` 9.5.2 → 13.1.3 (both AppHosts)
+- **Aspire packages**: All Aspire.* packages upgraded 9.5.2 → 13.1.3
+- **Breaking rename**: `Aspire.Hosting.NodeJs` → `Aspire.Hosting.JavaScript` (package renamed in Aspire 13.x)
+- **Breaking API change**: `AddNpmApp()` → `AddJavaScriptApp()` — both AppHost Program.cs files updated
+- **Microsoft.Extensions.Http.Resilience**: 9.10.0 → 10.4.0
+- **Microsoft.Extensions.ServiceDiscovery**: 9.5.2 → 10.4.0
+- **OpenTelemetry packages**: Already at 1.15.x (no change needed)
+- **Microsoft.Azure.Cosmos**: Already at 3.58.0 (no change needed)
+- **NoWarn cleanup**: Removed `ASPIREHOSTINGNODEJS001` from polyglot-event-stream AppHost (no longer applies)
+- **README updates**: Fixed `AddNpmApp` → `AddJavaScriptApp` in code snippets, version refs updated
+- Both samples build clean: 0 warnings, 0 errors on .NET 10
+- This was a major framework jump (9→10) + major Aspire jump (9.x→13.x), not a patch bump
+- Key learning: Aspire 13.x package versioning follows the CLI versioning (both at 13.1.3)
+
 ### 2026-03-22 — Package Upgrade Complete
 - All Aspire packages upgraded: 9.2.1 → 9.5.2 (both samples)
 - Supporting packages updated: Cosmos SDK, OpenTelemetry, HTTP Resilience
