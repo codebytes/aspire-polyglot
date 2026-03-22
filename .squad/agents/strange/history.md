@@ -49,3 +49,8 @@
   - Review demo slide timing (7 demos = 30–40 min; ensure fits talk duration)
   - Have pre-recorded demo backups ready for safety
 - **Deliverable:** Slides complete and ready for 13.2 talk
+
+### 2026-03-22 — Slides Expansion Complete
+- Feature flags slide added after TypeScript AppHost section
+- "What's New in 13.2" expanded from 1 slide to 2 slides (CLI + infrastructure)
+- Comprehensive coverage of 8+ major 13.2 features for talk preparation

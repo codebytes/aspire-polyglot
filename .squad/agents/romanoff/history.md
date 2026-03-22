@@ -33,3 +33,20 @@
   - Update README Aspire version reference (9.2.1 → current)
   - Optional: Consider adding infrastructure (Redis/PostgreSQL) if team approves
 - **Priority:** Fix README before talk (immediate blocker)
+
+### 2025-07-15: Added PostgreSQL Infrastructure to svelte-go-bookmarks
+- **apphost.go** updated: Added `AddPostgres("pg")` → `AddDatabase("bookmarksdb")` → `WithReference(db)` — follows the exact same pattern as spring-boot-postgres (Java AppHost) but with Go PascalCase conventions
+- **Go API rewritten** with `Storage` interface: `pgStore` (PostgreSQL via `lib/pq`) and `memStore` (in-memory fallback) — same REST API, swappable backend
+- **Graceful fallback**: reads `CONNECTIONSTRINGS__bookmarksdb` env var; if missing or connection fails, falls back to in-memory with log message — sample works with or without Aspire
+- **go.mod** updated: added `github.com/lib/pq v1.10.9` — chose `lib/pq` over `pgx` for simplicity (single import, no connection pool config)
+- **Dockerfile** updated: added `go.sum` copy and `go mod download` step before source copy — proper layer caching for dependencies
+- **README fully fixed**: all `apphost.cs` → `apphost.go`, C# code snippet → Go code snippet, added PostgreSQL to architecture/features/technologies, removed stale Aspire 9.2.1 version
+- **DB schema**: single `bookmarks` table with `SERIAL PRIMARY KEY`, auto-seeds 3 bookmarks on empty table
+- **Connection string pattern**: Aspire injects PostgreSQL connection strings as standard `lib/pq` format via `CONNECTIONSTRINGS__` prefix — works out of the box unlike Java's JDBC format issue (Decision #5)
+
+### 2026-03-22 — PostgreSQL Integration Complete
+- svelte-go-bookmarks: PostgreSQL database wiring complete
+- Storage interface pattern implemented with in-memory fallback
+- Graceful fallback working (sample runs standalone without Aspire)
+- README corrected: apphost.cs → apphost.go references, Go language snippets
+- Decision #6 (Infrastructure in Simple Samples) resolved for Go samples

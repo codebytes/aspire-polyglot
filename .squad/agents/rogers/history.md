@@ -30,3 +30,23 @@
   - Update README version references from "9.2.1" to current
   - Test both samples after version bump
 - **Deliverable:** All .NET packages on latest 9.x before talk
+
+### 2026-03-22 — NuGet Package Upgrades Complete
+- Upgraded all Aspire packages from 9.2.1 → 9.5.2 across both samples (6 .csproj files)
+- Upgraded Microsoft.Azure.Cosmos: 3.47.2 → 3.58.0
+- Upgraded Microsoft.Extensions.Http.Resilience: 9.0.0 → 9.10.0
+- Upgraded Microsoft.Extensions.ServiceDiscovery: 9.2.1 → 9.5.2
+- Upgraded all OpenTelemetry packages: 1.10.x → 1.15.x (Exporter 1.15.0, Hosting 1.15.0, AspNetCore 1.15.1, Http 1.15.0, Runtime 1.15.0)
+- Fixed dotnet-angular-cosmos README: `.AddDatabase()` → `.AddCosmosDatabase()` to match actual AppHost code
+- Updated README version reference from "Aspire 9.2.1" to "Aspire 9.5.2"
+- Both ServiceDefaults kept in sync (identical package versions)
+- `dotnet restore` succeeded on both samples with no errors
+- No API changes required — pure version bump, no code modifications needed
+- NuGet flat container API requires fully lowercase package IDs (case matters for REST API, not for dotnet CLI)
+
+### 2026-03-22 — Package Upgrade Complete
+- All Aspire packages upgraded: 9.2.1 → 9.5.2 (both samples)
+- Supporting packages updated: Cosmos SDK, OpenTelemetry, HTTP Resilience
+- dotnet restore verified, zero breaking changes
+- Documentation fixed: API references, version mentions
+- Both samples tested and synchronized

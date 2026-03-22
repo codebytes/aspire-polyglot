@@ -30,3 +30,8 @@
   - Add try-catch to Express routes in polyglot-event-stream node-dashboard
   - Add `process.on('unhandledRejection')` handler to node-dashboard
 - **Deliverable:** All samples should handle API errors gracefully before live demo
+
+### 2026-03-22 — README Correction Complete
+- vite-react-api README: Fixed apphost.cs → apphost.py reference
+- Updated AppHost language identification from C# to Python
+- Documentation now consistent with TypeScript/React + Python architecture

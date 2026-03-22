@@ -33,3 +33,8 @@
   - Update README version references (from "9.2.1")
   - Optional: Spring Boot version bump, constructor injection refactor
 - **Blocker status:** Connection string format MUST be resolved before demo day (sample won't connect to PostgreSQL otherwise)
+
+### 2026-03-22 — README Correction Complete
+- spring-boot-postgres README: Fixed apphost.cs → AppHost.java reference
+- Documentation now consistent with Java codebase
+- Sample architecture documented correctly

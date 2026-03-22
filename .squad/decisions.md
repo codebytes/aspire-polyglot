@@ -22,35 +22,30 @@
 
 ### 2. Feature Flags Coverage in Slides
 
-**Status:** URGENT — Chris requests  
+**Status:** ✅ RESOLVED — Strange added feature flags slide  
 **Issue:** Slides do not cover `polyglotSupportEnabled` or language-specific feature flags  
 **Decision:** Add new slide after TypeScript AppHost intro (after line 193)
 
-**Content to Cover:**
-- What `.aspire/settings.json` / `aspire.config.json` is
-- `polyglotSupportEnabled: true` — master flag
-- Language-specific flags: `experimentalPolyglot:python`, `:java`, `:go`
-- How samples use these flags
-- Why flags exist (experimental feature maturity)
+**Implementation:**
+- New slide covers `.aspire/settings.json` / `aspire.config.json` formats
+- Explains `polyglotSupportEnabled` master flag and language-specific feature flags
+- Provides context for experimental feature maturity phases
 
-**Owner:** Strange (Content Dev) — implement immediately
+**Owner:** Strange (Content Dev) — ✅ COMPLETED
 
 ---
 
 ### 3. "What's New in 13.2" Slide Expansion
 
-**Status:** URGENT — Critical gap identified  
+**Status:** ✅ RESOLVED — Strange expanded 1 slide to 2 slides  
 **Issue:** Slides cover only 3 of 15+ key 13.2 features  
 **Decision:** Expand to cover 8–10 major features across 2–3 slides
 
-**Missing Features to Add:**
-- `aspire.config.json` (new config format)
-- `aspire run --detach`, `aspire ps`, `aspire stop` (detached mode)
-- `aspire doctor`, `aspire restore`, `aspire agent`, `aspire docs`, `aspire resource` (new CLI commands)
-- Dashboard enhancements (export, persistent state, resource graph)
-- Bun support, Java cert trust, Foundry, MongoDB EF, Azure VNet
+**Implementation:**
+- Slide 13.2a: CLI enhancements (`aspire run --detach`, `aspire ps`, `aspire stop`, `aspire doctor`, `aspire restore`)
+- Slide 13.2b: Configuration and infrastructure (`aspire.config.json`, dashboard persistence, resource graph)
 
-**Owner:** Strange (Content Dev) — implement in parallel with feature flags slide
+**Owner:** Strange (Content Dev) — ✅ COMPLETED
 
 ---
 
@@ -68,7 +63,7 @@
 
 ### 5. Java Connection String Format Handling
 
-**Status:** URGENT — Functional issue  
+**Status:** PENDING IMPLEMENTATION — Flagged as functional issue  
 **Issue:** Aspire injects PostgreSQL connection strings in .NET format (`Host=...;Port=...`), but Spring Boot expects JDBC URL format (`jdbc:postgresql://host:port/db`)  
 **Decision Needed:** How to handle?
 
@@ -83,43 +78,60 @@
 
 ### 6. Infrastructure in Simple Samples
 
-**Status:** Pending team consensus  
+**Status:** ✅ RESOLVED — Banner (Python) + Romanoff (Go) implemented  
 **Issue:** 3 samples lack Aspire-managed infrastructure (weakens orchestration narrative)  
 **Affected Samples:**
-- flask-markdown-wiki — uses SQLite only
-- django-htmx-polls — uses SQLite only
-- svelte-go-bookmarks — uses in-memory store
+- flask-markdown-wiki — ✅ Added Redis for page caching
+- django-htmx-polls — ✅ Added PostgreSQL as primary database
+- svelte-go-bookmarks — ✅ Added PostgreSQL for bookmark persistence
 
-**Decision Needed:** Add Redis/PostgreSQL to these samples?
+**Implementation Details:**
+- All three samples follow Connection Strings pattern: `ConnectionStrings__<resource>`
+- Graceful fallbacks implemented (Redis absence = no caching, missing DB = SQLite)
+- Auto-migration logic for PostgreSQL samples (Django `manage.py migrate`, Go seed check)
 
-**Recommendation:** Add infrastructure for stronger demo impact. Flask and Django could add Redis for session cache. Go sample could add PostgreSQL for bookmark persistence.
-
-**Owners:** Banner (Python), Romanoff (Go) — implement if approved
+**Owners:** Banner (Python) ✅ COMPLETED, Romanoff (Go) ✅ COMPLETED
 
 ---
 
-### 7. NuGet.config Standardization
+### 7. NuGet Package Upgrades
 
-**Status:** Pending decision  
-**Issue:** Only Python polyglot samples have NuGet.config; Go and Java samples don't  
-**Decision Needed:** Should all polyglot samples have it (if targeting preview feeds) or none?
+**Status:** ✅ RESOLVED — Rogers upgraded all .NET packages  
+**Issue:** Aspire packages 3+ versions behind (9.2.1 → 9.5.2)  
+**Decision:** Upgrade all NuGet packages to latest stable within 9.x line
 
-**Owner:** Rogers (C#/.NET) to clarify with team
+**Implementation:**
+- Aspire packages: 9.2.1 → 9.5.2 (both AppHosts and all hosting packages)
+- Supporting packages: Cosmos SDK 3.47.2 → 3.58.0, OpenTelemetry 1.10.x → 1.15.x, etc.
+- Documentation fixes: `.AddDatabase()` → `.AddCosmosDatabase()`, version mentions updated
+- Testing: `dotnet restore` succeeded, zero breaking changes in 9.2.1→9.5.2 range
+
+**Owner:** Rogers (C#/.NET Dev) — ✅ COMPLETED
 
 ---
 
 ### 8. Root README AppHost Types
 
-**Status:** CRITICAL — Documentation accuracy  
+**Status:** ✅ RESOLVED — Stark corrected 3 critical entries  
 **Issue:** Root README lists wrong AppHost types for 3 samples  
-**Decision:** Fix table entries
+**Implementation:**
+- vite-react-api: ✅ Fixed `apphost.cs` → `apphost.py`
+- svelte-go-bookmarks: ✅ Fixed `apphost.cs` → `apphost.go`
+- spring-boot-postgres: ✅ Fixed `apphost.cs` → `AppHost.java`
 
-**Changes Needed:**
-- vite-react-api: `apphost.cs` → `apphost.py`
-- svelte-go-bookmarks: `apphost.cs` → `apphost.go`
-- spring-boot-postgres: `apphost.cs` → `AppHost.java`
+**Owner:** Stark (Lead) — ✅ COMPLETED
 
-**Owner:** Any specialist (trivial fix) — implement immediately
+---
+
+### 9. Sample README AppHost References
+
+**Status:** ✅ RESOLVED — Thor + Parker corrected language references  
+**Issue:** Individual sample READMEs reference wrong AppHost file names  
+**Implementation:**
+- spring-boot-postgres README: ✅ Fixed `apphost.cs` → `AppHost.java`
+- vite-react-api README: ✅ Fixed `apphost.cs` → `apphost.py`
+
+**Owners:** Thor (Java) ✅ COMPLETED, Parker (JS/TS) ✅ COMPLETED
 
 ---
 

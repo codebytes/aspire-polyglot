@@ -26,3 +26,10 @@
 - **Theme decision needed:** custom-aspire-light (current, looks good) vs. custom-default (charter).
 - **Infrastructure additions recommended:** Flask, Django, and Go samples could add Redis/PostgreSQL for stronger demo impact.
 - **Orchestration logs and team session log created** in `.squad/orchestration-log/` and `.squad/log/`.
+
+### 2026-03-22 — Root README Corrections Complete
+- Fixed 3 critical AppHost type errors in root README table
+- vite-react-api: apphost.cs → apphost.py (Python)
+- svelte-go-bookmarks: apphost.cs → apphost.go (Go)
+- spring-boot-postgres: apphost.cs → AppHost.java (Java)
+- Root documentation now accurate for talk preparation

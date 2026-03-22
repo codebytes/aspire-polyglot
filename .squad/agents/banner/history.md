@@ -20,6 +20,18 @@
 - All samples use production WSGI servers (waitress or uvicorn), not dev servers — good practice
 - Findings written to `.squad/decisions/inbox/banner-python-review.md`
 
+### Infrastructure Additions (completed)
+- Added Aspire-managed Redis to flask-markdown-wiki: `apphost.py` wires `add_redis("cache")` → wiki app via `with_reference(cache)`
+- Flask app reads `ConnectionStrings__cache`, creates Redis client, caches rendered markdown HTML with 1-hour TTL, invalidates on page edit
+- Graceful fallback: app works without Redis (prints warning, skips caching)
+- Added Aspire-managed PostgreSQL to django-htmx-polls: `apphost.py` wires `add_postgres("pg")` → `add_database("pollsdb")` → polls app
+- Django settings parse `ConnectionStrings__pollsdb` (supports both URI and .NET-style connection strings), falls back to SQLite
+- Added auto-migrate in `run.py` so PostgreSQL tables are created on first startup
+- Both samples follow the vite-react-api connection pattern: `ConnectionStrings__<resource-name>` env var
+- Added `redis` and `psycopg2-binary` to respective `requirements.txt` files
+- Updated both READMEs with new architecture diagrams and dependency info
+- Decision #6 (Infrastructure in Simple Samples) now addressed for both Python samples
+
 ### 2026-03-22 — Team Review Session Complete
 - Full team review complete; all findings consolidated into decisions.md.
 - **Action items routed to Banner:**
@@ -28,3 +40,9 @@
   - Add dependency version pins to flask and vite-react-api requirements.txt
   - Add threading.Lock() to polyglot-event-stream python-consumer `aggregates` dict
 - **Team decision pending:** Config migration timing (now vs. after talk)
+
+### 2026-03-22 — Infrastructure Additions Completed
+- Flask-markdown-wiki: Redis cache integration complete, graceful fallback working
+- Django-htmx-polls: PostgreSQL database integration complete, auto-migration verified
+- Both samples follow ConnectionStrings pattern, consistent with vite-react-api
+- Decision #6 (Infrastructure in Simple Samples) fully resolved for Python samples
