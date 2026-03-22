@@ -54,3 +54,44 @@
 - Feature flags slide added after TypeScript AppHost section
 - "What's New in 13.2" expanded from 1 slide to 2 slides (CLI + infrastructure)
 - Comprehensive coverage of 8+ major 13.2 features for talk preparation
+
+### 2025-07-25 — Full Aspire 13.2 Polyglot Alignment
+- Updated slides for full Aspire 13.2 polyglot coverage across all slide sections
+- **"What's New in 13.2" expanded from 2 slides to 4 slides:**
+  1. CLI Revolution — aspire new (language-aware), restore, run --detach, ps, stop, describe, doctor, agent, docs, wait, export, update
+  2. aspire.config.json — Full new format with code example, breaking change callout, boolean feature flags, config/secret/cert CLI commands
+  3. Multi-Language & Integrations — TypeScript AppHost improvements, WithBun(), Java cert trust, Go/Java/Rust codegen, WithMcpServer, WithBuildSecret, Foundry, contextual endpoint resolution
+  4. Dashboard & DX — Export/import, .env export, persistent UI state, resource graph, OTLP/JSON, security, breaking changes list
+- **Config slide updated:** aspire.config.json example now shows full format (appHost.path+language, sdk.version+channel, boolean features)
+- **CLI Quick Start updated:** Language-aware aspire new callout, aspire update mention
+- **Cheat Sheet updated:** Added WithBun(), WithBuildSecret(), WithMcpServer()
+- **Resources slide updated:** Added aspire docs search and aspire update references
+- **Key Takeaways updated:** Added 13.2-specific line (doctor, agent, docs, WithBun, --isolated)
+- All CLI references verified — no stale aspire resources/aspire mcp references found
+
+## Team Coordination
+
+### 2026-03-22 — Aspire 13.2 Upgrade Sprint (Orchestration Session)
+
+**Team Pattern Established:** All language specialists (Banner, Parker, Thor, Romanoff) migrated their respective samples from `.aspire/settings.json` → `aspire.config.json` following a unified pattern in a single coordinated session.
+
+**Strange's Role:** Expanded slides from 2 to 4 in "What's New in 13.2" section to comprehensively cover all polyglot-critical features. All config examples updated to new `aspire.config.json` format. Breaking changes documented for audience awareness.
+
+**Config Migration Pattern (Standardized across all 5 polyglot samples):**
+- Old: File at `.aspire/settings.json`, path relative to `.aspire/` directory with `../` prefix to AppHost
+- New: File at sample root as `aspire.config.json`, path relative to sample root, no `../` prefix
+- Old format: `"appHostPath": "../apphost.{lang}"`, `"polyglotSupportEnabled": "true"` (string), language-specific flags
+- New format: `"appHost": { "path": "apphost.{lang}", "language": "{lang}" }`, `"polyglotSupportEnabled": true` (boolean), no language-specific flags, `"sdk": { "version": "13.2.0" }` added
+- All 5 samples validated with `aspire restore` — zero regressions
+
+**Team Outcomes:**
+- ✅ Banner (Python): flask-markdown-wiki, django-htmx-polls migrated
+- ✅ Parker (JS): vite-react-api migrated
+- ✅ Thor (Java): spring-boot-postgres migrated
+- ✅ Romanoff (Go): svelte-go-bookmarks migrated
+- ⏳ Rogers (C#/.NET): Aspire 13.2.0 NuGet packages not yet published; scope documented for immediate execution once 13.2.0 lands
+- ✅ Strange (Content): Slides updated to comprehensively cover Aspire 13.2 features and config changes
+
+**Decision #1 (Config Migration):** ✅ RESOLVED — All polyglot samples now use Aspire 13.2 format
+**Decision #3 (13.2 Slides):** ✅ RESOLVED — Expanded from 2 slides to 4 slides covering all major 13.2 features
+**Decision #7 (NuGet Upgrades):** ⏳ DEFERRED — Waiting for Aspire 13.2.0 on NuGet; scope ready

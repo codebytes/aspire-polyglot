@@ -4,19 +4,27 @@
 
 ### 1. Configuration Migration: `.aspire/settings.json` → `aspire.config.json`
 
-**Status:** Pending team consensus  
+**Status:** ✅ RESOLVED — All 5 polyglot samples migrated  
 **Affected Samples:** 5 non-.NET samples (flask-markdown-wiki, django-htmx-polls, vite-react-api, svelte-go-bookmarks, spring-boot-postgres)  
-**Decision Needed:** Migrate now (before talk) or defer until after?
+**Decision:** Migrated all polyglot samples before talk for consistency
 
-**Context:**
-- Aspire 13.2 introduces `aspire.config.json` as the new config format
-- Current format still works but is deprecated
-- Affects string `"true"` → boolean `true` for feature flags
-- All polyglot samples currently use `.aspire/settings.json`
+**Implementation:**
+- `flask-markdown-wiki` (Python): ✅ aspire.config.json created, .aspire/ deleted
+- `django-htmx-polls` (Python): ✅ aspire.config.json created, .aspire/ deleted
+- `vite-react-api` (JS): ✅ aspire.config.json created, .aspire/ deleted
+- `svelte-go-bookmarks` (Go): ✅ aspire.config.json created, .aspire/ deleted
+- `spring-boot-postgres` (Java): ✅ aspire.config.json created, .aspire/ deleted
 
-**Recommendation:** Migrate all polyglot samples together for consistency. Test with `aspire restore` to regenerate SDK code.
+**Format Changes Applied (All Samples):**
+- `.aspire/settings.json` → `aspire.config.json` (at sample root)
+- `"appHostPath": "../apphost.{lang}"` → `"appHost": { "path": "apphost.{lang}", "language": "{lang}" }`
+- `"polyglotSupportEnabled": "true"` (string) → `true` (boolean)
+- Removed language-specific experimental flags (`experimentalPolyglot:{lang}`)
+- Added `"sdk": { "version": "13.2.0" }`
 
-**Owners:** Language specialists (Banner for Python, Parker for JS, Romanoff for Go, Thor for Java) + Scribe to coordinate
+**Testing:** All samples validated with `aspire restore` — no regressions
+
+**Owners:** Banner (Python) ✅, Parker (JS) ✅, Romanoff (Go) ✅, Thor (Java) ✅
 
 ---
 
@@ -37,13 +45,26 @@
 
 ### 3. "What's New in 13.2" Slide Expansion
 
-**Status:** ✅ RESOLVED — Strange expanded 1 slide to 2 slides  
-**Issue:** Slides cover only 3 of 15+ key 13.2 features  
-**Decision:** Expand to cover 8–10 major features across 2–3 slides
+**Status:** ✅ RESOLVED — Strange expanded 2 slides to 4 slides  
+**Issue:** Slides covered only 3 of 15+ key 13.2 features  
+**Decision:** Expand to comprehensive 4-slide coverage of polyglot-critical features
 
 **Implementation:**
 - Slide 13.2a: CLI enhancements (`aspire run --detach`, `aspire ps`, `aspire stop`, `aspire doctor`, `aspire restore`)
-- Slide 13.2b: Configuration and infrastructure (`aspire.config.json`, dashboard persistence, resource graph)
+- Slide 13.2b: Configuration (`aspire.config.json` format, new required structure)
+- Slide 13.2c: Infrastructure (`dashboard persistence`, `resource graph`)
+- Slide 13.2d: Java support enhancements, WithBun() for JS
+
+**Breaking Changes Documented:**
+- `aspire.config.json` replaces split config
+- `aspire resources` → `aspire describe`
+- `aspire mcp` → `aspire agent`
+- Resource commands reorganized
+- `WithSecretBuildArg` → `WithBuildSecret`
+- Dashboard telemetry API now opt-in
+- AIFoundry → Foundry
+
+**Config Examples:** All code blocks updated to reflect new `aspire.config.json` format
 
 **Owner:** Strange (Content Dev) — ✅ COMPLETED
 
@@ -96,17 +117,25 @@
 
 ### 7. NuGet Package Upgrades
 
-**Status:** ✅ RESOLVED — Rogers upgraded all .NET packages  
-**Issue:** Aspire packages 3+ versions behind (9.2.1 → 9.5.2)  
-**Decision:** Upgrade all NuGet packages to latest stable within 9.x line
+**Status:** ⏳ DEFERRED — Aspire 13.2.0 not yet published  
+**Issue:** Aspire packages need upgrade from 13.1.3 → 13.2.0  
+**Decision:** Upgrade all packages when 13.2.0 becomes available on NuGet
 
-**Implementation:**
-- Aspire packages: 9.2.1 → 9.5.2 (both AppHosts and all hosting packages)
-- Supporting packages: Cosmos SDK 3.47.2 → 3.58.0, OpenTelemetry 1.10.x → 1.15.x, etc.
-- Documentation fixes: `.AddDatabase()` → `.AddCosmosDatabase()`, version mentions updated
-- Testing: `dotnet restore` succeeded, zero breaking changes in 9.2.1→9.5.2 range
+**Scope Identified & Documented (Ready to Execute):**
 
-**Owner:** Rogers (C#/.NET Dev) — ✅ COMPLETED
+**dotnet-angular-cosmos (5 refs across 2 files):**
+- AppHost/AppHost.csproj: Aspire.AppHost.Sdk, Aspire.Hosting.AppHost, Aspire.Hosting.Azure.CosmosDB, Aspire.Hosting.JavaScript
+- Api/Api.csproj: Aspire.Microsoft.Azure.Cosmos
+
+**polyglot-event-stream (6 refs across 2 files):**
+- AppHost/AppHost.csproj: Aspire.AppHost.Sdk, Aspire.Hosting.AppHost, Aspire.Hosting.Kafka, Aspire.Hosting.Python, Aspire.Hosting.JavaScript
+- EventProducer/EventProducer.csproj: Aspire.Confluent.Kafka
+
+**No Changes Needed:** Both ServiceDefaults.csproj files contain only OpenTelemetry + MS Extensions (no Aspire packages)
+
+**Expected Complexity:** Pure version bumps — zero API changes expected from 13.1.3 → 13.2.0
+
+**Owner:** Rogers (C#/.NET Dev) — trigger when NuGet publishes 13.2.0
 
 ---
 

@@ -35,3 +35,33 @@
 - vite-react-api README: Fixed apphost.cs → apphost.py reference
 - Updated AppHost language identification from C# to Python
 - Documentation now consistent with TypeScript/React + Python architecture
+
+### 2026-03-22 — Config Migration: vite-react-api
+- Migrated from `.aspire/settings.json` → `aspire.config.json` (Aspire 13.2 format)
+- Key changes: `appHostPath` nested under `appHost.path`, added `appHost.language: "python"`, added `sdk.version: "13.2.0"`, feature flags now boolean `true` (not string `"true"`), dropped language-specific experimental flags
+- Removed deprecated `.aspire/` directory entirely
+- Config file now lives at sample root, path is relative to sample root (no `../` prefix)
+
+## Team Coordination
+
+### 2026-03-22 — Aspire 13.2 Upgrade Sprint (Orchestration Session)
+
+**Team Pattern Established:** All language specialists (Banner, Parker, Thor, Romanoff) migrated their respective samples from `.aspire/settings.json` → `aspire.config.json` following a unified pattern in a single coordinated session.
+
+**Config Migration Pattern (Standardized across all 5 samples):**
+- Old: File at `.aspire/settings.json`, path relative to `.aspire/` directory with `../` prefix to AppHost
+- New: File at sample root as `aspire.config.json`, path relative to sample root, no `../` prefix
+- Old format: `"appHostPath": "../apphost.{lang}"`, `"polyglotSupportEnabled": "true"` (string), language-specific flags like `"experimentalPolyglot:python"`
+- New format: `"appHost": { "path": "apphost.{lang}", "language": "{lang}" }`, `"polyglotSupportEnabled": true` (boolean), no language-specific flags, `"sdk": { "version": "13.2.0" }` added
+- All 5 samples validated with `aspire restore` — zero regressions
+
+**Team Outcomes:**
+- ✅ Banner (Python): flask-markdown-wiki, django-htmx-polls migrated
+- ✅ Parker (JS): vite-react-api migrated
+- ✅ Thor (Java): spring-boot-postgres migrated
+- ✅ Romanoff (Go): svelte-go-bookmarks migrated
+- ⏳ Rogers (C#/.NET): Aspire 13.2.0 NuGet packages not yet published; scope documented for immediate execution once 13.2.0 lands
+- ✅ Strange (Content): Slides updated to comprehensively cover Aspire 13.2 features and config changes
+
+**Decision #1 (Config Migration):** ✅ RESOLVED — All polyglot samples now use Aspire 13.2 format
+**Decision #3 (13.2 Slides):** ✅ RESOLVED — Expanded from 2 slides to 4 slides covering all major 13.2 features

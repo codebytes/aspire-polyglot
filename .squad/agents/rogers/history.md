@@ -67,3 +67,42 @@
 - dotnet restore verified, zero breaking changes
 - Documentation fixed: API references, version mentions
 - Both samples tested and synchronized
+
+### 2026-03-23 — Aspire 13.2.0 Upgrade Attempted (BLOCKED)
+- Attempted upgrade of all 11 Aspire package references from 13.1.3 → 13.2.0 across 4 .csproj files
+- **Result: 13.2.0 does not exist on NuGet yet** — latest stable is 13.1.3 as of this date
+- All 11 packages checked: Aspire.AppHost.Sdk, Aspire.Hosting.AppHost, Aspire.Hosting.Azure.CosmosDB, Aspire.Hosting.JavaScript, Aspire.Hosting.Kafka, Aspire.Hosting.Python, Aspire.Microsoft.Azure.Cosmos, Aspire.Confluent.Kafka
+- Changes reverted to 13.1.3 — both samples restore clean
+- Files audited: 6 .csproj files total; ServiceDefaults have no Aspire packages (only OpenTelemetry/MS Extensions)
+- Full inventory ready for when 13.2.0 drops: 4 files, 11 references to bump
+- Key learning: decisions.md references "Aspire 13.2" features (aspire.config.json) but NuGet packages haven't shipped yet
+
+## Team Coordination
+
+### 2026-03-22 — Aspire 13.2 Upgrade Sprint (Orchestration Session)
+
+**Team Pattern Established:** All language specialists (Banner, Parker, Thor, Romanoff) migrated their respective samples from `.aspire/settings.json` → `aspire.config.json` following a unified pattern in a single coordinated session.
+
+**Rogers' Role:** Attempted NuGet upgrade to 13.2.0 but packages not yet published. Full scope documented and ready for immediate execution once 13.2.0 lands on NuGet:
+- dotnet-angular-cosmos: 5 package refs across 2 files
+- polyglot-event-stream: 6 package refs across 2 files
+- ServiceDefaults: No Aspire packages (no upgrade needed)
+
+**Config Migration Pattern (Standardized across all 5 polyglot samples):**
+- Old: File at `.aspire/settings.json`, path relative to `.aspire/` directory with `../` prefix to AppHost
+- New: File at sample root as `aspire.config.json`, path relative to sample root, no `../` prefix
+- Old format: `"appHostPath": "../apphost.{lang}"`, `"polyglotSupportEnabled": "true"` (string), language-specific flags
+- New format: `"appHost": { "path": "apphost.{lang}", "language": "{lang}" }`, `"polyglotSupportEnabled": true` (boolean), no language-specific flags, `"sdk": { "version": "13.2.0" }` added
+- All 5 samples validated with `aspire restore` — zero regressions
+
+**Team Outcomes:**
+- ✅ Banner (Python): flask-markdown-wiki, django-htmx-polls migrated
+- ✅ Parker (JS): vite-react-api migrated
+- ✅ Thor (Java): spring-boot-postgres migrated
+- ✅ Romanoff (Go): svelte-go-bookmarks migrated
+- ⏳ Rogers (C#/.NET): Aspire 13.2.0 NuGet packages not yet published; scope documented for immediate execution once 13.2.0 lands
+- ✅ Strange (Content): Slides updated to comprehensively cover Aspire 13.2 features and config changes
+
+**Decision #1 (Config Migration):** ✅ RESOLVED — All polyglot samples now use Aspire 13.2 format
+**Decision #3 (13.2 Slides):** ✅ RESOLVED — Expanded from 2 slides to 4 slides covering all major 13.2 features
+**Decision #7 (NuGet Upgrades):** ⏳ DEFERRED — Waiting for Aspire 13.2.0 on NuGet; scope ready
