@@ -1,13 +1,12 @@
 {
   "appHost": {
-    "path": "apphost.py",
-    "language": "python"
+    "path": "apphost.ts",
+    "language": "typescript/nodejs"
   },
   "sdk": {
     "version": "13.2.0"
   },
   "features": {
-    "polyglotSupportEnabled": true,
-    "experimentalPolyglot:python": true
+    "polyglotSupportEnabled": true
   }
 }
