@@ -38,3 +38,23 @@
 - spring-boot-postgres README: Fixed apphost.cs → AppHost.java reference
 - Documentation now consistent with Java codebase
 - Sample architecture documented correctly
+
+### 2026-03-22 — Java Connection String Research COMPLETE
+- **Key finding:** Aspire injects connection properties as INDIVIDUAL env vars by default (flags = `All`), including `NOTESDB_JDBCCONNECTIONSTRING` = `jdbc:postgresql://host:port/notesdb`
+- **`ConnectionStrings__notesdb`** is in .NET format (`Host=...;Port=...`) — confirmed NOT usable as JDBC URL
+- **`AddSpringApp` does NOT exist** — no Java-specific hosting API; all polyglot apps use `addDockerfile`
+- **No parser needed!** Fix is a 3-line `application.properties` change:
+  - `spring.datasource.url=${NOTESDB_JDBCCONNECTIONSTRING:...}` (was `ConnectionStrings__notesdb`)
+  - `spring.datasource.username=${NOTESDB_USERNAME:postgres}` (was `POSTGRES_USER`)
+  - `spring.datasource.password=${NOTESDB_PASSWORD:postgres}` (was `POSTGRES_PASSWORD`)
+- JDBC connection string from Aspire does NOT include credentials (by design) — username/password are separate properties
+- `WithCertificateTrustConfiguration` is for TLS trust stores only, not connection strings
+- Full report filed to `.squad/decisions/inbox/thor-java-connstring-research.md`
+- **Decision #5 can be resolved with a simple config change — no Java code additions required**
+
+### 2026-03-22 — Decision #5 IMPLEMENTED: JDBC Connection String Fix
+- **application.properties** updated: `ConnectionStrings__notesdb` → `NOTESDB_JDBCCONNECTIONSTRING`, `POSTGRES_USER` → `NOTESDB_USERNAME`, `POSTGRES_PASSWORD` → `NOTESDB_PASSWORD`
+- **Demo 4 slide** updated: Removed "challenge/mismatch" framing, now shows Aspire auto-generates JDBC URLs natively — no parsing needed
+- **README** updated: Connection string line now references `NOTESDB_JDBCCONNECTIONSTRING` env var
+- Password default changed from `postgres` to empty string (Aspire always injects credentials; empty default prevents accidental hardcoded password usage)
+- **Decision #5 is now RESOLVED** — functional blocker eliminated

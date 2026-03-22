@@ -1,3 +1,50 @@
+# Decision: Java Connection String Format & Properties
+
+**Author:** Thor (Java Dev)  
+**Date:** 2026-03-22  
+**Status:** RESOLVED  
+
+## Summary
+
+Aspire does NOT need a connection string parser for Java. When `.withReference(db)` is used, Aspire automatically injects individual connection properties including a ready-to-use JDBC connection string as a separate environment variable.
+
+## Problem Statement
+
+The Aspire-provided `ConnectionStrings__notesdb` is in .NET semicolon-delimited format (`Host=...;Port=...;Username=...;Password=...;Database=notesdb`), not JDBC format. Spring Boot cannot use this directly.
+
+## Solution
+
+**No code changes required.** Use the Aspire-injected properties:
+
+```properties
+server.port=${PORT:8080}
+spring.datasource.url=${NOTESDB_JDBCCONNECTIONSTRING:jdbc:postgresql://localhost:5432/notesdb}
+spring.datasource.username=${NOTESDB_USERNAME:postgres}
+spring.datasource.password=${NOTESDB_PASSWORD:postgres}
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+```
+
+## Key Findings
+
+| Environment Variable | Value | Format |
+|---|---|---|
+| `NOTESDB_JDBCCONNECTIONSTRING` | `jdbc:postgresql://<host>:<port>/notesdb` | JDBC format |
+| `NOTESDB_USERNAME` | `<username>` | From `GetConnectionProperties()` |
+| `NOTESDB_PASSWORD` | `<password>` | From `GetConnectionProperties()` |
+| `NOTESDB_HOST` | `<hostname>` | Individual property |
+| `NOTESDB_PORT` | `<port>` | Individual property |
+
+The JDBC connection string does NOT include credentials; username and password must be provided separately.
+
+## Verification
+
+- All 5 research questions answered with source evidence
+- Test file: `tests/Aspire.Hosting.PostgreSQL.Tests/ConnectionPropertiesTests.cs` verifies these properties
+- Applied to: spring-boot-postgres sample (application.properties, demo slide, README)
+
+---
+
 # Decision: .NET 10 + Aspire 13.1.3 Upgrade
 
 **Author:** Rogers (C#/.NET Dev)  
