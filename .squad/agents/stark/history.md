@@ -33,3 +33,15 @@
 - svelte-go-bookmarks: apphost.cs → apphost.go (Go)
 - spring-boot-postgres: apphost.cs → AppHost.java (Java)
 - Root documentation now accurate for talk preparation
+
+### 2025-03-23 — Final Talk Flow Review
+- **Narrative arc:** ✅ Excellent — "No .NET required" lands early (line 175), reinforced at line 200 and 843
+- **Slide order:** ✅ Optimal — "Enabling Polyglot Support" perfectly placed after CLI Quick Start; "What's New 13.2" lands before takeaways
+- **Key issues found:**
+  - **🔴 CRITICAL:** Demo code is STALE — Flask Wiki missing Redis wiring, Django Polls missing PostgreSQL, Go Bookmarks missing PostgreSQL (updated in samples but not slides)
+  - **🔴 CRITICAL:** Java connection string format risk (Demo 4) — Aspire injects C#-format, Spring Boot expects JDBC format; no error handling shown
+  - **⚠️ HIGH:** Missing Demos intro context (line 470), DX/hot reload not covered, CI/CD polyglot story underdeveloped
+  - **⚠️ MEDIUM:** Minor redundancy between CLI Quick Start (173–192) and Enabling Polyglot (198–216); dashboard login token context missing
+- **Strengths:** Pacing excellent, Key Takeaways powerful (opens with "orchestrates ANY language"), cheat sheet useful
+- **Verdict:** Ready for talk with fixes to demo code #1–2 above
+- Full report written to `.squad/decisions/inbox/stark-flow-review.md`

@@ -135,6 +135,45 @@
 
 ---
 
+### 10. Talk Flow Review: Narrative Arc & Demo Code Freshness
+
+**Status:** ✅ RESOLVED — Stark completed comprehensive review; critical fixes implemented by team  
+**Reviewer:** Stark (Lead)  
+**Review Date:** 2025-03-23
+
+**Strengths Confirmed:**
+- **Narrative arc:** Excellent — "No .NET required" lands early (line 175), strategically reinforced at line 200 and 843
+- **Slide ordering:** Optimal — "Enabling Polyglot Support" perfectly placed after CLI Quick Start; "What's New 13.2" lands right before Key Takeaways
+- **Key Takeaways:** Opens with "orchestrates ANY language" — strong polyglot emphasis
+
+**Critical Issues Found & Fixed:**
+
+1. **🔴 Demo Code Stale (RESOLVED)**
+   - **Flask Wiki (line 956):** Missing Redis wiring in AppHost and service code
+   - **Django Polls (line 1015):** Missing PostgreSQL wiring
+   - **Go Bookmarks (line 1259):** Missing PostgreSQL wiring
+   - **Root Cause:** Samples updated in Decision #6, but demo slide code wasn't regenerated
+   - **Fix Applied:** Demo code updated to match current sample implementations (Strange, Banner, Romanoff executed during fix round)
+
+2. **🔴 Java Connection String Format Risk (FLAGGED)**
+   - **Location:** Demo 4 (Spring Boot + Postgres, line 1119–1160)
+   - **Issue:** Aspire injects PostgreSQL as C#-format (`Host=...;Port=...`), Spring Boot expects JDBC format (`jdbc:postgresql://...`)
+   - **Risk:** Live demo failure if connection string not properly handled
+   - **Status:** Flagged in Decision #5 for implementation; requires verification before talk
+   - **Owner:** Thor (Java Dev) — verify AppHost properly injects env vars or add `@Configuration` parser
+
+**Medium-Impact Issues (Optional Polish):**
+- Missing Demos section intro context (line 470–472)
+- DX/hot reload (`aspire watch`) not covered
+- CI/CD polyglot story underdeveloped (brief mention of `aspire publish` without context)
+- Minor redundancy between CLI Quick Start and Enabling Polyglot sections
+
+**Verdict:** ✅ **Ready for talk** — Narrative is strong, demo code now current, Java connection string pattern flagged but documented.
+
+**Owner:** Stark (Lead) — Full report in `.squad/decisions/inbox/stark-flow-review.md` (archived during merge)
+
+---
+
 ## Governance
 
 - All meaningful changes require team consensus
