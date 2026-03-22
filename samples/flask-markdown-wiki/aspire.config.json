@@ -1,0 +1,17 @@
+{
+  "appHost": {
+    "path": "apphost.py",
+    "language": "python"
+  },
+  "sdk": {
+    "version": "13.2.0"
+  },
+  "features": {
+    "polyglotSupportEnabled": true,
+    "experimentalPolyglot:python": true
+  },
+  "packages": {
+    "Aspire.Hosting.Redis": "13.1.3",
+    "Aspire.Hosting.Python": "13.1.3"
+  }
+}

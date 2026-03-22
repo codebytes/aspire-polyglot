@@ -1,7 +1,0 @@
-{
-  "appHostPath": "../apphost.go",
-  "features": {
-    "polyglotSupportEnabled": "true",
-    "experimentalPolyglot:go": "true"
-  }
-}

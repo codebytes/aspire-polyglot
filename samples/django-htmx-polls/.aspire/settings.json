@@ -1,7 +1,0 @@
-{
-  "appHostPath": "../apphost.py",
-  "features": {
-    "polyglotSupportEnabled": "true",
-    "experimentalPolyglot:python": "true"
-  }
-}

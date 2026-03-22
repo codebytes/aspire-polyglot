@@ -1,0 +1,13 @@
+{
+  "appHost": {
+    "path": "apphost.go",
+    "language": "go"
+  },
+  "sdk": {
+    "version": "13.2.0"
+  },
+  "features": {
+    "polyglotSupportEnabled": true,
+    "experimentalPolyglot:go": true
+  }
+}

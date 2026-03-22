@@ -1,0 +1,13 @@
+{
+  "appHost": {
+    "path": "AppHost.java",
+    "language": "java"
+  },
+  "sdk": {
+    "version": "13.2.0"
+  },
+  "features": {
+    "polyglotSupportEnabled": true,
+    "experimentalPolyglot:java": true
+  }
+}

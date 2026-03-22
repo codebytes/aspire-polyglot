@@ -1,7 +1,0 @@
-{
-  "appHostPath": "../AppHost.java",
-  "features": {
-    "polyglotSupportEnabled": "true",
-    "experimentalPolyglot:java": "true"
-  }
-}

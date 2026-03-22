@@ -1,0 +1,13 @@
+{
+  "appHost": {
+    "path": "apphost.py",
+    "language": "python"
+  },
+  "sdk": {
+    "version": "13.2.0"
+  },
+  "features": {
+    "polyglotSupportEnabled": true,
+    "experimentalPolyglot:python": true
+  }
+}
