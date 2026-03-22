@@ -6,9 +6,11 @@ from aspire import create_builder
 
 builder = create_builder()
 
-builder.add_python_app("wiki", "./src", "main.py") \
-    .with_http_endpoint(env="PORT") \
-    .with_external_http_endpoints()
+cache = builder.add_container("cache", "redis:latest")
+
+wiki = builder.add_dockerfile("wiki", "./src")
+wiki.with_external_http_endpoints()
+wiki.with_http_endpoint(target_port=8080, env="PORT")
 
 app = builder.build()
 app.run()
