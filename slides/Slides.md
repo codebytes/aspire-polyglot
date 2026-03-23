@@ -27,7 +27,6 @@ footer: '@Chris_L_Ayers - https://chris-ayers.com'
 <i class="fa fa-window-maximize"></i> Blog: [https://chris-ayers\.com/](https://chris-ayers.com/)
 <i class="fa-brands fa-github"></i> GitHub: [Codebytes](https://github.com/codebytes)
 <i class="fa-brands fa-mastodon"></i> Mastodon: [@Chrisayers@hachyderm.io](https://hachyderm.io/@Chrisayers)
-~~<i class="fa-brands fa-twitter"></i> Twitter: @Chris_L_Ayers~~
 
 ---
 
@@ -49,10 +48,10 @@ Your team doesn't use one language — it uses **five**.
 <div>
 
 **Your orchestration pain**
-- Docker Compose: no service discovery, no telemetry, manual port wiring
-- Each language has its own config (`.env`, YAML, `application.properties`...)
-- Separate dashboards per language — good luck tracing a request across 4 services
-- 15-step README to run locally — "just `docker-compose up`" never works
+- Docker Compose: manual port wiring, no built-in telemetry, no health-aware startup ordering
+- Each language has its own config format (`.env`, YAML, `application.properties`...)
+- No unified observability — good luck tracing a request across 4 services
+- 15-step README to run locally — "just `docker-compose up`" never works first time
 
 </div>
 </div>
@@ -177,20 +176,20 @@ await builder.build().run();
 
 🐍 **Python** — `apphost.py`
 ```python
-builder.add_python_app("api", "./src", "app.py") \
-    .with_http_endpoint(env="PORT")
+api = builder.add_dockerfile("api", "./src")
+api.with_http_endpoint(target_port=8080, env="PORT")
 ```
 
 🟦 **TypeScript** — `apphost.ts`
 ```typescript
 await builder.addNodeApp("api", "./src", "server.js")
-  .withNpm().withHttpEndpoint({ env: "PORT" });
+  .withHttpEndpoint({ env: "PORT" });
 ```
 
 🟢 **Go** — `apphost.go`
 ```go
-api, _ := builder.AddDockerfile("api", "./src")
-api.WithHttpEndpoint(8080, "http")
+api, _ := builder.AddDockerfile("api", "./src", nil, nil)
+api.WithHttpEndpoint(nil, float64Ptr(8080), stringPtr("http"), nil, nil)
 ```
 
 </div>
@@ -198,8 +197,7 @@ api.WithHttpEndpoint(8080, "http")
 
 ☕ **Java** — `AppHost.java`
 ```java
-builder.addDockerfile("api", "./src")
-  .withHttpEndpoint(8080, "PORT")
+builder.addDockerfile("api", "./src", null, null)
   .withExternalHttpEndpoints();
 ```
 
@@ -210,12 +208,12 @@ builder.AddProject<Projects.Api>("api")
 ```
 
 **All five produce the same result:**
-Dashboard, service discovery, connection strings, and telemetry work **identically**.
+Dashboard, service discovery, and telemetry work **identically**. C# has the richest typed integrations; other SDKs use `addDockerfile`/`addContainer` as universal building blocks.
 
 </div>
 </div>
 
-<!-- Each language has its own idioms — Python uses snake_case, TypeScript uses camelCase, Go returns errors — but the Aspire model is the same everywhere. -->
+<!-- Each language has its own idioms — Python uses snake_case, TypeScript uses camelCase, Go returns errors — but the Aspire model is the same everywhere. The C# SDK has the most typed integrations, but all five languages can orchestrate any service via Dockerfile or container. -->
 
 ---
 
@@ -228,7 +226,7 @@ Dashboard, service discovery, connection strings, and telemetry work **identical
 ```json
 {
   "appHost": { "path": "apphost.py", "language": "python" },
-  "sdk": { "version": "9.5.2", "channel": "lts" },
+  "sdk": { "version": "13.2.0" },
   "features": { "polyglotSupportEnabled": true }
 }
 ```
@@ -238,9 +236,9 @@ Dashboard, service discovery, connection strings, and telemetry work **identical
 
 **What it does:**
 - `appHost.path` + `appHost.language` — declares your stack
-- `sdk.version` — pins the Aspire SDK version
+- `sdk.version` — pins the Aspire SDK version (e.g. `13.2.0`)
 - Feature flags use **boolean `true`** (not string `"true"`)
-- Replaces old `.aspire/settings.json` + `apphost.run.json`
+- Replaces old `.aspire/settings.json` split config
 
 </div>
 <div>
@@ -261,9 +259,9 @@ Dashboard, service discovery, connection strings, and telemetry work **identical
 
 # <!--fit--> How It Works
 
-The patterns that make polyglot orchestration possible
+The three patterns that make polyglot orchestration possible
 
-<!-- Now let's look at the mechanisms that make all of this work across any language. -->
+<!-- Now let's look at the three mechanisms that power everything: service discovery, connection strings, and the dashboard. These work the same regardless of AppHost language. -->
 
 ---
 
@@ -340,13 +338,14 @@ const kafka = new Kafka({ brokers: [process.env.CONNECTIONSTRINGS__messaging] })
 ```
 
 ```properties
-# Java Spring Boot — PostgreSQL (Aspire auto-generates JDBC URLs)
-spring.datasource.url=${NOTESDB_JDBCCONNECTIONSTRING}
+# Java Spring Boot — via explicit env vars from AppHost
+spring.datasource.url=jdbc:postgresql://${PG_HOST:localhost}:${PG_PORT:5432}/${PG_DB:notesdb}
+spring.datasource.username=${PG_USER:postgres}
 ```
 
-**Aspire knows the right format for each resource type** — you just read the env var.
+**Aspire injects environment variables** — your service reads them using its language's standard env var mechanism.
 
-<!-- Aspire handles the complexity of connection strings so you don't have to manage .env files. For Java, it even generates proper JDBC URLs so Spring Boot just works. -->
+<!-- Aspire handles the complexity of connection strings so you don't have to manage .env files. For C# AppHosts using AddPostgres, connection strings are auto-generated. For polyglot AppHosts, you wire env vars explicitly — same result, more control. -->
 
 ---
 
@@ -461,9 +460,9 @@ cd my-app && aspire run   # Runs immediately — no extra setup
 
 # <!--fit--> Demos — The Samples
 
-8 real-world polyglot samples, simple → complex
+8 polyglot samples across 5 AppHost languages, simple → complex
 
-<!-- Time to see Aspire in action! We'll walk through 8 samples that showcase different AppHost languages and patterns. -->
+<!-- Time to see Aspire in action! We'll walk through 8 samples — each running live with the Aspire dashboard. Watch for: service startup ordering, cross-language logs, and the unified trace view. -->
 
 ---
 
@@ -471,22 +470,22 @@ cd my-app && aspire run   # Runs immediately — no extra setup
 
 # Demo 1: ts-starter — TypeScript AppHost Template
 
-**AppHost language:** TypeScript · **Stack:** Express API + React frontend
+**AppHost language:** TypeScript · **Stack:** Express API + Vite/React frontend
 
 The official `aspire-ts-starter` template — zero .NET required.
 
 ```typescript
 const builder = await createBuilder();
 
-await builder
-  .addNodeApp("api", "../api", "server.js")
-  .withNpm()
-  .withHttpEndpoint({ env: "PORT" });
-
-await builder
-  .addNpmApp("web", "../web", "dev")
+const app = await builder
+  .addNodeApp("app", "./api", "src/index.ts")
   .withHttpEndpoint({ env: "PORT" })
   .withExternalHttpEndpoints();
+
+const frontend = await builder
+  .addViteApp("frontend", "./frontend")
+  .withReference(app)
+  .waitFor(app);
 
 await builder.build().run();
 ```
@@ -495,9 +494,9 @@ await builder.build().run();
 aspire new aspire-ts-starter -n my-app && cd my-app && aspire run
 ```
 
-**Polyglot highlight:** A JavaScript/TypeScript team can adopt Aspire without learning C# or installing .NET.
+**Polyglot highlight:** A JavaScript/TypeScript team can adopt Aspire without learning C# or installing .NET. Full dashboard, service discovery, and hot reload from day one.
 
-<!-- This is the fastest on-ramp for JS/TS teams. aspire new gives you a working project with dashboard in under a minute. -->
+<!-- This is the fastest on-ramp for JS/TS teams. aspire new gives you a working project with dashboard in under a minute. Note: Aspire 13.2 improved JS/TS AppHost debugging — the VS Code extension now includes an Activity Bar panel for managing Aspire apps and auto-detects your AppHost language. Great for stepping through TypeScript orchestration code. -->
 
 ---
 
@@ -505,24 +504,23 @@ aspire new aspire-ts-starter -n my-app && cd my-app && aspire run
 
 # Demo 2: flask-markdown-wiki — Python AppHost
 
-**AppHost language:** Python · **Stack:** Flask + SQLite + Redis cache
+**AppHost language:** Python · **Stack:** Flask (Dockerfile) + Redis container
 
 ```python
-cache = builder.add_redis("cache")
+cache = builder.add_container("cache", "redis:latest")
 
-builder.add_python_app("wiki", "./src", "main.py") \
-    .with_http_endpoint(env="PORT") \
-    .with_external_http_endpoints() \
-    .with_reference(cache)
+wiki = builder.add_dockerfile("wiki", "./src")
+wiki.with_external_http_endpoints()
+wiki.with_http_endpoint(target_port=8080, env="PORT")
 ```
 
 ```bash
 cd samples/flask-markdown-wiki && aspire run
 ```
 
-**Polyglot highlight:** Python AppHost orchestrates a Python app + Redis container. The entire stack defined and run without leaving the Python ecosystem.
+**Polyglot highlight:** Python AppHost uses `add_container` and `add_dockerfile` — the universal building blocks. Redis, Flask, PostgreSQL — anything with a Docker image works.
 
-<!-- This demo shows the simplest Python pattern: web app + infrastructure. The Python AppHost uses snake_case — it feels native to Python developers. -->
+<!-- This demo shows the Python SDK's current approach: add_container for infrastructure, add_dockerfile for services. The Python SDK uses snake_case — it feels native to Python developers. Even with lower-level primitives, you get full dashboard, logs, and health monitoring. -->
 
 ---
 
@@ -535,18 +533,18 @@ cd samples/flask-markdown-wiki && aspire run
 ![w:500px center](./img/django-htmx-voting-polls.drawio.svg)
 
 ```python
-postgres = builder.add_postgres("pg")
-db = postgres.add_database("pollsdb")
+postgres = builder.add_container("pg", "postgres:latest")
+postgres.with_environment("POSTGRES_DB", "pollsdb")
+postgres.with_environment("POSTGRES_PASSWORD", "postgres")
 
-builder.add_python_app("polls", "./src", "run.py") \
-    .with_http_endpoint(env="PORT") \
-    .with_external_http_endpoints() \
-    .with_reference(db)
+polls = builder.add_dockerfile("polls", "./src")
+polls.with_external_http_endpoints()
+polls.with_http_endpoint(target_port=8080, env="PORT")
 ```
 
-**Polyglot highlight:** Aspire manages PostgreSQL lifecycle — spins up the container, runs Django migrations automatically, injects the connection string.
+**Polyglot highlight:** Aspire manages the PostgreSQL container lifecycle — spins it up, injects environment variables, and Django connects on startup.
 
-<!-- Django with HTMX shows modern server-rendered patterns. PostgreSQL is orchestrated by Aspire — no manual docker run needed. -->
+<!-- Django with HTMX shows modern server-rendered patterns. PostgreSQL runs as an Aspire-managed container — no manual docker run needed. The Dockerfile approach means any Python framework works the same way. -->
 
 ---
 
@@ -554,27 +552,27 @@ builder.add_python_app("polls", "./src", "run.py") \
 
 # Demo 4: vite-react-api — TypeScript AppHost
 
-**AppHost language:** TypeScript · **Stack:** FastAPI + Vite/React + Redis
+**AppHost language:** TypeScript · **Stack:** FastAPI (Dockerfile) + Vite/React (Dockerfile) + Redis
 
 ```typescript
 const builder = await createBuilder();
 
-const cache = await builder.addRedis("cache");
+const cache = builder.addContainer("cache", "redis:latest");
 
-const api = await builder
-  .addPythonApp("api", "./src/api", "main.py")
-  .withReference(cache);
+const api = builder.addDockerfile("api", "./src/api")
+  .withHttpEndpoint({ targetPort: 8080, env: "PORT" })
+  .withExternalHttpEndpoints();
 
-await builder
-  .addNpmApp("web", "./src/web", "dev")
-  .withReference(api);
+const web = builder.addDockerfile("web", "./src/web")
+  .withHttpEndpoint({ targetPort: 5173, env: "PORT" })
+  .withExternalHttpEndpoints();
 
 await builder.build().run();
 ```
 
-**Polyglot highlight:** TypeScript AppHost orchestrating a **Python** backend + **React** frontend + **Redis**. Three ecosystems, one TypeScript file.
+**Polyglot highlight:** TypeScript AppHost orchestrating a **Python** backend + **React** frontend + **Redis** — all via Dockerfiles. Three ecosystems, one TypeScript file.
 
-<!-- This sample was just converted from a Python AppHost to TypeScript. The AppHost language is independent of the service languages — pick what your team prefers. -->
+<!-- This sample shows the Dockerfile-based approach: any service with a Dockerfile can be orchestrated. The TypeScript SDK's addDockerfile and addContainer are universal escape hatches. -->
 
 ---
 
@@ -582,25 +580,25 @@ await builder.build().run();
 
 # Demo 5: spring-boot-postgres — Java AppHost
 
-**AppHost language:** Java · **Stack:** Spring Boot + PostgreSQL + Dockerfile
+**AppHost language:** Java · **Stack:** Spring Boot (Dockerfile) + PostgreSQL container
 
 ```java
-var pg = builder.addPostgres("pg", null, null);
-var db = pg.addDatabase("notesdb");
+var pg = builder.addContainer("pg", "postgres:16");
+pg.withEnvironment("POSTGRES_USER", "postgres");
+pg.withEnvironment("POSTGRES_PASSWORD", "postgres");
+pg.withEnvironment("POSTGRES_DB", "notesdb");
 
-builder.addDockerfile("api", "./src")
-  .withReference(db)
-  .withHttpEndpoint(8080, "PORT")
-  .withExternalHttpEndpoints();
+var api = builder.addDockerfile("api", "./src", null, null);
+api.withExternalHttpEndpoints();
 ```
 
-**Polyglot highlight:** Java teams can define their AppHost in Java. Aspire auto-generates JDBC connection URLs — Spring Boot just reads `${NOTESDB_JDBCCONNECTIONSTRING}`.
+**Polyglot highlight:** Java teams write their AppHost in Java. `addDockerfile` builds and runs the Spring Boot container; environment variables wire PostgreSQL credentials.
 
 ```bash
 cd samples/spring-boot-postgres && aspire run
 ```
 
-<!-- Spring Boot is the dominant Java framework. The Java AppHost uses addDockerfile since Spring Boot runs as a container. Aspire injects proper JDBC URLs — no parsing needed. -->
+<!-- Spring Boot is the dominant Java framework. The Java SDK uses addContainer for infrastructure and addDockerfile for services — same low-level primitives as Go and Python. Aspire handles the container lifecycle. -->
 
 ---
 
@@ -613,21 +611,23 @@ cd samples/spring-boot-postgres && aspire run
 ![w:500px center](./img/go-svelte-bookmarks.drawio.svg)
 
 ```go
-pg, _ := builder.AddPostgres("pg")
-db, _ := pg.AddDatabase("bookmarksdb")
+pg, _ := builder.AddContainer("pg", "postgres:16")
+pg.WithEnvironment("POSTGRES_DB", "bookmarksdb")
 
-api, _ := builder.AddDockerfile("api", "./go-api")
-api.WithReference(db)
-api.WithHttpEndpoint(8080, "http")
+api, _ := builder.AddDockerfile("api", "./go-api", nil, nil)
+pgEndpoint, _ := pg.GetEndpoint("tcp")
+api.WithEnvironmentEndpoint("PG_HOST", pgEndpoint)
 api.WithExternalHttpEndpoints()
 
-frontend, _ := builder.AddNpmApp("frontend", "./frontend", "dev")
-frontend.WithEnvironment("services__api__http__0", api.GetEndpoint("http"))
+frontend, _ := builder.AddExecutable("frontend", "npm",
+    "./frontend", []string{"run", "dev"})
+apiEndpoint, _ := api.GetEndpoint("http")
+frontend.WithEnvironmentEndpoint("services__api__http__0", apiEndpoint)
 ```
 
-**Polyglot highlight:** Go AppHost orchestrates a Dockerized Go API + npm-based Svelte frontend + PostgreSQL.
+**Polyglot highlight:** Go AppHost uses `AddExecutable` for npm and `AddDockerfile` for the Go API — Go's explicit error-handling style works naturally.
 
-<!-- Go's error-handling style (_, err) works naturally with the Aspire Go SDK. AddDockerfile is the escape hatch for any containerized service. -->
+<!-- Go's (_, err) pattern works naturally with the Aspire Go SDK. AddDockerfile is the escape hatch for any containerized service. AddExecutable runs npm directly without Docker. -->
 
 ---
 
@@ -642,12 +642,12 @@ var cosmos = builder.AddAzureCosmosDB("cosmos").RunAsEmulator();
 var db = cosmos.AddCosmosDatabase("recipesdb");
 
 var api = builder.AddProject<Projects.Api>("api").WithReference(db);
-builder.AddNpmApp("frontend", "../frontend", "start")
+builder.AddJavaScriptApp("frontend", "../frontend", "start")
        .WithReference(api)
        .WithHttpEndpoint(env: "PORT");
 ```
 
-**Polyglot highlight:** The traditional .NET AppHost — but it's still polyglot because it orchestrates an **Angular** frontend alongside .NET. CosmosDB emulator runs locally via Docker.
+**Polyglot highlight:** The traditional .NET AppHost — but it's still polyglot because it orchestrates an **Angular** frontend via `AddJavaScriptApp`. CosmosDB emulator runs locally via Docker.
 
 ```bash
 cd samples/dotnet-angular-cosmos && aspire run
@@ -674,7 +674,7 @@ builder.AddProject<Projects.EventProducer>("producer")
 builder.AddPythonApp("consumer", "../python-consumer", "main.py")
        .WithReference(kafka);
 
-builder.AddNpmApp("dashboard", "../node-dashboard", "start")
+builder.AddJavaScriptApp("dashboard", "../node-dashboard", "start")
        .WithReference(kafka).WithHttpEndpoint(env: "PORT");
 ```
 
@@ -700,7 +700,7 @@ builder.AddNpmApp("dashboard", "../node-dashboard", "start")
 
 🛠️ **Standalone CLI** — `aspire run` / `aspire doctor` / `aspire new` — no .NET SDK required
 
-📦 **40+ integrations** — Redis, Kafka, PostgreSQL, CosmosDB, Azure services — same from any AppHost language
+📦 **40+ integrations** — Redis, Kafka, PostgreSQL, CosmosDB — richest in C#, growing in all SDKs
 
 🚀 **Deploy anywhere** — Same AppHost model for local dev, staging, and production
 
@@ -763,15 +763,15 @@ builder.AddNpmApp("dashboard", "../node-dashboard", "start")
 <div class="columns">
 <div>
 
-**Runtime → Method**
+**Runtime → Method (C# SDK)**
 - Python / ASGI → `AddPythonApp()`
 - Python / Uvicorn → `AddUvicornApp()`
 - Node.js → `AddNodeApp()`
 - Vite / React → `AddViteApp()`
 - .NET project → `AddProject<T>()`
-- Go → `AddGolangApp()`
-- Spring Boot → `AddSpringApp()`
+- JavaScript → `AddJavaScriptApp()`
 - Any Dockerfile → `AddDockerfile()`
+- Any executable → `AddExecutable()`
 
 </div>
 <div>
