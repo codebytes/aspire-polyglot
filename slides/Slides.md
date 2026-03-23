@@ -1,6 +1,6 @@
 ---
 marp: true
-theme: custom-aspire-dark
+theme: custom-aspire-light
 footer: '@Chris_L_Ayers - https://chris-ayers.com'
 ---
 
@@ -227,8 +227,14 @@ api.WithHttpEndpoint(nil, float64Ptr(8080), stringPtr("http"), nil, nil)
 ```json
 {
   "appHost": { "path": "apphost.py", "language": "python" },
-  "sdk": { "version": "13.2.0" },
-  "features": { "polyglotSupportEnabled": true }
+  "sdk": { 
+  "version": "13.2.0" },
+   "packages": {
+    "Aspire.Hosting.Redis": "13.2.0",
+    "Aspire.Hosting.JavaScript": "13.2.0",
+    "Aspire.Hosting.Python": "13.2.0",
+    "Aspire.Hosting.OpenAI": "13.2.0"
+  }
 }
 ```
 
