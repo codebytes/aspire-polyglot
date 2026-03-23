@@ -80,3 +80,11 @@
 - Added OTel packages to all requirements.txt: `opentelemetry-api`, `opentelemetry-sdk`, `opentelemetry-exporter-otlp-proto-grpc`, framework-specific instrumentation
 - Apps work with or without OTel enabled (graceful degradation)
 - Fixed flask-markdown-wiki aspire.config.json: updated package versions from 13.1.3 to 13.2.0 for `Aspire.Hosting.Redis` and `Aspire.Hosting.Python`
+
+### Django CSRF Fix for HTMX Voting (completed)
+- Root cause: `detail.html` vote buttons use `hx-post` (HTMX AJAX), but no CSRF token was included in the request headers
+- The buttons are standalone `<button>` elements with `hx-post`, not inside a `<form>`, so `{% csrf_token %}` hidden input wouldn't help
+- Fix: Added `hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'` to the `<body>` tag in `base.html`
+- This is the standard Django+HTMX pattern — all HTMX POST/PUT/DELETE requests from any page automatically include the CSRF token
+- `create.html` already had `{% csrf_token %}` in its `<form>` (standard POST), so it was unaffected
+- Settings already had `CsrfViewMiddleware` in MIDDLEWARE and `CSRF_TRUSTED_ORIGINS` for localhost — no changes needed there
