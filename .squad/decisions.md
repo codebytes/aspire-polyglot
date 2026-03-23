@@ -203,6 +203,96 @@
 
 ---
 
+### 11. OpenTelemetry Integration Across Polyglot Stack
+
+**Status:** ✅ IMPLEMENTED — Full OTel instrumentation added to all polyglot samples  
+**Date:** 2026-03-23  
+**Owners:** Banner (Python), Parker (JS), Thor (Java), Romanoff (Go)
+
+#### 11a. OpenTelemetry Integration for Python Apps (Banner)
+
+**Context:** Aspire 13.2 includes built-in OTel support via ServiceDefaults, but 4 Python apps had zero instrumentation.
+
+**Decision:** Add consistent OTel instrumentation to all Python apps using framework-specific auto-instrumentation.
+
+**Implementation:**
+- **flask-markdown-wiki:** OTel SDK + FlaskInstrumentor in main.py, requirements.txt updated
+- **django-htmx-polls:** OTel SDK + DjangoInstrumentor in run.py, requirements.txt updated
+- **vite-react-api FastAPI:** OTel SDK + FastAPIInstrumentor in main.py, requirements.txt updated
+- **polyglot-event-stream python-consumer:** OTel SDK + FlaskInstrumentor in main.py, requirements.txt updated
+- **Bonus:** Updated aspire.config.json package pins from 13.1.3 → 13.2.0
+
+**Pattern:** Initialize OTel before framework app creation, gate behind `OTEL_EXPORTER_OTLP_ENDPOINT` env var
+
+**Outcome:** ✅ All Python apps now visible in Aspire dashboard with traces, metrics, and logs
+
+#### 11b. OpenTelemetry Instrumentation for Node.js (Parker)
+
+**Context:** polyglot-event-stream/node-dashboard had no OTel instrumentation despite ts-starter serving as reference.
+
+**Decision:** Implement full OTel instrumentation following ts-starter pattern, adapted for CommonJS.
+
+**Implementation:**
+- Created `instrumentation.js` with NodeSDK + OTLP exporters
+- Updated `package.json` with 8 OTel dependencies (matching ts-starter versions)
+- Modified `app.js` to require instrumentation as first line
+- Conditional initialization behind `OTEL_EXPORTER_OTLP_ENDPOINT` check
+
+**Pattern:** CommonJS-based (unlike ESM ts-starter); auto-instruments Express, Kafka, HTTP
+
+**Outcome:** ✅ node-dashboard now sends full telemetry stack to Aspire
+
+#### 11c. OpenTelemetry Integration for Spring Boot (Thor)
+
+**Context:** spring-boot-postgres had no observability; Aspire expects OTel integration.
+
+**Challenge:** File-based AppHost (AppHost.java) lacks `AddSpringApp` helper with -javaagent support.
+
+**Decision:** Use OpenTelemetry Spring Boot Starter instead of Java agent approach.
+
+**Implementation:**
+- Added `opentelemetry-instrumentation-bom` (v2.12.0) to pom.xml
+- Added `opentelemetry-spring-boot-starter` dependency
+- Configured `application.properties` with OTLP exporter settings
+- **Bonus:** Fixed AppHost.java env var mismatch (set correct NOTESDB_* vars instead of PG_*)
+
+**Outcome:** ✅ Zero code changes; full auto-instrumentation via Spring Boot starter
+
+#### 11d. OpenTelemetry Integration for Go API (Romanoff)
+
+**Context:** svelte-go-bookmarks/go-api had no OTel instrumentation.
+
+**Decision:** Implement full OTel using gRPC OTLP exporters and HTTP middleware.
+
+**Implementation:**
+- Created `initOtel()` function with trace, metric, and log providers
+- Wrapped all route handlers with `otelhttp.NewHandler`
+- Configured gRPC OTLP exporters (matching Aspire default)
+- Conditional initialization behind `OTEL_EXPORTER_OTLP_ENDPOINT` check
+
+**Dependencies:** Standard OpenTelemetry Go packages (api, sdk, exporters, contrib)
+
+**Outcome:** ✅ Automatic span creation for all HTTP requests; full distributed tracing support
+
+#### Cross-Cutting Benefits
+
+- ✅ **Distributed tracing across all 5 polyglot services** (Python Flask/Django/FastAPI, Node Express, Java Spring Boot, Go HTTP)
+- ✅ **Metrics exported to Aspire dashboard** (request latency, throughput, resource utilization)
+- ✅ **Log correlation with trace context** (identify root cause across services)
+- ✅ **Graceful degradation** — apps work standalone without Aspire
+- ✅ **No breaking changes** — instrumentation is purely additive
+- ✅ **Consistent pattern** — all services follow "gate behind OTEL_EXPORTER_OTLP_ENDPOINT" pattern
+
+#### Alternatives Considered & Rejected
+
+- **Manual span creation:** Too much boilerplate; auto-instrumentation is industry standard
+- **Java agent for all Java apps:** File-based AppHost incompatibility; Spring Boot starter cleaner
+- **HTTP exporter instead of gRPC:** Aspire's OTLP endpoint is gRPC-native
+
+**Owner:** Coordinated by Rogers (C#); executed by Banner, Parker, Thor, Romanoff
+
+---
+
 ## Governance
 
 - All meaningful changes require team consensus
