@@ -65,3 +65,34 @@
 
 **Decision #1 (Config Migration):** ✅ RESOLVED — All polyglot samples now use Aspire 13.2 format
 **Decision #3 (13.2 Slides):** ✅ RESOLVED — Expanded from 2 slides to 4 slides covering all major 13.2 features
+
+### 2026-03-22 — TypeScript AppHost Migration: vite-react-api
+- **Migrated from Python AppHost (`apphost.py`) to TypeScript AppHost (`apphost.ts`)**
+- Scaffolded TS AppHost using `aspire new aspire-ts-empty` to learn canonical API pattern
+- Key API: `createBuilder()` from `.modules/aspire.js`, fluent chainable methods (`addContainer`, `addDockerfile`, `withEnvironment`, `withHttpEndpoint`, `withExternalHttpEndpoints`)
+- `withHttpEndpoint` takes an options object `{ targetPort, env }` (not positional args like Python)
+- `addDockerfile(name, contextPath)` — just name + path to dir with Dockerfile
+- Created `package.json` (deps: `vscode-jsonrpc`, devDeps: `@types/node`, `tsx`, `typescript`), `tsconfig.json` (ES2022/NodeNext)
+- `aspire.config.json` updated: `language: "typescript/nodejs"`, removed `experimentalPolyglot:python` flag and `packages` section
+- Removed all Python scaffolding: `apphost.py`, `requirements.txt`, `uv-install.py`, `.venv/`, Python `.modules` files
+- Validated with `aspire restore` (SDK codegen ✅) and `aspire run` (dashboard launched ✅)
+- Updated sample README and root README to reflect `apphost.ts`
+- **This makes vite-react-api the first non-.NET sample with a TypeScript AppHost — better fit since it's a JS/TS frontend**
+
+### 2026-03-22 — TypeScript Starter Sample Created
+- **Scaffolded `ts-starter` using `aspire new aspire-ts-starter`** — the official Aspire TS template
+- Initial scaffold used stable `Aspire.Hosting.JavaScript@13.1.3` which lacked `addNodeApp`/`addViteApp` APIs — template/SDK version mismatch
+- Re-scaffolded with `--channel daily` to get `Aspire.Hosting.JavaScript@13.3.0-preview.1` which includes `addNodeApp`, `addViteApp`, `withReference`, `waitFor` — the full JS hosting API surface
+- **Key learning:** The stable channel template references preview APIs; must use `--channel daily` until 13.3.0 goes stable
+- Generated structure: `apphost.ts` (TypeScript AppHost), `api/` (Express + OpenTelemetry), `frontend/` (React 19 + Vite)
+- `addNodeApp(name, dir, scriptPath)` runs Node.js apps via tsx; `addViteApp(name, dir)` runs Vite dev servers
+- `withReference(resource)` injects service URLs; `waitFor(resource)` enforces startup ordering
+- `publishWithContainerFiles(frontend, "./static")` bundles frontend build output into API container for deploy
+- Validated: `aspire restore` ✅, `aspire run` ✅ (dashboard launched), `aspire stop` ✅
+- Created README following repo sample pattern (architecture diagram, structure, key files, prerequisites)
+
+### 2026-03-23 — Team Scribe Session: Orchestration Log Recorded
+- Parker's ts-starter work documented in orchestration log
+- Parker's vite-react-api TypeScript migration verified and approved
+- Decisions #2 and #4 archived to decisions.md
+- ts-starter demo validated in Stark's slide review (Demo 1, accurate API usage)

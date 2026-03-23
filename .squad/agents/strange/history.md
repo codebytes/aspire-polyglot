@@ -95,3 +95,22 @@
 **Decision #1 (Config Migration):** ✅ RESOLVED — All polyglot samples now use Aspire 13.2 format
 **Decision #3 (13.2 Slides):** ✅ RESOLVED — Expanded from 2 slides to 4 slides covering all major 13.2 features
 **Decision #7 (NuGet Upgrades):** ⏳ DEFERRED — Waiting for Aspire 13.2.0 on NuGet; scope ready
+
+### 2025-07-25 — Major Slide Deck Restructure (Polyglot-First Narrative)
+- **Complete restructure** of slides/Slides.md from "Aspire intro + 13.2 changelog" to a tight polyglot story
+- **Removed:** "What is Aspire?" generic slide, "Key Aspire Concepts" deep dive, 4 separate "What's New in 13.2" changelog slides, redundant "Observability & Service Discovery" deep dive section (6 slides), duplicate dashboard/health/service-discovery slides
+- **Added:** "Five AppHost Languages" slide showing all 5 in one view, ts-starter demo slide (Demo 1), combined dashboard slide with cross-language trace example, `aspire new` language-aware scaffolding slide
+- **Restructured flow:** Act 1 (Problem, 2 slides) → Act 2 (Polyglot Answer, 5 slides) → Act 3 (How It Works, 5 slides) → Act 4 (Demos, 9 slides for 8 samples) → Act 5 (Wrap-Up, 3 slides) → Appendix (reference + commented demo walkthroughs)
+- **13.2 features woven into narrative:** aspire.config.json in Act 2, CLI commands (doctor/restore/detach/ps/stop) in Act 3, aspire new scaffolding in Act 3 — no longer a separate "What's New" section
+- **Demo order changed:** simple → complex, now 8 demos (added ts-starter): ts-starter → flask-markdown-wiki → django-htmx-polls → vite-react-api → spring-boot-postgres → svelte-go-bookmarks → dotnet-angular-cosmos → polyglot-event-stream
+- **vite-react-api demo updated:** Now shows TypeScript AppHost code (converted from Python)
+- **Appendix preserved:** Cheat sheet, OTel setup, lifecycle, deployment, and all detailed commented-out demo walkthroughs kept intact
+- **Net result:** Active deck went from ~33 main slides with lots of filler to 25 focused slides + 8 appendix slides. Tighter pacing for 30-45 min talk with demos
+- **All 9 image references verified** — no broken links
+
+### 2026-03-23 — Team Scribe Session: Orchestration Log Recorded
+- Strange's slide restructure work documented in orchestration log
+- All 25 main slides + 8 appendix slides approved by Stark
+- Decision #6 (Slide Restructure) and Decision #2 (ts-starter demo) archived to decisions.md
+- Slide deck confirmed ready for 30-minute conference delivery
+- Session log created in .squad/log/ with cross-agent outcomes

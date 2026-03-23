@@ -45,3 +45,24 @@
 - **Strengths:** Pacing excellent, Key Takeaways powerful (opens with "orchestrates ANY language"), cheat sheet useful
 - **Verdict:** Ready for talk with fixes to demo code #1–2 above
 - Full report written to `.squad/decisions/inbox/stark-flow-review.md`
+
+### 2025-07-17 — Full Slide Deck Polish Pass
+- **Scope:** Complete review and edit of slides/Slides.md against actual sample code and 30-minute timing.
+- **Critical fixes applied:**
+  - **Demo code accuracy:** Updated all 8 demo slides to match actual AppHost source files. Major discrepancies found: slides showed idealized typed APIs (`add_redis`, `add_python_app`, `addPythonApp`) but actual polyglot samples use low-level primitives (`add_container`, `add_dockerfile`, `AddExecutable`). C# samples were mostly correct except `AddNpmApp` → `AddJavaScriptApp`.
+  - **ts-starter demo:** Updated to match actual `apphost.ts` (uses `addNodeApp("app")` + `addViteApp("frontend")` with `waitFor`, not the old `addNpmApp` pattern). Added TS debugging speaker note (Aspire 13.2 VS Code extension improvements).
+  - **aspire.config.json example:** Fixed version from "9.5.2" to "13.2.0", removed non-existent "channel" field.
+  - **Connection Strings slide:** Updated Java example from `NOTESDB_JDBCCONNECTIONSTRING` to actual explicit env var pattern matching the Spring Boot sample.
+  - **Five Languages slide:** Updated Python example from `add_python_app` (doesn't exist in Python SDK) to `add_dockerfile` (actual API). Added qualifier about C# having richest typed integrations.
+  - **Cheat Sheet:** Removed `AddGolangApp()` and `AddSpringApp()` (don't exist), added `AddJavaScriptApp()` and `AddExecutable()`.
+  - **Bio slide:** Removed strikethrough Twitter line.
+- **Narrative polish:** Tightened "Polyglot Problem" wording, improved transitions, enhanced speaker notes on key slides.
+- **Verdict:** ✅ Ready for delivery. Theme decision (#4) still pending Chris's approval.
+- Report written to `.squad/decisions/inbox/stark-slide-review.md`.
+
+### 2026-03-23 — Team Scribe Session: Orchestration Log Recorded
+- Stark's slide accuracy review work documented in orchestration log
+- All 8 demo slides verified against actual AppHost source code
+- Verdict: ✅ Slides ready for 30-minute conference delivery (timing: ~26 slides, ~30 min)
+- Decision #6 (Slide Polish Pass) archived to decisions.md
+- Outstanding items documented: theme decision #4 pending, commented-out demo walkthroughs flagged for future accuracy pass if uncommented
