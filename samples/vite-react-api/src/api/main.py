@@ -1,5 +1,8 @@
 import os
 import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 # --- OpenTelemetry setup (must run before FastAPI app creation) ---
 if os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT"):
@@ -36,6 +39,7 @@ if os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT"):
     logger_provider.add_log_record_processor(BatchLogRecordProcessor(OTLPLogExporter()))
     handler = LoggingHandler(logger_provider=logger_provider)
     logging.getLogger().addHandler(handler)
+    logging.getLogger().setLevel(logging.INFO)
 
     # Auto-instrument requests
     RequestsInstrumentor().instrument()
@@ -94,6 +98,7 @@ def add_todo(todo: Todo):
     todos = get_todos()
     todos.append(todo.model_dump())
     save_todos(todos)
+    logger.info("Todo created: id=%d text='%s'", todo.id, todo.text)
     return {"todo": todo}
 
 @app.delete("/api/todos/{todo_id}")
@@ -101,8 +106,10 @@ def delete_todo(todo_id: int):
     todos = get_todos()
     todos = [t for t in todos if t["id"] != todo_id]
     save_todos(todos)
+    logger.info("Todo deleted: id=%d", todo_id)
     return {"success": True}
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
+    logger.info("Starting FastAPI server on port %d", port)
     uvicorn.run(app, host="0.0.0.0", port=port)

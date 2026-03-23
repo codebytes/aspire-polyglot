@@ -36,16 +36,20 @@ if os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT"):
     logger_provider.add_log_record_processor(BatchLogRecordProcessor(OTLPLogExporter()))
     handler = LoggingHandler(logger_provider=logger_provider)
     logging.getLogger().addHandler(handler)
+    logging.getLogger().setLevel(logging.INFO)
 
     # Auto-instrument requests
     RequestsInstrumentor().instrument()
     _flask_instrumentor = FlaskInstrumentor()
 
+import logging
 import sqlite3
 from datetime import datetime
 from flask import Flask, request, redirect, url_for, render_template_string
 import markdown
 import re
+
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
@@ -68,12 +72,12 @@ def _init_redis():
                 f"redis://{conn_str}", decode_responses=True
             )
             redis_client.ping()
-            print(f"Redis cache connected: {conn_str}")
+            logger.info("Redis cache connected: %s", conn_str)
         except Exception as e:
-            print(f"Redis unavailable, running without cache: {e}")
+            logger.warning("Redis unavailable, running without cache: %s", e)
             redis_client = None
     else:
-        print("No Redis connection string found, running without cache")
+        logger.info("No Redis connection string found, running without cache")
 
 def _cache_key(slug):
     return f"wiki:html:{slug}"
@@ -455,8 +459,8 @@ if __name__ == "__main__":
     # Use waitress in production, Flask dev server as fallback
     try:
         from waitress import serve
-        print(f"Starting wiki server on port {port} with Waitress...")
+        logger.info("Starting wiki server on port %d with Waitress...", port)
         serve(app, host="0.0.0.0", port=port)
     except ImportError:
-        print(f"Waitress not found, using Flask dev server on port {port}...")
+        logger.info("Waitress not found, using Flask dev server on port %d...", port)
         app.run(host="0.0.0.0", port=port, debug=True)

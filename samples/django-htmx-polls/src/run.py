@@ -1,5 +1,8 @@
 import os
 import sys
+import logging
+
+logger = logging.getLogger(__name__)
 
 # --- OpenTelemetry setup (must run before Django setup) ---
 if os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT"):
@@ -36,6 +39,7 @@ if os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT"):
     logger_provider.add_log_record_processor(BatchLogRecordProcessor(OTLPLogExporter()))
     handler = LoggingHandler(logger_provider=logger_provider)
     logging.getLogger().addHandler(handler)
+    logging.getLogger().setLevel(logging.INFO)
 
     # Auto-instrument Django and requests
     DjangoInstrumentor().instrument()
@@ -48,7 +52,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "pollsite.settings")
 import django
 django.setup()
 from django.core.management import call_command
-print("Running database migrations...")
+logger.info("Running database migrations...")
 call_command("migrate", "--no-input", verbosity=1)
 
 # Import Django's WSGI application
@@ -59,5 +63,5 @@ app = get_wsgi_application()
 
 # Get port from environment (Aspire sets this)
 port = int(os.environ.get("PORT", 8000))
-print(f"Starting Django polls app on port {port}")
+logger.info("Starting Django polls app on port %d", port)
 serve(app, host="0.0.0.0", port=port)

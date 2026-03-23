@@ -31,6 +31,46 @@ if (env.OTEL_EXPORTER_OTLP_ENDPOINT) {
 
   sdk.start();
 
+  // Bridge console output to OTel structured logs so they appear in the
+  // Aspire dashboard's Structured Logs view.
+  const { logs, SeverityNumber } = require('@opentelemetry/api-logs');
+  const otelLogger = logs.getLogger('node-dashboard');
+
+  const originalLog = console.log;
+  const originalWarn = console.warn;
+  const originalError = console.error;
+
+  function formatArgs(args) {
+    return args.map(a => (typeof a === 'string' ? a : JSON.stringify(a))).join(' ');
+  }
+
+  console.log = function (...args) {
+    originalLog.apply(console, args);
+    otelLogger.emit({
+      severityNumber: SeverityNumber.INFO,
+      severityText: 'INFO',
+      body: formatArgs(args),
+    });
+  };
+
+  console.warn = function (...args) {
+    originalWarn.apply(console, args);
+    otelLogger.emit({
+      severityNumber: SeverityNumber.WARN,
+      severityText: 'WARN',
+      body: formatArgs(args),
+    });
+  };
+
+  console.error = function (...args) {
+    originalError.apply(console, args);
+    otelLogger.emit({
+      severityNumber: SeverityNumber.ERROR,
+      severityText: 'ERROR',
+      body: formatArgs(args),
+    });
+  };
+
   process.on('SIGTERM', () => {
     sdk.shutdown().finally(() => process.exit(0));
   });

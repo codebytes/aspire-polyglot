@@ -6,6 +6,7 @@
     "start": "tsx src/index.ts"
   },
   "dependencies": {
+    "@opentelemetry/api-logs": "^0.213.0",
     "@opentelemetry/auto-instrumentations-node": "^0.71.0",
     "@opentelemetry/exporter-logs-otlp-grpc": "^0.213.0",
     "@opentelemetry/exporter-metrics-otlp-grpc": "^0.213.0",

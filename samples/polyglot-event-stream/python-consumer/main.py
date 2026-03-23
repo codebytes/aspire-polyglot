@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 import os
 import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 # --- OpenTelemetry setup (must run before Flask app creation) ---
 if os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT"):
@@ -37,6 +40,7 @@ if os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT"):
     logger_provider.add_log_record_processor(BatchLogRecordProcessor(OTLPLogExporter()))
     handler = LoggingHandler(logger_provider=logger_provider)
     logging.getLogger().addHandler(handler)
+    logging.getLogger().setLevel(logging.INFO)
 
     # Auto-instrument requests
     RequestsInstrumentor().instrument()
@@ -85,8 +89,8 @@ def consume_events():
     producer = Producer(producer_config)
     consumer.subscribe(['sensor-readings'])
     
-    print(f"Consumer connected to Kafka at {get_kafka_config()}")
-    print("Subscribed to topic: sensor-readings")
+    logger.info("Consumer connected to Kafka at %s", get_kafka_config())
+    logger.info("Subscribed to topic: sensor-readings")
     
     while True:
         msg = consumer.poll(timeout=1.0)
@@ -96,7 +100,7 @@ def consume_events():
         if msg.error():
             if msg.error().code() == KafkaError._PARTITION_EOF:
                 continue
-            print(f"Consumer error: {msg.error()}")
+            logger.error("Consumer error: %s", msg.error())
             continue
         
         try:
@@ -122,8 +126,9 @@ def consume_events():
             sensor_data['last_update'] = timestamp
             sensor_data['location'] = location
             
-            print(f"Processed {sensor_id} at {location}: {temperature:.1f}°C, {humidity:.1f}% "
-                  f"(avg: {sensor_data['avg_temperature']:.1f}°C, {sensor_data['avg_humidity']:.1f}%)")
+            logger.info("Processed %s at %s: %.1f°C, %.1f%% "
+                  "(avg: %.1f°C, %.1f%%)", sensor_id, location, temperature, humidity,
+                  sensor_data['avg_temperature'], sensor_data['avg_humidity'])
             
             # Detect anomalies
             if temperature > 35 or humidity > 90:
@@ -149,10 +154,10 @@ def consume_events():
                 producer.produce('sensor-alerts', key=sensor_id, value=alert_json)
                 producer.flush()
                 
-                print(f"⚠️  ALERT: {sensor_id} - {alert['reason']}")
+                logger.warning("ALERT: %s - %s", sensor_id, alert['reason'])
         
         except Exception as e:
-            print(f"Error processing message: {e}")
+            logger.error("Error processing message: %s", e)
 
 @app.route('/health')
 def health():
@@ -183,5 +188,5 @@ if __name__ == '__main__':
     
     # Start Flask server
     port = int(os.environ.get('PORT', 8000))
-    print(f"Starting Flask server on port {port}")
+    logger.info("Starting Flask server on port %d", port)
     serve(app, host='0.0.0.0', port=port)

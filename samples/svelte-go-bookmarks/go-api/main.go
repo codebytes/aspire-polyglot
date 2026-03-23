@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"strconv"
@@ -13,6 +14,7 @@ import (
 	"time"
 
 	_ "github.com/lib/pq"
+	"go.opentelemetry.io/contrib/bridges/otelslog"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc"
@@ -81,7 +83,7 @@ func newPgStore(connStr string) (*pgStore, error) {
 		}
 	}
 
-	log.Println("Connected to PostgreSQL")
+	slog.Info("Connected to PostgreSQL")
 	return &pgStore{db: db}, nil
 }
 
@@ -165,7 +167,7 @@ func newMemStore() *memStore {
 		s.bookmarks = append(s.bookmarks, seed)
 		s.nextID++
 	}
-	log.Println("Using in-memory storage (no database connection string found)")
+	slog.Info("Using in-memory storage (no database connection string found)")
 	return s
 }
 
@@ -377,6 +379,10 @@ func initOtel(ctx context.Context) (func(), error) {
 		propagation.Baggage{},
 	))
 
+	// Bridge slog → OTel so structured logs appear in the Aspire dashboard
+	slogHandler := otelslog.NewHandler("go-bookmarks", otelslog.WithLoggerProvider(loggerProvider))
+	slog.SetDefault(slog.New(slogHandler))
+
 	shutdown := func() {
 		ctx := context.Background()
 		tracerProvider.Shutdown(ctx)
@@ -384,7 +390,7 @@ func initOtel(ctx context.Context) (func(), error) {
 		loggerProvider.Shutdown(ctx)
 	}
 
-	log.Printf("OpenTelemetry initialized, exporting to %s", endpoint)
+	slog.Info("OpenTelemetry initialized", "endpoint", endpoint)
 	return shutdown, nil
 }
 
@@ -392,7 +398,7 @@ func main() {
 	ctx := context.Background()
 	shutdown, err := initOtel(ctx)
 	if err != nil {
-		log.Printf("Warning: failed to initialize OpenTelemetry: %v", err)
+		slog.Warn("Failed to initialize OpenTelemetry", "error", err)
 	} else {
 		defer shutdown()
 	}
@@ -402,7 +408,7 @@ func main() {
 	if connStr != "" {
 		pg, err := newPgStore(connStr)
 		if err != nil {
-			log.Printf("PostgreSQL connection failed (%v), falling back to in-memory", err)
+			slog.Warn("PostgreSQL connection failed, falling back to in-memory", "error", err)
 			storage = newMemStore()
 		} else {
 			storage = pg
@@ -416,7 +422,7 @@ func main() {
 	http.Handle("/api/bookmarks/search", otelhttp.NewHandler(http.HandlerFunc(handleSearch), "handleSearch"))
 	http.Handle("/health", otelhttp.NewHandler(http.HandlerFunc(health), "health"))
 
-	log.Println("Go Bookmarks API listening on :8080")
+	slog.Info("Go Bookmarks API listening", "port", 8080)
 	if err := http.ListenAndServe(":8080", nil); err != nil {
 		log.Fatal(err)
 	}
