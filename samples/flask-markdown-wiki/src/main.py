@@ -1,5 +1,46 @@
 #!/usr/bin/env python3
 import os
+
+# --- OpenTelemetry setup (must run before Flask app creation) ---
+if os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT"):
+    from opentelemetry import trace
+    from opentelemetry.sdk.trace import TracerProvider
+    from opentelemetry.sdk.trace.export import BatchSpanProcessor
+    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+    from opentelemetry.sdk.resources import Resource
+    from opentelemetry.instrumentation.flask import FlaskInstrumentor
+    from opentelemetry.instrumentation.requests import RequestsInstrumentor
+    from opentelemetry.sdk.metrics import MeterProvider
+    from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
+    from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import OTLPMetricExporter
+    from opentelemetry.sdk._logs import LoggerProvider, LoggingHandler
+    from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
+    from opentelemetry.exporter.otlp.proto.grpc._log_exporter import OTLPLogExporter
+    import logging
+
+    resource = Resource.create({
+        "service.name": os.environ.get("OTEL_SERVICE_NAME", "flask-wiki"),
+    })
+
+    # Traces
+    trace_provider = TracerProvider(resource=resource)
+    trace_provider.add_span_processor(BatchSpanProcessor(OTLPSpanExporter()))
+    trace.set_tracer_provider(trace_provider)
+
+    # Metrics
+    metric_reader = PeriodicExportingMetricReader(OTLPMetricExporter())
+    meter_provider = MeterProvider(resource=resource, metric_readers=[metric_reader])
+
+    # Logs
+    logger_provider = LoggerProvider(resource=resource)
+    logger_provider.add_log_record_processor(BatchLogRecordProcessor(OTLPLogExporter()))
+    handler = LoggingHandler(logger_provider=logger_provider)
+    logging.getLogger().addHandler(handler)
+
+    # Auto-instrument requests
+    RequestsInstrumentor().instrument()
+    _flask_instrumentor = FlaskInstrumentor()
+
 import sqlite3
 from datetime import datetime
 from flask import Flask, request, redirect, url_for, render_template_string
@@ -7,6 +48,62 @@ import markdown
 import re
 
 app = Flask(__name__)
+
+# Instrument Flask app if OTel is enabled
+if os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT"):
+    _flask_instrumentor.instrument_app(app)
+
+# Redis cache setup — optional, used when Aspire provides a connection string
+redis_client = None
+CACHE_TTL = 3600  # 1 hour
+
+def _init_redis():
+    """Initialize Redis client from Aspire connection string."""
+    global redis_client
+    conn_str = os.environ.get("ConnectionStrings__cache")
+    if conn_str:
+        try:
+            import redis
+            redis_client = redis.Redis.from_url(
+                f"redis://{conn_str}", decode_responses=True
+            )
+            redis_client.ping()
+            print(f"Redis cache connected: {conn_str}")
+        except Exception as e:
+            print(f"Redis unavailable, running without cache: {e}")
+            redis_client = None
+    else:
+        print("No Redis connection string found, running without cache")
+
+def _cache_key(slug):
+    return f"wiki:html:{slug}"
+
+def get_cached_html(slug):
+    """Retrieve cached rendered HTML for a page."""
+    if redis_client is None:
+        return None
+    try:
+        return redis_client.get(_cache_key(slug))
+    except Exception:
+        return None
+
+def set_cached_html(slug, html):
+    """Store rendered HTML in cache."""
+    if redis_client is None:
+        return
+    try:
+        redis_client.set(_cache_key(slug), html, ex=CACHE_TTL)
+    except Exception:
+        pass
+
+def invalidate_cache(slug):
+    """Remove cached HTML when a page is edited."""
+    if redis_client is None:
+        return
+    try:
+        redis_client.delete(_cache_key(slug))
+    except Exception:
+        pass
 
 # Database setup
 DB_PATH = "wiki.db"
@@ -264,8 +361,11 @@ def view_page(slug):
     if not page:
         return f"Page not found: {slug}", 404
     
-    # Convert Markdown to HTML
-    html_content = markdown.markdown(page["content"], extensions=['extra', 'nl2br'])
+    # Check cache first, then render and store
+    html_content = get_cached_html(slug)
+    if html_content is None:
+        html_content = markdown.markdown(page["content"], extensions=['extra', 'nl2br'])
+        set_cached_html(slug, html_content)
     
     return render_template_string(PAGE_TEMPLATE, title=page["title"], page=page, content=html_content)
 
@@ -297,6 +397,8 @@ def save_page(slug):
     """, (content, datetime.now(), slug))
     conn.commit()
     conn.close()
+    
+    invalidate_cache(slug)
     
     return redirect(url_for("view_page", slug=slug))
 
@@ -343,6 +445,9 @@ def health():
 if __name__ == "__main__":
     # Initialize database
     init_db()
+    
+    # Initialize Redis cache (optional — works without it)
+    _init_redis()
     
     # Get port from environment variable
     port = int(os.environ.get("PORT", 8080))

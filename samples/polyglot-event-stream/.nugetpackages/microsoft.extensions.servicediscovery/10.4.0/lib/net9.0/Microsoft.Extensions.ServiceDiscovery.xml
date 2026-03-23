@@ -1,0 +1,849 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Microsoft.Extensions.ServiceDiscovery</name>
+    </assembly>
+    <members>
+        <member name="T:Microsoft.Shared.Diagnostics.Throw">
+            <summary>
+            Defines static methods used to throw exceptions.
+            </summary>
+            <remarks>
+            The main purpose is to reduce code size, improve performance, and standardize exception
+            messages.
+            </remarks>
+        </member>
+        <member name="M:Microsoft.Shared.Diagnostics.Throw.IfNull``1(``0,System.String)">
+            <summary>
+            Throws an <see cref="T:System.ArgumentNullException"/> if the specified argument is <see langword="null"/>.
+            </summary>
+            <typeparam name="T">Argument type to be checked for <see langword="null"/>.</typeparam>
+            <param name="argument">Object to be checked for <see langword="null"/>.</param>
+            <param name="paramName">The name of the parameter being checked.</param>
+            <returns>The original value of <paramref name="argument"/>.</returns>
+        </member>
+        <member name="M:Microsoft.Shared.Diagnostics.Throw.IfNullOrMemberNull``2(``0,``1,System.String,System.String)">
+            <summary>
+            Throws an <see cref="T:System.ArgumentNullException"/> if the specified argument is <see langword="null"/>,
+            or <see cref="T:System.ArgumentException" /> if the specified member is <see langword="null"/>.
+            </summary>
+            <typeparam name="TParameter">Argument type to be checked for <see langword="null"/>.</typeparam>
+            <typeparam name="TMember">Member type to be checked for <see langword="null"/>.</typeparam>
+            <param name="argument">Argument to be checked for <see langword="null"/>.</param>
+            <param name="member">Object member to be checked for <see langword="null"/>.</param>
+            <param name="paramName">The name of the parameter being checked.</param>
+            <param name="memberName">The name of the member.</param>
+            <returns>The original value of <paramref name="member"/>.</returns>
+            <example>
+            <code language="csharp">
+            Throws.IfNullOrMemberNull(myObject, myObject?.MyProperty)
+            </code>
+            </example>
+        </member>
+        <member name="M:Microsoft.Shared.Diagnostics.Throw.IfMemberNull``2(``0,``1,System.String,System.String)">
+            <summary>
+            Throws an <see cref="T:System.ArgumentException" /> if the specified member is <see langword="null"/>.
+            </summary>
+            <typeparam name="TParameter">Argument type.</typeparam>
+            <typeparam name="TMember">Member type to be checked for <see langword="null"/>.</typeparam>
+            <param name="argument">Argument to which member belongs.</param>
+            <param name="member">Object member to be checked for <see langword="null"/>.</param>
+            <param name="paramName">The name of the parameter being checked.</param>
+            <param name="memberName">The name of the member.</param>
+            <returns>The original value of <paramref name="member"/>.</returns>
+            <example>
+            <code language="csharp">
+            Throws.IfMemberNull(myObject, myObject.MyProperty)
+            </code>
+            </example>
+        </member>
+        <member name="M:Microsoft.Shared.Diagnostics.Throw.IfNullOrWhitespace(System.String,System.String)">
+            <summary>
+            Throws either an <see cref="T:System.ArgumentNullException"/> or an <see cref="T:System.ArgumentException"/>
+            if the specified string is <see langword="null"/> or whitespace respectively.
+            </summary>
+            <param name="argument">String to be checked for <see langword="null"/> or whitespace.</param>
+            <param name="paramName">The name of the parameter being checked.</param>
+            <returns>The original value of <paramref name="argument"/>.</returns>
+        </member>
+        <member name="M:Microsoft.Shared.Diagnostics.Throw.IfNullOrEmpty(System.String,System.String)">
+            <summary>
+            Throws an <see cref="T:System.ArgumentNullException"/> if the string is <see langword="null"/>,
+            or <see cref="T:System.ArgumentException"/> if it is empty.
+            </summary>
+            <param name="argument">String to be checked for <see langword="null"/> or empty.</param>
+            <param name="paramName">The name of the parameter being checked.</param>
+            <returns>The original value of <paramref name="argument"/>.</returns>
+        </member>
+        <member name="M:Microsoft.Shared.Diagnostics.Throw.IfBufferTooSmall(System.Int32,System.Int32,System.String)">
+            <summary>
+            Throws an <see cref="T:System.ArgumentException"/> if the argument's buffer size is less than the required buffer size.
+            </summary>
+            <param name="bufferSize">The actual buffer size.</param>
+            <param name="requiredSize">The required buffer size.</param>
+            <param name="paramName">The name of the parameter to be checked.</param>
+        </member>
+        <member name="M:Microsoft.Shared.Diagnostics.Throw.IfOutOfRange``1(``0,System.String)">
+            <summary>
+            Throws an <see cref="T:System.ArgumentOutOfRangeException"/> if the enum value is not valid.
+            </summary>
+            <param name="argument">The argument to evaluate.</param>
+            <param name="paramName">The name of the parameter being checked.</param>
+            <typeparam name="T">The type of the enumeration.</typeparam>
+            <returns>The original value of <paramref name="argument"/>.</returns>
+        </member>
+        <member name="M:Microsoft.Shared.Diagnostics.Throw.IfNullOrEmpty``1(System.Collections.Generic.IEnumerable{``0},System.String)">
+            <summary>
+            Throws an <see cref="T:System.ArgumentNullException"/> if the collection is <see langword="null"/>,
+            or <see cref="T:System.ArgumentException"/> if it is empty.
+            </summary>
+            <param name="argument">The collection to evaluate.</param>
+            <param name="paramName">The name of the parameter being checked.</param>
+            <typeparam name="T">The type of objects in the collection.</typeparam>
+            <returns>The original value of <paramref name="argument"/>.</returns>
+        </member>
+        <member name="M:Microsoft.Shared.Diagnostics.Throw.ArgumentNullException(System.String)">
+            <summary>
+            Throws an <see cref="T:System.ArgumentNullException"/>.
+            </summary>
+            <param name="paramName">The name of the parameter that caused the exception.</param>
+        </member>
+        <member name="M:Microsoft.Shared.Diagnostics.Throw.ArgumentNullException(System.String,System.String)">
+            <summary>
+            Throws an <see cref="T:System.ArgumentNullException"/>.
+            </summary>
+            <param name="paramName">The name of the parameter that caused the exception.</param>
+            <param name="message">A message that describes the error.</param>
+        </member>
+        <member name="M:Microsoft.Shared.Diagnostics.Throw.ArgumentOutOfRangeException(System.String)">
+            <summary>
+            Throws an <see cref="T:System.ArgumentOutOfRangeException"/>.
+            </summary>
+            <param name="paramName">The name of the parameter that caused the exception.</param>
+        </member>
+        <member name="M:Microsoft.Shared.Diagnostics.Throw.ArgumentOutOfRangeException(System.String,System.String)">
+            <summary>
+            Throws an <see cref="T:System.ArgumentOutOfRangeException"/>.
+            </summary>
+            <param name="paramName">The name of the parameter that caused the exception.</param>
+            <param name="message">A message that describes the error.</param>
+        </member>
+        <member name="M:Microsoft.Shared.Diagnostics.Throw.ArgumentOutOfRangeException(System.String,System.Object,System.String)">
+            <summary>
+            Throws an <see cref="T:System.ArgumentOutOfRangeException"/>.
+            </summary>
+            <param name="paramName">The name of the parameter that caused the exception.</param>
+            <param name="actualValue">The value of the argument that caused this exception.</param>
+            <param name="message">A message that describes the error.</param>
+        </member>
+        <member name="M:Microsoft.Shared.Diagnostics.Throw.ArgumentException(System.String,System.String)">
+            <summary>
+            Throws an <see cref="T:System.ArgumentException"/>.
+            </summary>
+            <param name="paramName">The name of the parameter that caused the exception.</param>
+            <param name="message">A message that describes the error.</param>
+        </member>
+        <member name="M:Microsoft.Shared.Diagnostics.Throw.ArgumentException(System.String,System.String,System.Exception)">
+            <summary>
+            Throws an <see cref="T:System.ArgumentException"/>.
+            </summary>
+            <param name="paramName">The name of the parameter that caused the exception.</param>
+            <param name="message">A message that describes the error.</param>
+            <param name="innerException">The exception that is the cause of the current exception.</param>
+            <remarks>
+            If the <paramref name="innerException"/> is not a <see langword="null"/>, the current exception is raised in a catch
+            block that handles the inner exception.
+            </remarks>
+        </member>
+        <member name="M:Microsoft.Shared.Diagnostics.Throw.InvalidOperationException(System.String)">
+            <summary>
+            Throws an <see cref="T:System.InvalidOperationException"/>.
+            </summary>
+            <param name="message">A message that describes the error.</param>
+        </member>
+        <member name="M:Microsoft.Shared.Diagnostics.Throw.InvalidOperationException(System.String,System.Exception)">
+            <summary>
+            Throws an <see cref="T:System.InvalidOperationException"/>.
+            </summary>
+            <param name="message">A message that describes the error.</param>
+            <param name="innerException">The exception that is the cause of the current exception.</param>
+        </member>
+        <member name="M:Microsoft.Shared.Diagnostics.Throw.IfLessThan(System.Int32,System.Int32,System.String)">
+            <summary>
+            Throws an <see cref="T:System.ArgumentOutOfRangeException"/>  if the specified number is less than min.
+            </summary>
+            <param name="argument">Number to be expected being less than min.</param>
+            <param name="min">The number that must be less than the argument.</param>
+            <param name="paramName">The name of the parameter being checked.</param>
+            <returns>The original value of <paramref name="argument"/>.</returns>
+        </member>
+        <member name="M:Microsoft.Shared.Diagnostics.Throw.IfGreaterThan(System.Int32,System.Int32,System.String)">
+            <summary>
+            Throws an <see cref="T:System.ArgumentOutOfRangeException"/> if the specified number is greater than max.
+            </summary>
+            <param name="argument">Number to be expected being greater than max.</param>
+            <param name="max">The number that must be greater than the argument.</param>
+            <param name="paramName">The name of the parameter being checked.</param>
+            <returns>The original value of <paramref name="argument"/>.</returns>
+        </member>
+        <member name="M:Microsoft.Shared.Diagnostics.Throw.IfLessThanOrEqual(System.Int32,System.Int32,System.String)">
+            <summary>
+            Throws an <see cref="T:System.ArgumentOutOfRangeException"/> if the specified number is less or equal than min.
+            </summary>
+            <param name="argument">Number to be expected being less or equal than min.</param>
+            <param name="min">The number that must be less or equal than the argument.</param>
+            <param name="paramName">The name of the parameter being checked.</param>
+            <returns>The original value of <paramref name="argument"/>.</returns>
+        </member>
+        <member name="M:Microsoft.Shared.Diagnostics.Throw.IfGreaterThanOrEqual(System.Int32,System.Int32,System.String)">
+            <summary>
+            Throws an <see cref="T:System.ArgumentOutOfRangeException"/> if the specified number is greater or equal than max.
+            </summary>
+            <param name="argument">Number to be expected being greater or equal than max.</param>
+            <param name="max">The number that must be greater or equal than the argument.</param>
+            <param name="paramName">The name of the parameter being checked.</param>
+            <returns>The original value of <paramref name="argument"/>.</returns>
+        </member>
+        <member name="M:Microsoft.Shared.Diagnostics.Throw.IfOutOfRange(System.Int32,System.Int32,System.Int32,System.String)">
+            <summary>
+            Throws an <see cref="T:System.ArgumentOutOfRangeException"/> if the specified number is not in the specified range.
+            </summary>
+            <param name="argument">Number to be expected being greater or equal than max.</param>
+            <param name="min">The lower bound of the allowed range of argument values.</param>
+            <param name="max">The upper bound of the allowed range of argument values.</param>
+            <param name="paramName">The name of the parameter being checked.</param>
+            <returns>The original value of <paramref name="argument"/>.</returns>
+        </member>
+        <member name="M:Microsoft.Shared.Diagnostics.Throw.IfZero(System.Int32,System.String)">
+            <summary>
+            Throws an <see cref="T:System.ArgumentOutOfRangeException"/> if the specified number is equal to 0.
+            </summary>
+            <param name="argument">Number to be expected being not equal to zero.</param>
+            <param name="paramName">The name of the parameter being checked.</param>
+            <returns>The original value of <paramref name="argument"/>.</returns>
+        </member>
+        <member name="M:Microsoft.Shared.Diagnostics.Throw.IfLessThan(System.UInt32,System.UInt32,System.String)">
+            <summary>
+            Throws an <see cref="T:System.ArgumentOutOfRangeException"/>  if the specified number is less than min.
+            </summary>
+            <param name="argument">Number to be expected being less than min.</param>
+            <param name="min">The number that must be less than the argument.</param>
+            <param name="paramName">The name of the parameter being checked.</param>
+            <returns>The original value of <paramref name="argument"/>.</returns>
+        </member>
+        <member name="M:Microsoft.Shared.Diagnostics.Throw.IfGreaterThan(System.UInt32,System.UInt32,System.String)">
+            <summary>
+            Throws an <see cref="T:System.ArgumentOutOfRangeException"/> if the specified number is greater than max.
+            </summary>
+            <param name="argument">Number to be expected being greater than max.</param>
+            <param name="max">The number that must be greater than the argument.</param>
+            <param name="paramName">The name of the parameter being checked.</param>
+            <returns>The original value of <paramref name="argument"/>.</returns>
+        </member>
+        <member name="M:Microsoft.Shared.Diagnostics.Throw.IfLessThanOrEqual(System.UInt32,System.UInt32,System.String)">
+            <summary>
+            Throws an <see cref="T:System.ArgumentOutOfRangeException"/> if the specified number is less or equal than min.
+            </summary>
+            <param name="argument">Number to be expected being less or equal than min.</param>
+            <param name="min">The number that must be less or equal than the argument.</param>
+            <param name="paramName">The name of the parameter being checked.</param>
+            <returns>The original value of <paramref name="argument"/>.</returns>
+        </member>
+        <member name="M:Microsoft.Shared.Diagnostics.Throw.IfGreaterThanOrEqual(System.UInt32,System.UInt32,System.String)">
+            <summary>
+            Throws an <see cref="T:System.ArgumentOutOfRangeException"/> if the specified number is greater or equal than max.
+            </summary>
+            <param name="argument">Number to be expected being greater or equal than max.</param>
+            <param name="max">The number that must be greater or equal than the argument.</param>
+            <param name="paramName">The name of the parameter being checked.</param>
+            <returns>The original value of <paramref name="argument"/>.</returns>
+        </member>
+        <member name="M:Microsoft.Shared.Diagnostics.Throw.IfOutOfRange(System.UInt32,System.UInt32,System.UInt32,System.String)">
+            <summary>
+            Throws an <see cref="T:System.ArgumentOutOfRangeException"/> if the specified number is not in the specified range.
+            </summary>
+            <param name="argument">Number to be expected being greater or equal than max.</param>
+            <param name="min">The lower bound of the allowed range of argument values.</param>
+            <param name="max">The upper bound of the allowed range of argument values.</param>
+            <param name="paramName">The name of the parameter being checked.</param>
+            <returns>The original value of <paramref name="argument"/>.</returns>
+        </member>
+        <member name="M:Microsoft.Shared.Diagnostics.Throw.IfZero(System.UInt32,System.String)">
+            <summary>
+            Throws an <see cref="T:System.ArgumentOutOfRangeException"/> if the specified number is equal to 0.
+            </summary>
+            <param name="argument">Number to be expected being not equal to zero.</param>
+            <param name="paramName">The name of the parameter being checked.</param>
+            <returns>The original value of <paramref name="argument"/>.</returns>
+        </member>
+        <member name="M:Microsoft.Shared.Diagnostics.Throw.IfLessThan(System.Int64,System.Int64,System.String)">
+            <summary>
+            Throws an <see cref="T:System.ArgumentOutOfRangeException"/>  if the specified number is less than min.
+            </summary>
+            <param name="argument">Number to be expected being less than min.</param>
+            <param name="min">The number that must be less than the argument.</param>
+            <param name="paramName">The name of the parameter being checked.</param>
+            <returns>The original value of <paramref name="argument"/>.</returns>
+        </member>
+        <member name="M:Microsoft.Shared.Diagnostics.Throw.IfGreaterThan(System.Int64,System.Int64,System.String)">
+            <summary>
+            Throws an <see cref="T:System.ArgumentOutOfRangeException"/> if the specified number is greater than max.
+            </summary>
+            <param name="argument">Number to be expected being greater than max.</param>
+            <param name="max">The number that must be greater than the argument.</param>
+            <param name="paramName">The name of the parameter being checked.</param>
+            <returns>The original value of <paramref name="argument"/>.</returns>
+        </member>
+        <member name="M:Microsoft.Shared.Diagnostics.Throw.IfLessThanOrEqual(System.Int64,System.Int64,System.String)">
+            <summary>
+            Throws an <see cref="T:System.ArgumentOutOfRangeException"/> if the specified number is less or equal than min.
+            </summary>
+            <param name="argument">Number to be expected being less or equal than min.</param>
+            <param name="min">The number that must be less or equal than the argument.</param>
+            <param name="paramName">The name of the parameter being checked.</param>
+            <returns>The original value of <paramref name="argument"/>.</returns>
+        </member>
+        <member name="M:Microsoft.Shared.Diagnostics.Throw.IfGreaterThanOrEqual(System.Int64,System.Int64,System.String)">
+            <summary>
+            Throws an <see cref="T:System.ArgumentOutOfRangeException"/> if the specified number is greater or equal than max.
+            </summary>
+            <param name="argument">Number to be expected being greater or equal than max.</param>
+            <param name="max">The number that must be greater or equal than the argument.</param>
+            <param name="paramName">The name of the parameter being checked.</param>
+            <returns>The original value of <paramref name="argument"/>.</returns>
+        </member>
+        <member name="M:Microsoft.Shared.Diagnostics.Throw.IfOutOfRange(System.Int64,System.Int64,System.Int64,System.String)">
+            <summary>
+            Throws an <see cref="T:System.ArgumentOutOfRangeException"/> if the specified number is not in the specified range.
+            </summary>
+            <param name="argument">Number to be expected being greater or equal than max.</param>
+            <param name="min">The lower bound of the allowed range of argument values.</param>
+            <param name="max">The upper bound of the allowed range of argument values.</param>
+            <param name="paramName">The name of the parameter being checked.</param>
+            <returns>The original value of <paramref name="argument"/>.</returns>
+        </member>
+        <member name="M:Microsoft.Shared.Diagnostics.Throw.IfZero(System.Int64,System.String)">
+            <summary>
+            Throws an <see cref="T:System.ArgumentOutOfRangeException"/> if the specified number is equal to 0.
+            </summary>
+            <param name="argument">Number to be expected being not equal to zero.</param>
+            <param name="paramName">The name of the parameter being checked.</param>
+            <returns>The original value of <paramref name="argument"/>.</returns>
+        </member>
+        <member name="M:Microsoft.Shared.Diagnostics.Throw.IfLessThan(System.UInt64,System.UInt64,System.String)">
+            <summary>
+            Throws an <see cref="T:System.ArgumentOutOfRangeException"/>  if the specified number is less than min.
+            </summary>
+            <param name="argument">Number to be expected being less than min.</param>
+            <param name="min">The number that must be less than the argument.</param>
+            <param name="paramName">The name of the parameter being checked.</param>
+            <returns>The original value of <paramref name="argument"/>.</returns>
+        </member>
+        <member name="M:Microsoft.Shared.Diagnostics.Throw.IfGreaterThan(System.UInt64,System.UInt64,System.String)">
+            <summary>
+            Throws an <see cref="T:System.ArgumentOutOfRangeException"/> if the specified number is greater than max.
+            </summary>
+            <param name="argument">Number to be expected being greater than max.</param>
+            <param name="max">The number that must be greater than the argument.</param>
+            <param name="paramName">The name of the parameter being checked.</param>
+            <returns>The original value of <paramref name="argument"/>.</returns>
+        </member>
+        <member name="M:Microsoft.Shared.Diagnostics.Throw.IfLessThanOrEqual(System.UInt64,System.UInt64,System.String)">
+            <summary>
+            Throws an <see cref="T:System.ArgumentOutOfRangeException"/> if the specified number is less or equal than min.
+            </summary>
+            <param name="argument">Number to be expected being less or equal than min.</param>
+            <param name="min">The number that must be less or equal than the argument.</param>
+            <param name="paramName">The name of the parameter being checked.</param>
+            <returns>The original value of <paramref name="argument"/>.</returns>
+        </member>
+        <member name="M:Microsoft.Shared.Diagnostics.Throw.IfGreaterThanOrEqual(System.UInt64,System.UInt64,System.String)">
+            <summary>
+            Throws an <see cref="T:System.ArgumentOutOfRangeException"/> if the specified number is greater or equal than max.
+            </summary>
+            <param name="argument">Number to be expected being greater or equal than max.</param>
+            <param name="max">The number that must be greater or equal than the argument.</param>
+            <param name="paramName">The name of the parameter being checked.</param>
+            <returns>The original value of <paramref name="argument"/>.</returns>
+        </member>
+        <member name="M:Microsoft.Shared.Diagnostics.Throw.IfOutOfRange(System.UInt64,System.UInt64,System.UInt64,System.String)">
+            <summary>
+            Throws an <see cref="T:System.ArgumentOutOfRangeException"/> if the specified number is not in the specified range.
+            </summary>
+            <param name="argument">Number to be expected being greater or equal than max.</param>
+            <param name="min">The lower bound of the allowed range of argument values.</param>
+            <param name="max">The upper bound of the allowed range of argument values.</param>
+            <param name="paramName">The name of the parameter being checked.</param>
+            <returns>The original value of <paramref name="argument"/>.</returns>
+        </member>
+        <member name="M:Microsoft.Shared.Diagnostics.Throw.IfZero(System.UInt64,System.String)">
+            <summary>
+            Throws an <see cref="T:System.ArgumentOutOfRangeException"/> if the specified number is equal to 0.
+            </summary>
+            <param name="argument">Number to be expected being not equal to zero.</param>
+            <param name="paramName">The name of the parameter being checked.</param>
+            <returns>The original value of <paramref name="argument"/>.</returns>
+        </member>
+        <member name="M:Microsoft.Shared.Diagnostics.Throw.IfLessThan(System.Double,System.Double,System.String)">
+            <summary>
+            Throws an <see cref="T:System.ArgumentOutOfRangeException"/> if the specified number is less than min.
+            </summary>
+            <param name="argument">Number to be expected being less than min.</param>
+            <param name="min">The number that must be less than the argument.</param>
+            <param name="paramName">The name of the parameter being checked.</param>
+            <returns>The original value of <paramref name="argument"/>.</returns>
+        </member>
+        <member name="M:Microsoft.Shared.Diagnostics.Throw.IfGreaterThan(System.Double,System.Double,System.String)">
+            <summary>
+            Throws an <see cref="T:System.ArgumentOutOfRangeException"/> if the specified number is greater than max.
+            </summary>
+            <param name="argument">Number to be expected being greater than max.</param>
+            <param name="max">The number that must be greater than the argument.</param>
+            <param name="paramName">The name of the parameter being checked.</param>
+            <returns>The original value of <paramref name="argument"/>.</returns>
+        </member>
+        <member name="M:Microsoft.Shared.Diagnostics.Throw.IfLessThanOrEqual(System.Double,System.Double,System.String)">
+            <summary>
+            Throws an <see cref="T:System.ArgumentOutOfRangeException"/> if the specified number is less or equal than min.
+            </summary>
+            <param name="argument">Number to be expected being less or equal than min.</param>
+            <param name="min">The number that must be less or equal than the argument.</param>
+            <param name="paramName">The name of the parameter being checked.</param>
+            <returns>The original value of <paramref name="argument"/>.</returns>
+        </member>
+        <member name="M:Microsoft.Shared.Diagnostics.Throw.IfGreaterThanOrEqual(System.Double,System.Double,System.String)">
+            <summary>
+            Throws an <see cref="T:System.ArgumentOutOfRangeException"/> if the specified number is greater or equal than max.
+            </summary>
+            <param name="argument">Number to be expected being greater or equal than max.</param>
+            <param name="max">The number that must be greater or equal than the argument.</param>
+            <param name="paramName">The name of the parameter being checked.</param>
+            <returns>The original value of <paramref name="argument"/>.</returns>
+        </member>
+        <member name="M:Microsoft.Shared.Diagnostics.Throw.IfOutOfRange(System.Double,System.Double,System.Double,System.String)">
+            <summary>
+            Throws an <see cref="T:System.ArgumentOutOfRangeException"/> if the specified number is not in the specified range.
+            </summary>
+            <param name="argument">Number to be expected being greater or equal than max.</param>
+            <param name="min">The lower bound of the allowed range of argument values.</param>
+            <param name="max">The upper bound of the allowed range of argument values.</param>
+            <param name="paramName">The name of the parameter being checked.</param>
+            <returns>The original value of <paramref name="argument"/>.</returns>
+        </member>
+        <member name="M:Microsoft.Shared.Diagnostics.Throw.IfZero(System.Double,System.String)">
+            <summary>
+            Throws an <see cref="T:System.ArgumentOutOfRangeException"/> if the specified number is equal to 0.
+            </summary>
+            <param name="argument">Number to be expected being not equal to zero.</param>
+            <param name="paramName">The name of the parameter being checked.</param>
+            <returns>The original value of <paramref name="argument"/>.</returns>
+        </member>
+        <member name="T:Microsoft.Extensions.ServiceDiscovery.ConfigurationServiceEndpointProviderOptions">
+            <summary>
+            Options for <see cref="T:Microsoft.Extensions.ServiceDiscovery.Configuration.ConfigurationServiceEndpointProvider"/>.
+            </summary>
+        </member>
+        <member name="P:Microsoft.Extensions.ServiceDiscovery.ConfigurationServiceEndpointProviderOptions.SectionName">
+            <summary>
+            The name of the configuration section which contains service endpoints. Defaults to <c>"Services"</c>.
+            </summary>
+        </member>
+        <member name="P:Microsoft.Extensions.ServiceDiscovery.ConfigurationServiceEndpointProviderOptions.ShouldApplyHostNameMetadata">
+            <summary>
+            Gets or sets a delegate used to determine whether to apply host name metadata to each resolved endpoint. Defaults to a delegate which returns <c>false</c>.
+            </summary>
+        </member>
+        <member name="T:Microsoft.Extensions.ServiceDiscovery.Configuration.ConfigurationServiceEndpointProvider">
+            <summary>
+            A service endpoint provider that uses configuration to resolve resolved.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Extensions.ServiceDiscovery.Configuration.ConfigurationServiceEndpointProvider.#ctor(Microsoft.Extensions.ServiceDiscovery.ServiceEndpointQuery,Microsoft.Extensions.Configuration.IConfiguration,Microsoft.Extensions.Logging.ILogger{Microsoft.Extensions.ServiceDiscovery.Configuration.ConfigurationServiceEndpointProvider},Microsoft.Extensions.Options.IOptions{Microsoft.Extensions.ServiceDiscovery.ConfigurationServiceEndpointProviderOptions},Microsoft.Extensions.Options.IOptions{Microsoft.Extensions.ServiceDiscovery.ServiceDiscoveryOptions})">
+            <summary>
+            Initializes a new <see cref="T:Microsoft.Extensions.ServiceDiscovery.Configuration.ConfigurationServiceEndpointProvider"/> instance.
+            </summary>
+            <param name="query">The query.</param>
+            <param name="configuration">The configuration.</param>
+            <param name="logger">The logger.</param>
+            <param name="options">Configuration provider options.</param>
+            <param name="serviceDiscoveryOptions">Service discovery options.</param>
+        </member>
+        <member name="M:Microsoft.Extensions.ServiceDiscovery.Configuration.ConfigurationServiceEndpointProvider.DisposeAsync">
+            <inheritdoc/>
+        </member>
+        <member name="M:Microsoft.Extensions.ServiceDiscovery.Configuration.ConfigurationServiceEndpointProvider.PopulateAsync(Microsoft.Extensions.ServiceDiscovery.IServiceEndpointBuilder,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="T:Microsoft.Extensions.ServiceDiscovery.Configuration.ConfigurationServiceEndpointProviderFactory">
+            <summary>
+            <see cref="T:Microsoft.Extensions.ServiceDiscovery.IServiceEndpointProviderFactory"/> implementation that resolves services using <see cref="T:Microsoft.Extensions.Configuration.IConfiguration"/>.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Extensions.ServiceDiscovery.Configuration.ConfigurationServiceEndpointProviderFactory.#ctor(Microsoft.Extensions.Configuration.IConfiguration,Microsoft.Extensions.Options.IOptions{Microsoft.Extensions.ServiceDiscovery.ConfigurationServiceEndpointProviderOptions},Microsoft.Extensions.Options.IOptions{Microsoft.Extensions.ServiceDiscovery.ServiceDiscoveryOptions},Microsoft.Extensions.Logging.ILogger{Microsoft.Extensions.ServiceDiscovery.Configuration.ConfigurationServiceEndpointProvider})">
+            <summary>
+            <see cref="T:Microsoft.Extensions.ServiceDiscovery.IServiceEndpointProviderFactory"/> implementation that resolves services using <see cref="T:Microsoft.Extensions.Configuration.IConfiguration"/>.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Extensions.ServiceDiscovery.Configuration.ConfigurationServiceEndpointProviderFactory.TryCreateProvider(Microsoft.Extensions.ServiceDiscovery.ServiceEndpointQuery,Microsoft.Extensions.ServiceDiscovery.IServiceEndpointProvider@)">
+            <inheritdoc/>
+        </member>
+        <member name="T:Microsoft.Extensions.ServiceDiscovery.Http.HttpServiceEndpointResolver">
+            <summary>
+            Resolves endpoints for HTTP requests.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Extensions.ServiceDiscovery.Http.HttpServiceEndpointResolver.#ctor(Microsoft.Extensions.ServiceDiscovery.ServiceEndpointWatcherFactory,System.IServiceProvider,System.TimeProvider)">
+            <summary>
+            Resolves endpoints for HTTP requests.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Extensions.ServiceDiscovery.Http.HttpServiceEndpointResolver.GetEndpointAsync(System.Net.Http.HttpRequestMessage,System.Threading.CancellationToken)">
+            <summary>
+            Resolves and returns a service endpoint for the specified request.
+            </summary>
+            <param name="request">The request message.</param>
+            <param name="cancellationToken">A <see cref="T:System.Threading.CancellationToken"/>.</param>
+            <returns>The resolved service endpoint.</returns>
+            <exception cref="T:System.InvalidOperationException">The request had no <see cref="P:System.Net.Http.HttpRequestMessage.RequestUri"/> set or a suitable endpoint could not be found.</exception>
+        </member>
+        <member name="M:Microsoft.Extensions.ServiceDiscovery.Http.HttpServiceEndpointResolver.DisposeAsync">
+            <inheritdoc/>
+        </member>
+        <member name="T:Microsoft.Extensions.ServiceDiscovery.Http.IServiceDiscoveryHttpMessageHandlerFactory">
+            <summary>
+            Factory which creates <see cref="T:System.Net.Http.HttpMessageHandler"/> instances which resolve endpoints using service discovery
+            before delegating to a provided handler.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Extensions.ServiceDiscovery.Http.IServiceDiscoveryHttpMessageHandlerFactory.CreateHandler(System.Net.Http.HttpMessageHandler)">
+            <summary>
+            Creates an <see cref="T:System.Net.Http.HttpMessageHandler"/> instance which resolve endpoints using service discovery before
+            delegating to a provided handler.
+            </summary>
+            <param name="handler">The handler to delegate to.</param>
+            <returns>The new <see cref="T:System.Net.Http.HttpMessageHandler"/>.</returns>
+        </member>
+        <member name="T:Microsoft.Extensions.ServiceDiscovery.Http.ResolvingHttpClientHandler">
+            <summary>
+            <see cref="T:System.Net.Http.HttpClientHandler"/> which resolves endpoints using service discovery.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Extensions.ServiceDiscovery.Http.ResolvingHttpClientHandler.#ctor(Microsoft.Extensions.ServiceDiscovery.Http.HttpServiceEndpointResolver,Microsoft.Extensions.Options.IOptions{Microsoft.Extensions.ServiceDiscovery.ServiceDiscoveryOptions})">
+            <summary>
+            <see cref="T:System.Net.Http.HttpClientHandler"/> which resolves endpoints using service discovery.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Extensions.ServiceDiscovery.Http.ResolvingHttpClientHandler.SendAsync(System.Net.Http.HttpRequestMessage,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="T:Microsoft.Extensions.ServiceDiscovery.Http.ResolvingHttpDelegatingHandler">
+            <summary>
+            HTTP message handler which resolves endpoints using service discovery.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Extensions.ServiceDiscovery.Http.ResolvingHttpDelegatingHandler.#ctor(Microsoft.Extensions.ServiceDiscovery.Http.HttpServiceEndpointResolver,Microsoft.Extensions.Options.IOptions{Microsoft.Extensions.ServiceDiscovery.ServiceDiscoveryOptions})">
+            <summary>
+            Initializes a new <see cref="T:Microsoft.Extensions.ServiceDiscovery.Http.ResolvingHttpDelegatingHandler"/> instance.
+            </summary>
+            <param name="resolver">The endpoint resolver.</param>
+            <param name="options">The service discovery options.</param>
+        </member>
+        <member name="M:Microsoft.Extensions.ServiceDiscovery.Http.ResolvingHttpDelegatingHandler.#ctor(Microsoft.Extensions.ServiceDiscovery.Http.HttpServiceEndpointResolver,Microsoft.Extensions.Options.IOptions{Microsoft.Extensions.ServiceDiscovery.ServiceDiscoveryOptions},System.Net.Http.HttpMessageHandler)">
+            <summary>
+            Initializes a new <see cref="T:Microsoft.Extensions.ServiceDiscovery.Http.ResolvingHttpDelegatingHandler"/> instance.
+            </summary>
+            <param name="resolver">The endpoint resolver.</param>
+            <param name="options">The service discovery options.</param>
+            <param name="innerHandler">The inner handler.</param>
+        </member>
+        <member name="M:Microsoft.Extensions.ServiceDiscovery.Http.ResolvingHttpDelegatingHandler.SendAsync(System.Net.Http.HttpRequestMessage,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="T:Microsoft.Extensions.ServiceDiscovery.Internal.ServiceEndpointResolverResult">
+            <summary>
+            Represents the result of service endpoint resolution.
+            </summary>
+            <param name="endpointSource">The endpoint collection.</param>
+            <param name="exception">The exception which occurred during resolution.</param>
+        </member>
+        <member name="M:Microsoft.Extensions.ServiceDiscovery.Internal.ServiceEndpointResolverResult.#ctor(Microsoft.Extensions.ServiceDiscovery.ServiceEndpointSource,System.Exception)">
+            <summary>
+            Represents the result of service endpoint resolution.
+            </summary>
+            <param name="endpointSource">The endpoint collection.</param>
+            <param name="exception">The exception which occurred during resolution.</param>
+        </member>
+        <member name="P:Microsoft.Extensions.ServiceDiscovery.Internal.ServiceEndpointResolverResult.Exception">
+            <summary>
+            Gets the exception which occurred during resolution.
+            </summary>
+        </member>
+        <member name="P:Microsoft.Extensions.ServiceDiscovery.Internal.ServiceEndpointResolverResult.ResolvedSuccessfully">
+            <summary>
+            Gets a value indicating whether resolution completed successfully.
+            </summary>
+        </member>
+        <member name="P:Microsoft.Extensions.ServiceDiscovery.Internal.ServiceEndpointResolverResult.EndpointSource">
+            <summary>
+            Gets the endpoints.
+            </summary>
+        </member>
+        <member name="T:Microsoft.Extensions.ServiceDiscovery.LoadBalancing.IServiceEndpointSelector">
+            <summary>
+            Selects endpoints from a collection of endpoints.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Extensions.ServiceDiscovery.LoadBalancing.IServiceEndpointSelector.SetEndpoints(Microsoft.Extensions.ServiceDiscovery.ServiceEndpointSource)">
+            <summary>
+            Sets the collection of endpoints which this instance will select from.
+            </summary>
+            <param name="endpoints">The collection of endpoints to select from.</param>
+        </member>
+        <member name="M:Microsoft.Extensions.ServiceDiscovery.LoadBalancing.IServiceEndpointSelector.GetEndpoint(System.Object)">
+            <summary>
+            Selects an endpoints from the collection provided by the most recent call to <see cref="M:Microsoft.Extensions.ServiceDiscovery.LoadBalancing.IServiceEndpointSelector.SetEndpoints(Microsoft.Extensions.ServiceDiscovery.ServiceEndpointSource)"/>.
+            </summary>
+            <param name="context">The context.</param>
+            <returns>An endpoint.</returns>
+        </member>
+        <member name="T:Microsoft.Extensions.ServiceDiscovery.LoadBalancing.RoundRobinServiceEndpointSelector">
+            <summary>
+            Selects endpoints by iterating through the list of endpoints in a round-robin fashion.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Extensions.ServiceDiscovery.LoadBalancing.RoundRobinServiceEndpointSelector.SetEndpoints(Microsoft.Extensions.ServiceDiscovery.ServiceEndpointSource)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Microsoft.Extensions.ServiceDiscovery.LoadBalancing.RoundRobinServiceEndpointSelector.GetEndpoint(System.Object)">
+            <inheritdoc/>
+        </member>
+        <member name="T:Microsoft.Extensions.ServiceDiscovery.PassThrough.PassThroughServiceEndpointProvider">
+            <summary>
+            Service endpoint provider which passes through the provided value.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Extensions.ServiceDiscovery.PassThrough.PassThroughServiceEndpointProvider.#ctor(Microsoft.Extensions.Logging.ILogger,System.String,System.Net.EndPoint)">
+            <summary>
+            Service endpoint provider which passes through the provided value.
+            </summary>
+        </member>
+        <member name="T:Microsoft.Extensions.ServiceDiscovery.PassThrough.PassThroughServiceEndpointProviderFactory">
+            <summary>
+            Service endpoint provider factory which creates pass-through providers.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Extensions.ServiceDiscovery.PassThrough.PassThroughServiceEndpointProviderFactory.#ctor(Microsoft.Extensions.Logging.ILogger{Microsoft.Extensions.ServiceDiscovery.PassThrough.PassThroughServiceEndpointProvider})">
+            <summary>
+            Service endpoint provider factory which creates pass-through providers.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Extensions.ServiceDiscovery.PassThrough.PassThroughServiceEndpointProviderFactory.TryCreateProvider(Microsoft.Extensions.ServiceDiscovery.ServiceEndpointQuery,Microsoft.Extensions.ServiceDiscovery.IServiceEndpointProvider@)">
+            <inheritdoc/>
+        </member>
+        <member name="T:Microsoft.Extensions.ServiceDiscovery.ServiceDiscoveryOptions">
+            <summary>
+            Options for service endpoint resolution.
+            </summary>
+        </member>
+        <member name="P:Microsoft.Extensions.ServiceDiscovery.ServiceDiscoveryOptions.AllowAllSchemes">
+            <summary>
+            Gets or sets a value indicating whether all URI schemes for URIs resolved by the service discovery system are allowed.
+            If this value is <see langword="true"/>, all URI schemes are allowed.
+            If this value is <see langword="false"/>, only the schemes specified in <see cref="P:Microsoft.Extensions.ServiceDiscovery.ServiceDiscoveryOptions.AllowedSchemes"/> are allowed.
+            </summary>
+        </member>
+        <member name="P:Microsoft.Extensions.ServiceDiscovery.ServiceDiscoveryOptions.RefreshPeriod">
+            <summary>
+            Gets or sets the period between polling attempts for providers which do not support refresh notifications via <see cref="P:Microsoft.Extensions.Primitives.IChangeToken.ActiveChangeCallbacks"/>.
+            </summary>
+        </member>
+        <member name="P:Microsoft.Extensions.ServiceDiscovery.ServiceDiscoveryOptions.AllowedSchemes">
+            <summary>
+            Gets or sets the collection of allowed URI schemes for URIs resolved by the service discovery system when multiple schemes are specified, for example "https+http://_endpoint.service".
+            </summary>
+            <remarks>
+            When <see cref="P:Microsoft.Extensions.ServiceDiscovery.ServiceDiscoveryOptions.AllowAllSchemes"/> is <see langword="true"/>, this property is ignored.
+            </remarks>
+        </member>
+        <member name="M:Microsoft.Extensions.ServiceDiscovery.ServiceDiscoveryOptions.ApplyAllowedSchemes(System.Collections.Generic.IReadOnlyList{System.String})">
+            <summary>
+            Filters the specified URI schemes to include only those that are applicable, based on the current settings.
+            </summary>
+            <param name="requestedSchemes">The URI schemes to be evaluated against the allowed schemes.</param>
+            <returns>
+            The URI schemes that are applicable. If no schemes are requested, all allowed schemes are returned.
+            If all schemes are allowed, only the requested schemes are returned.
+            Otherwise, the intersection of requested and allowed schemes is returned.
+            </returns>
+        </member>
+        <member name="T:Microsoft.Extensions.ServiceDiscovery.ServiceEndpointBuilder">
+            <summary>
+            A mutable collection of service endpoints. 
+            </summary>
+        </member>
+        <member name="M:Microsoft.Extensions.ServiceDiscovery.ServiceEndpointBuilder.AddChangeToken(Microsoft.Extensions.Primitives.IChangeToken)">
+            <summary>
+            Adds a change token.
+            </summary>
+            <param name="changeToken">The change token.</param>
+        </member>
+        <member name="P:Microsoft.Extensions.ServiceDiscovery.ServiceEndpointBuilder.Features">
+            <summary>
+            Gets the feature collection.
+            </summary>
+        </member>
+        <member name="P:Microsoft.Extensions.ServiceDiscovery.ServiceEndpointBuilder.Endpoints">
+            <summary>
+            Gets the endpoints.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Extensions.ServiceDiscovery.ServiceEndpointBuilder.Build">
+            <summary>
+            Creates a <see cref="T:Microsoft.Extensions.ServiceDiscovery.ServiceEndpointSource"/> from the provided instance.
+            </summary>
+            <returns>The service endpoint source.</returns>
+        </member>
+        <member name="T:Microsoft.Extensions.ServiceDiscovery.ServiceEndpointResolver">
+            <summary>
+            Resolves service names to collections of endpoints.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Extensions.ServiceDiscovery.ServiceEndpointResolver.#ctor(Microsoft.Extensions.ServiceDiscovery.ServiceEndpointWatcherFactory,System.TimeProvider)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Microsoft.Extensions.ServiceDiscovery.ServiceEndpointResolver"/> class.
+            </summary>
+            <param name="watcherFactory">The watcher factory.</param>
+            <param name="timeProvider">The time provider.</param>
+        </member>
+        <member name="M:Microsoft.Extensions.ServiceDiscovery.ServiceEndpointResolver.GetEndpointsAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Resolves and returns service endpoints for the specified service.
+            </summary>
+            <param name="serviceName">The service name.</param>
+            <param name="cancellationToken">A <see cref="T:System.Threading.CancellationToken"/>.</param>
+            <returns>The resolved service endpoints.</returns>
+        </member>
+        <member name="M:Microsoft.Extensions.ServiceDiscovery.ServiceEndpointResolver.DisposeAsync">
+            <inheritdoc/>
+        </member>
+        <member name="T:Microsoft.Extensions.ServiceDiscovery.ServiceEndpointWatcher">
+            <summary>
+            Watches for updates to the collection of resolved endpoints for a specified service.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Extensions.ServiceDiscovery.ServiceEndpointWatcher.#ctor(Microsoft.Extensions.ServiceDiscovery.IServiceEndpointProvider[],Microsoft.Extensions.Logging.ILogger,System.String,System.TimeProvider,Microsoft.Extensions.Options.IOptions{Microsoft.Extensions.ServiceDiscovery.ServiceDiscoveryOptions})">
+            <summary>
+            Watches for updates to the collection of resolved endpoints for a specified service.
+            </summary>
+        </member>
+        <member name="P:Microsoft.Extensions.ServiceDiscovery.ServiceEndpointWatcher.ServiceName">
+            <summary>
+            Gets the service name.
+            </summary>
+        </member>
+        <member name="P:Microsoft.Extensions.ServiceDiscovery.ServiceEndpointWatcher.OnEndpointsUpdated">
+            <summary>
+            Gets or sets the action called when endpoints are updated.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Extensions.ServiceDiscovery.ServiceEndpointWatcher.Start">
+            <summary>
+            Starts the endpoint resolver.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Extensions.ServiceDiscovery.ServiceEndpointWatcher.GetEndpointsAsync(System.Threading.CancellationToken)">
+            <summary>
+            Returns a collection of resolved endpoints for the service.
+            </summary>
+            <param name="cancellationToken">A <see cref="T:System.Threading.CancellationToken"/>.</param>
+            <returns>A collection of resolved endpoints for the service.</returns>
+        </member>
+        <member name="M:Microsoft.Extensions.ServiceDiscovery.ServiceEndpointWatcher.DisposeAsync">
+            <inheritdoc/>
+        </member>
+        <member name="T:Microsoft.Extensions.ServiceDiscovery.ServiceEndpointWatcherFactory">
+            <summary>
+            Creates service endpoint watchers.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Extensions.ServiceDiscovery.ServiceEndpointWatcherFactory.#ctor(System.Collections.Generic.IEnumerable{Microsoft.Extensions.ServiceDiscovery.IServiceEndpointProviderFactory},Microsoft.Extensions.Logging.ILogger{Microsoft.Extensions.ServiceDiscovery.ServiceEndpointWatcher},Microsoft.Extensions.Options.IOptions{Microsoft.Extensions.ServiceDiscovery.ServiceDiscoveryOptions},System.TimeProvider)">
+            <summary>
+            Creates service endpoint watchers.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Extensions.ServiceDiscovery.ServiceEndpointWatcherFactory.CreateWatcher(System.String)">
+            <summary>
+            Creates a service endpoint watcher for the provided service name.
+            </summary>
+        </member>
+        <member name="T:Microsoft.Extensions.DependencyInjection.ServiceDiscoveryHttpClientBuilderExtensions">
+            <summary>
+            Extensions for configuring <see cref="T:Microsoft.Extensions.DependencyInjection.IHttpClientBuilder"/> with service discovery.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Extensions.DependencyInjection.ServiceDiscoveryHttpClientBuilderExtensions.AddServiceDiscovery(Microsoft.Extensions.DependencyInjection.IHttpClientBuilder)">
+            <summary>
+            Adds service discovery to the <see cref="T:Microsoft.Extensions.DependencyInjection.IHttpClientBuilder"/>.
+            </summary>
+            <param name="httpClientBuilder">The builder.</param>
+            <returns>The builder.</returns>
+        </member>
+        <member name="T:Microsoft.Extensions.DependencyInjection.ServiceDiscoveryServiceCollectionExtensions">
+            <summary>
+            Extension methods for configuring service discovery.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Extensions.DependencyInjection.ServiceDiscoveryServiceCollectionExtensions.AddServiceDiscovery(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Adds the core service discovery services and configures defaults.
+            </summary>
+            <param name="services">The service collection.</param>
+            <returns>The service collection.</returns>
+        </member>
+        <member name="M:Microsoft.Extensions.DependencyInjection.ServiceDiscoveryServiceCollectionExtensions.AddServiceDiscovery(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Microsoft.Extensions.ServiceDiscovery.ServiceDiscoveryOptions})">
+            <summary>
+            Adds the core service discovery services and configures defaults.
+            </summary>
+            <param name="services">The service collection.</param>
+            <param name="configureOptions">The delegate used to configure service discovery options.</param>
+            <returns>The service collection.</returns>
+        </member>
+        <member name="M:Microsoft.Extensions.DependencyInjection.ServiceDiscoveryServiceCollectionExtensions.AddServiceDiscoveryCore(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Adds the core service discovery services.
+            </summary>
+            <param name="services">The service collection.</param>
+            <returns>The service collection.</returns>
+        </member>
+        <member name="M:Microsoft.Extensions.DependencyInjection.ServiceDiscoveryServiceCollectionExtensions.AddServiceDiscoveryCore(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Microsoft.Extensions.ServiceDiscovery.ServiceDiscoveryOptions})">
+            <summary>
+            Adds the core service discovery services.
+            </summary>
+            <param name="services">The service collection.</param>
+            <param name="configureOptions">The delegate used to configure service discovery options.</param>
+            <returns>The service collection.</returns>
+        </member>
+        <member name="M:Microsoft.Extensions.DependencyInjection.ServiceDiscoveryServiceCollectionExtensions.AddConfigurationServiceEndpointProvider(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Configures a service discovery endpoint provider which uses <see cref="T:Microsoft.Extensions.Configuration.IConfiguration"/> to resolve endpoints.
+            </summary>
+            <param name="services">The service collection.</param>
+            <returns>The service collection.</returns>
+        </member>
+        <member name="M:Microsoft.Extensions.DependencyInjection.ServiceDiscoveryServiceCollectionExtensions.AddConfigurationServiceEndpointProvider(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Microsoft.Extensions.ServiceDiscovery.ConfigurationServiceEndpointProviderOptions})">
+            <summary>
+            Configures a service discovery endpoint provider which uses <see cref="T:Microsoft.Extensions.Configuration.IConfiguration"/> to resolve endpoints.
+            </summary>
+            <param name="configureOptions">The delegate used to configure the provider.</param>
+            <param name="services">The service collection.</param>
+            <returns>The service collection.</returns>
+        </member>
+        <member name="M:Microsoft.Extensions.DependencyInjection.ServiceDiscoveryServiceCollectionExtensions.AddPassThroughServiceEndpointProvider(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Configures a service discovery endpoint provider which passes through the input without performing resolution.
+            </summary>
+            <param name="services">The service collection.</param>
+            <returns>The service collection.</returns>
+        </member>
+    </members>
+</doc>

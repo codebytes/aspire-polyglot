@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>Microsoft.Extensions.ServiceDiscovery</id>
+    <version>10.4.0</version>
+    <authors>Microsoft</authors>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <license type="expression">MIT</license>
+    <licenseUrl>https://licenses.nuget.org/MIT</licenseUrl>
+    <icon>Icon.png</icon>
+    <readme>README.md</readme>
+    <projectUrl>https://dot.net/</projectUrl>
+    <description>Provides extensions to HttpClient that enable service discovery based on configuration.</description>
+    <copyright>© Microsoft Corporation. All rights reserved.</copyright>
+    <serviceable>true</serviceable>
+    <repository type="git" url="https://github.com/dotnet/extensions" commit="0ae4c336dd9f1b59b1e25bcf341da7315d657557" />
+    <dependencies>
+      <group targetFramework=".NETFramework4.6.2">
+        <dependency id="Microsoft.Extensions.ServiceDiscovery.Abstractions" version="10.4.0" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.Bcl.TimeProvider" version="8.0.1" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.Extensions.Http" version="8.0.1" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework="net8.0">
+        <dependency id="Microsoft.Extensions.ServiceDiscovery.Abstractions" version="10.4.0" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.Extensions.Http" version="8.0.1" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework="net9.0">
+        <dependency id="Microsoft.Extensions.ServiceDiscovery.Abstractions" version="10.4.0" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.Extensions.Http" version="9.0.14" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework="net10.0">
+        <dependency id="Microsoft.Extensions.ServiceDiscovery.Abstractions" version="10.4.0" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.Extensions.Http" version="10.0.4" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework=".NETStandard2.0">
+        <dependency id="Microsoft.Extensions.ServiceDiscovery.Abstractions" version="10.4.0" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.Bcl.TimeProvider" version="8.0.1" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.Extensions.Http" version="8.0.1" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+    <frameworkAssemblies>
+      <frameworkAssembly assemblyName="System.Net.Http" targetFramework=".NETFramework4.6.2" />
+    </frameworkAssemblies>
+  </metadata>
+</package>

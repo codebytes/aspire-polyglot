@@ -11,11 +11,9 @@ public class AppHost {
             pg.withEnvironment("POSTGRES_DB", "notesdb");
 
             var api = builder.addDockerfile("api", "./src", null, null);
-            api.withEnvironment("PG_HOST", "pg");
-            api.withEnvironment("PG_PORT", "5432");
-            api.withEnvironment("PG_USER", "postgres");
-            api.withEnvironment("PG_PASSWORD", "postgres");
-            api.withEnvironment("PG_DB", "notesdb");
+            api.withEnvironment("NOTESDB_JDBCCONNECTIONSTRING", "jdbc:postgresql://pg:5432/notesdb");
+            api.withEnvironment("NOTESDB_USERNAME", "postgres");
+            api.withEnvironment("NOTESDB_PASSWORD", "postgres");
             api.withExternalHttpEndpoints();
 
             DistributedApplication app = builder.build();

@@ -4,11 +4,12 @@ A full-stack bookmark manager demonstrating how **Aspire can orchestrate ANY exe
 
 ## Architecture
 
-- **Backend**: Go HTTP server (stdlib `net/http`, no external dependencies)
+- **Backend**: Go HTTP server with PostgreSQL persistence (falls back to in-memory without Aspire)
 - **Frontend**: Svelte 4 SPA with Vite
-- **Orchestration**: Aspire using standalone `apphost.cs` with `AddDockerfile` and `AddNpmApp`
+- **Database**: PostgreSQL managed by Aspire via `AddPostgres`
+- **Orchestration**: Aspire using standalone `apphost.go` with `AddDockerfile`, `AddNpmApp`, and `AddPostgres`
 
-This sample proves that Aspire is a **polyglot orchestration platform** - it can manage Go, Node.js, Python, Ruby, or any containerized application.
+This sample proves that Aspire is a **polyglot orchestration platform** - it can manage Go, Node.js, Python, Ruby, or any containerized application, **including real infrastructure like PostgreSQL**.
 
 ## Features
 
@@ -16,16 +17,17 @@ This sample proves that Aspire is a **polyglot orchestration platform** - it can
 - 🔍 Real-time search by title, tags, or URL
 - 🏷️ Tag-based organization with colored badges
 - 🗑️ Delete bookmarks
-- 💾 In-memory storage with seeded data
+- 🐘 PostgreSQL persistence via Aspire-managed infrastructure
+- 💾 Graceful in-memory fallback when running without Aspire
 - 🎨 Modern, responsive card-based UI
 
 ## Project Structure
 
 ```
 svelte-go-bookmarks/
-├── apphost.cs            # Standalone Aspire orchestration
+├── apphost.go            # Standalone Aspire orchestration (Go)
 ├── go-api/               # Go backend
-│   ├── main.go           # HTTP server with CRUD endpoints
+│   ├── main.go           # HTTP server with CRUD endpoints + PostgreSQL
 │   ├── go.mod
 │   └── Dockerfile        # Multi-stage build
 └── frontend/             # Svelte SPA
@@ -38,17 +40,27 @@ svelte-go-bookmarks/
     └── package.json
 ```
 
-## Key Aspire Pattern: AddDockerfile
+## Key Aspire Patterns
 
-Since Aspire doesn't have `AddGoApp`, we use **`AddDockerfile`** to orchestrate the Go API in our standalone `apphost.cs`:
+### AddPostgres + WithReference
 
-```csharp
-var api = builder.AddDockerfile("api", "./go-api")
-    .WithHttpEndpoint(targetPort: 8080)
-    .WithExternalHttpEndpoints();
+Aspire manages a PostgreSQL container and injects the connection string into the Go API automatically:
+
+```go
+pg, _ := builder.AddPostgres("pg")
+db, _ := pg.AddDatabase("bookmarksdb")
+
+api, _ := builder.AddDockerfile("api", "./go-api")
+api.WithReference(db)
+api.WithHttpEndpoint(8080, "http")
+api.WithExternalHttpEndpoints()
 ```
 
-This pattern works for **any language** that can be containerized!
+The Go API reads `CONNECTIONSTRINGS__bookmarksdb` from the environment — no hardcoded connection strings needed.
+
+### AddDockerfile
+
+Since Aspire doesn't have `AddGoApp`, we use **`AddDockerfile`** to orchestrate the Go API. This pattern works for **any language** that can be containerized!
 
 ## API Endpoints
 
@@ -84,16 +96,18 @@ This sample demonstrates:
 
 - 🌍 **Polyglot orchestration** - Aspire isn't .NET-only!
 - 🐳 **AddDockerfile pattern** - Universal integration for any language
-- 🔗 **Service references** - Frontend gets `services__api__http__0` automatically
+- 🐘 **AddPostgres pattern** - Aspire manages real infrastructure for non-.NET apps
+- 🔗 **Service references** - Frontend gets `services__api__http__0`, API gets `CONNECTIONSTRINGS__bookmarksdb` automatically
 - 📊 **Unified observability** - Logs, metrics, traces in Aspire dashboard
 - 🚀 **Local-to-cloud** - Same orchestration in dev and production
 
-**The lesson**: If it runs in Docker, Aspire can orchestrate it. This makes Aspire a compelling choice for **heterogeneous microservices** where teams use different tech stacks.
+**The lesson**: Aspire isn't just for .NET — it orchestrates containers, databases, and frontends across any tech stack. If it runs in Docker, Aspire can orchestrate it and wire up infrastructure automatically.
 
 ## Technologies
 
-- [Aspire 9.2.1](https://learn.microsoft.com/dotnet/aspire/)
+- [Aspire](https://learn.microsoft.com/dotnet/aspire/)
 - [Go 1.22](https://go.dev/)
+- [PostgreSQL](https://www.postgresql.org/)
 - [Svelte 4](https://svelte.dev/)
 - [Vite 5](https://vitejs.dev/)
 - Docker

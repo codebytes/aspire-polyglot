@@ -5,7 +5,7 @@ A Java Spring Boot REST API with PostgreSQL, orchestrated by Aspire via Dockerfi
 ## Tech Stack
 - **Backend**: Java 21 + Spring Boot 3.4
 - **Database**: PostgreSQL + pgAdmin
-- **AppHost**: Standalone `apphost.cs` with `AddDockerfile`
+- **AppHost**: Standalone `AppHost.java` with `addDockerfile`
 
 ## Running
 
@@ -17,7 +17,7 @@ aspire run
 ## What It Demonstrates
 - `AddDockerfile` for Java applications
 - `AddPostgres` with pgAdmin
-- Connection string injection via environment variables
+- JDBC connection string injection via `NOTESDB_JDBCCONNECTIONSTRING` env var
 - Multi-stage Docker build for Spring Boot
 
 ## API Endpoints

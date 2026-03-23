@@ -19,22 +19,24 @@ HTMX allows you to build interactive, modern web UIs using **server-rendered HTM
 
 ```
 ┌─────────────────────────────────────────┐
-│         Aspire AppHost             │
+│         Aspire AppHost                  │
 │   (Orchestration & Service Discovery)   │
-└────────────────┬────────────────────────┘
-                 │
-                 │ Python App
-                 ▼
-┌─────────────────────────────────────────┐
-│         Django + HTMX                   │
-│  ┌─────────────────────────────────┐   │
-│  │  Waitress WSGI Server           │   │
-│  │  ↓                              │   │
-│  │  Django Views                   │   │
-│  │  ↓                              │   │
-│  │  SQLite Database                │   │
-│  └─────────────────────────────────┘   │
-└─────────────────────────────────────────┘
+└────────────┬──────────────┬─────────────┘
+             │              │
+             │ Python App   │ Container
+             ▼              ▼
+┌──────────────────┐  ┌────────────┐
+│  Django + HTMX   │  │ PostgreSQL │
+│  ┌────────────┐  │  │  (pollsdb) │
+│  │  Waitress  │  │  └────────────┘
+│  │     ↓      │  │        ▲
+│  │   Views  ──┼──┼────────┘
+│  │     ↓      │  │  database
+│  │  Django ORM│  │
+│  └────────────┘  │
+└──────────────────┘
+
+Falls back to SQLite when running standalone (no Aspire).
 ```
 
 ## Features
@@ -52,6 +54,7 @@ HTMX allows you to build interactive, modern web UIs using **server-rendered HTM
 - .NET 9.0 SDK
 - Python 3.11+
 - pip
+- Docker (for PostgreSQL container)
 
 ### Run the Application
 
@@ -158,8 +161,8 @@ The poll detail page uses HTMX attributes:
 - **Backend:** Django 5.0, Python 3.11+
 - **Frontend:** HTMX 2.0, vanilla CSS
 - **Server:** Waitress WSGI server
-- **Database:** SQLite
-- **Orchestration:** Aspire 9.2
+- **Database:** PostgreSQL (via Aspire) with SQLite fallback
+- **Orchestration:** Aspire
 - **Static Files:** WhiteNoise
 
 ## Learn More

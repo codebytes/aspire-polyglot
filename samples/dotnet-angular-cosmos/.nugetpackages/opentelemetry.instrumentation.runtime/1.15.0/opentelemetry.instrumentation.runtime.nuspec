@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>OpenTelemetry.Instrumentation.Runtime</id>
+    <version>1.15.0</version>
+    <authors>OpenTelemetry Authors</authors>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <license type="expression">Apache-2.0</license>
+    <licenseUrl>https://licenses.nuget.org/Apache-2.0</licenseUrl>
+    <icon>opentelemetry-icon-color.png</icon>
+    <readme>README.md</readme>
+    <projectUrl>https://opentelemetry.io/</projectUrl>
+    <description>.NET runtime instrumentation for OpenTelemetry .NET.</description>
+    <releaseNotes>For detailed changes see: https://github.com/open-telemetry/opentelemetry-dotnet-contrib/blob/c2eebbab1bfb073568db270bea38d5824fa23176/src/OpenTelemetry.Instrumentation.Runtime/CHANGELOG.md.</releaseNotes>
+    <copyright>Copyright The OpenTelemetry Authors</copyright>
+    <tags>Observability OpenTelemetry Monitoring Telemetry runtime</tags>
+    <repository type="git" url="https://github.com/open-telemetry/opentelemetry-dotnet-contrib" commit="c2eebbab1bfb073568db270bea38d5824fa23176" />
+    <dependencies>
+      <group targetFramework=".NETFramework4.6.2">
+        <dependency id="OpenTelemetry.Api" version="[1.15.0, 2.0.0)" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework="net8.0">
+        <dependency id="OpenTelemetry.Api" version="[1.15.0, 2.0.0)" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework="net10.0">
+        <dependency id="OpenTelemetry.Api" version="[1.15.0, 2.0.0)" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework=".NETStandard2.0">
+        <dependency id="OpenTelemetry.Api" version="[1.15.0, 2.0.0)" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>

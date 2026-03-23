@@ -1,0 +1,135 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Aspire.Hosting.Kafka</name>
+    </assembly>
+    <members>
+        <member name="T:Aspire.Hosting.KafkaBuilderExtensions">
+            <summary>
+            Provides extension methods for adding Kafka resources to the application model.
+            </summary>
+        </member>
+        <member name="M:Aspire.Hosting.KafkaBuilderExtensions.AddKafka(Aspire.Hosting.IDistributedApplicationBuilder,System.String,System.Nullable{System.Int32})">
+            <summary>
+            Adds a Kafka resource to the application. A container is used for local development.
+            </summary>
+            <remarks>
+            This version of the package defaults to the <inheritdoc cref="F:Aspire.Hosting.KafkaContainerImageTags.Tag"/> tag of the <inheritdoc cref="F:Aspire.Hosting.KafkaContainerImageTags.Image"/> container image.
+            </remarks>
+            <param name="builder">The <see cref="T:Aspire.Hosting.IDistributedApplicationBuilder"/>.</param>
+            <param name="name">The name of the resource. This name will be used as the connection string name when referenced in a dependency</param>
+            <param name="port">The host port of Kafka broker.</param>
+            <returns>A reference to the <see cref="T:Aspire.Hosting.ApplicationModel.IResourceBuilder`1"/>.</returns>
+        </member>
+        <member name="M:Aspire.Hosting.KafkaBuilderExtensions.WithKafkaUI(Aspire.Hosting.ApplicationModel.IResourceBuilder{Aspire.Hosting.KafkaServerResource},System.Action{Aspire.Hosting.ApplicationModel.IResourceBuilder{Aspire.Hosting.KafkaUIContainerResource}},System.String)">
+            <summary>
+            Adds a Kafka UI container to the application.
+            </summary>
+            <remarks>
+            This version of the package defaults to the <inheritdoc cref="F:Aspire.Hosting.KafkaContainerImageTags.KafkaUiTag"/> tag of the <inheritdoc cref="F:Aspire.Hosting.KafkaContainerImageTags.KafkaUiImage"/> container image.
+            </remarks>
+            <param name="builder">The Kafka server resource builder.</param>
+            <param name="configureContainer">Configuration callback for KafkaUI container resource.</param>
+            <param name="containerName">The name of the container (Optional).</param>
+            <returns>A reference to the <see cref="T:Aspire.Hosting.ApplicationModel.IResourceBuilder`1"/>.</returns>
+        </member>
+        <member name="M:Aspire.Hosting.KafkaBuilderExtensions.WithHostPort(Aspire.Hosting.ApplicationModel.IResourceBuilder{Aspire.Hosting.KafkaUIContainerResource},System.Nullable{System.Int32})">
+            <summary>
+            Configures the host port that the KafkaUI resource is exposed on instead of using randomly assigned port.
+            </summary>
+            <param name="builder">The resource builder for KafkaUI.</param>
+            <param name="port">The port to bind on the host. If <see langword="null"/> is used random port will be assigned.</param>
+            <returns>The resource builder for KafkaUI.</returns>
+        </member>
+        <member name="M:Aspire.Hosting.KafkaBuilderExtensions.WithDataVolume(Aspire.Hosting.ApplicationModel.IResourceBuilder{Aspire.Hosting.KafkaServerResource},System.String,System.Boolean)">
+            <summary>
+            Adds a named volume for the data folder to a Kafka container resource.
+            </summary>
+            <param name="builder">The resource builder.</param>
+            <param name="name">The name of the volume. Defaults to an auto-generated name based on the application and resource names.</param>
+            <param name="isReadOnly">A flag that indicates if this is a read-only volume.</param>
+            <returns>The <see cref="T:Aspire.Hosting.ApplicationModel.IResourceBuilder`1"/>.</returns>
+        </member>
+        <member name="M:Aspire.Hosting.KafkaBuilderExtensions.WithDataBindMount(Aspire.Hosting.ApplicationModel.IResourceBuilder{Aspire.Hosting.KafkaServerResource},System.String,System.Boolean)">
+            <summary>
+            Adds a bind mount for the data folder to a Kafka container resource.
+            </summary>
+            <param name="builder">The resource builder.</param>
+            <param name="source">The source directory on the host to mount into the container.</param>
+            <param name="isReadOnly">A flag that indicates if this is a read-only mount.</param>
+            <returns>The <see cref="T:Aspire.Hosting.ApplicationModel.IResourceBuilder`1"/>.</returns>
+        </member>
+        <member name="M:Aspire.Hosting.KafkaBuilderExtensions.ConfigureLogDirs(Aspire.Hosting.ApplicationModel.EnvironmentCallbackContext)">
+            <summary>
+            Only need to call this if we want to persistent kafka data
+            </summary>
+            <param name="context"></param>
+        </member>
+        <member name="F:Aspire.Hosting.KafkaContainerImageTags.Registry">
+            <remarks>docker.io</remarks>
+        </member>
+        <member name="F:Aspire.Hosting.KafkaContainerImageTags.Image">
+            <remarks>confluentinc/confluent-local</remarks>
+        </member>
+        <member name="F:Aspire.Hosting.KafkaContainerImageTags.Tag">
+            <remarks>8.1.1</remarks>
+        </member>
+        <member name="F:Aspire.Hosting.KafkaContainerImageTags.KafkaUiImage">
+            <remarks>kafbat/kafka-ui</remarks>
+        </member>
+        <member name="F:Aspire.Hosting.KafkaContainerImageTags.KafkaUiTag">
+            <remarks>v1.4.2</remarks>
+        </member>
+        <member name="T:Aspire.Hosting.KafkaServerResource">
+            <summary>
+            A resource that represents a Kafka broker.
+            </summary>
+            <param name="name">The name of the resource.</param>
+        </member>
+        <member name="M:Aspire.Hosting.KafkaServerResource.#ctor(System.String)">
+            <summary>
+            A resource that represents a Kafka broker.
+            </summary>
+            <param name="name">The name of the resource.</param>
+        </member>
+        <member name="P:Aspire.Hosting.KafkaServerResource.PrimaryEndpoint">
+            <summary>
+            Gets the primary endpoint for the Kafka broker. This endpoint is used for host processes to Kafka broker communication.
+            To connect to the Kafka broker from a container, use <see cref="P:Aspire.Hosting.KafkaServerResource.InternalEndpoint"/>.
+            </summary>
+        </member>
+        <member name="P:Aspire.Hosting.KafkaServerResource.Host">
+            <summary>
+            Gets the host endpoint reference for the primary endpoint.
+            </summary>
+        </member>
+        <member name="P:Aspire.Hosting.KafkaServerResource.Port">
+            <summary>
+            Gets the port endpoint reference for the primary endpoint.
+            </summary>
+        </member>
+        <member name="P:Aspire.Hosting.KafkaServerResource.InternalEndpoint">
+            <summary>
+            Gets the internal endpoint for the Kafka broker. This endpoint is used for container to broker communication.
+            To connect to the Kafka broker from a host process, use <see cref="P:Aspire.Hosting.KafkaServerResource.PrimaryEndpoint"/>.
+            </summary>
+        </member>
+        <member name="P:Aspire.Hosting.KafkaServerResource.ConnectionStringExpression">
+            <summary>
+            Gets the connection string expression for the Kafka broker.
+            </summary>
+        </member>
+        <member name="T:Aspire.Hosting.KafkaUIContainerResource">
+            <summary>
+            A resource that represents a Kafka UI container.
+            </summary>
+            <param name="name"></param>
+        </member>
+        <member name="M:Aspire.Hosting.KafkaUIContainerResource.#ctor(System.String)">
+            <summary>
+            A resource that represents a Kafka UI container.
+            </summary>
+            <param name="name"></param>
+        </member>
+    </members>
+</doc>

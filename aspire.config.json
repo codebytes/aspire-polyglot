@@ -1,0 +1,8 @@
+{
+  "appHost": {
+    "path": "samples/dotnet-angular-cosmos/AppHost/AppHost.csproj"
+  },
+  "features": {
+    "polyglotSupportEnabled": true
+  }
+}

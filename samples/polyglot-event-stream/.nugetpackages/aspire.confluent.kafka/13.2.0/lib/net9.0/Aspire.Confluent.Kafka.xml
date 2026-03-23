@@ -1,0 +1,632 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Aspire.Confluent.Kafka</name>
+    </assembly>
+    <members>
+        <member name="T:Microsoft.Extensions.Hosting.AspireKafkaConsumerExtensions">
+            <summary>
+            Extension methods for connecting to a Kafka broker.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Extensions.Hosting.AspireKafkaConsumerExtensions.AddKafkaConsumer``2(Microsoft.Extensions.Hosting.IHostApplicationBuilder,System.String)">
+            <inheritdoc cref="M:Microsoft.Extensions.Hosting.AspireKafkaConsumerExtensions.AddKafkaConsumer``2(Microsoft.Extensions.Hosting.IHostApplicationBuilder,System.String,System.Action{Aspire.Confluent.Kafka.KafkaConsumerSettings},System.Action{System.IServiceProvider,Confluent.Kafka.ConsumerBuilder{``0,``1}})"/>
+        </member>
+        <member name="M:Microsoft.Extensions.Hosting.AspireKafkaConsumerExtensions.AddKafkaConsumer``2(Microsoft.Extensions.Hosting.IHostApplicationBuilder,System.String,System.Action{Aspire.Confluent.Kafka.KafkaConsumerSettings})">
+            <inheritdoc cref="M:Microsoft.Extensions.Hosting.AspireKafkaConsumerExtensions.AddKafkaConsumer``2(Microsoft.Extensions.Hosting.IHostApplicationBuilder,System.String,System.Action{Aspire.Confluent.Kafka.KafkaConsumerSettings},System.Action{System.IServiceProvider,Confluent.Kafka.ConsumerBuilder{``0,``1}})"/>
+        </member>
+        <member name="M:Microsoft.Extensions.Hosting.AspireKafkaConsumerExtensions.AddKafkaConsumer``2(Microsoft.Extensions.Hosting.IHostApplicationBuilder,System.String,System.Action{Confluent.Kafka.ConsumerBuilder{``0,``1}})">
+            <inheritdoc cref="M:Microsoft.Extensions.Hosting.AspireKafkaConsumerExtensions.AddKafkaConsumer``2(Microsoft.Extensions.Hosting.IHostApplicationBuilder,System.String,System.Action{Aspire.Confluent.Kafka.KafkaConsumerSettings},System.Action{System.IServiceProvider,Confluent.Kafka.ConsumerBuilder{``0,``1}})"/>
+        </member>
+        <member name="M:Microsoft.Extensions.Hosting.AspireKafkaConsumerExtensions.AddKafkaConsumer``2(Microsoft.Extensions.Hosting.IHostApplicationBuilder,System.String,System.Action{System.IServiceProvider,Confluent.Kafka.ConsumerBuilder{``0,``1}})">
+            <inheritdoc cref="M:Microsoft.Extensions.Hosting.AspireKafkaConsumerExtensions.AddKafkaConsumer``2(Microsoft.Extensions.Hosting.IHostApplicationBuilder,System.String,System.Action{Aspire.Confluent.Kafka.KafkaConsumerSettings},System.Action{System.IServiceProvider,Confluent.Kafka.ConsumerBuilder{``0,``1}})"/>
+        </member>
+        <member name="M:Microsoft.Extensions.Hosting.AspireKafkaConsumerExtensions.AddKafkaConsumer``2(Microsoft.Extensions.Hosting.IHostApplicationBuilder,System.String,System.Action{Aspire.Confluent.Kafka.KafkaConsumerSettings},System.Action{Confluent.Kafka.ConsumerBuilder{``0,``1}})">
+            <inheritdoc cref="M:Microsoft.Extensions.Hosting.AspireKafkaConsumerExtensions.AddKafkaConsumer``2(Microsoft.Extensions.Hosting.IHostApplicationBuilder,System.String,System.Action{Aspire.Confluent.Kafka.KafkaConsumerSettings},System.Action{System.IServiceProvider,Confluent.Kafka.ConsumerBuilder{``0,``1}})"/>
+        </member>
+        <member name="M:Microsoft.Extensions.Hosting.AspireKafkaConsumerExtensions.AddKafkaConsumer``2(Microsoft.Extensions.Hosting.IHostApplicationBuilder,System.String,System.Action{Aspire.Confluent.Kafka.KafkaConsumerSettings},System.Action{System.IServiceProvider,Confluent.Kafka.ConsumerBuilder{``0,``1}})">
+            <summary>
+            Registers <see cref="T:Confluent.Kafka.IConsumer`2"/> as a singleton in the services provided by the <paramref name="builder"/>.
+            </summary>
+            <param name="builder">The <see cref="T:Microsoft.Extensions.Hosting.IHostApplicationBuilder" /> to read config from and add services to.</param>
+            <param name="connectionName">A name used to retrieve the connection string from the ConnectionStrings configuration section.</param>
+            <param name="configureSettings">An optional method for customizing the <see cref="T:Aspire.Confluent.Kafka.KafkaConsumerSettings"/>.</param>
+            <param name="configureBuilder">An optional method used for customizing the <see cref="T:Confluent.Kafka.ConsumerBuilder`2"/>.</param>
+            <remarks>Reads the configuration from "Aspire:Kafka:Consumer" section.</remarks>
+        </member>
+        <member name="M:Microsoft.Extensions.Hosting.AspireKafkaConsumerExtensions.AddKeyedKafkaConsumer``2(Microsoft.Extensions.Hosting.IHostApplicationBuilder,System.String)">
+            <inheritdoc cref="M:Microsoft.Extensions.Hosting.AspireKafkaConsumerExtensions.AddKeyedKafkaConsumer``2(Microsoft.Extensions.Hosting.IHostApplicationBuilder,System.String,System.Action{Aspire.Confluent.Kafka.KafkaConsumerSettings},System.Action{System.IServiceProvider,Confluent.Kafka.ConsumerBuilder{``0,``1}})"/>
+        </member>
+        <member name="M:Microsoft.Extensions.Hosting.AspireKafkaConsumerExtensions.AddKeyedKafkaConsumer``2(Microsoft.Extensions.Hosting.IHostApplicationBuilder,System.String,System.Action{Aspire.Confluent.Kafka.KafkaConsumerSettings})">
+            <inheritdoc cref="M:Microsoft.Extensions.Hosting.AspireKafkaConsumerExtensions.AddKeyedKafkaConsumer``2(Microsoft.Extensions.Hosting.IHostApplicationBuilder,System.String,System.Action{Aspire.Confluent.Kafka.KafkaConsumerSettings},System.Action{System.IServiceProvider,Confluent.Kafka.ConsumerBuilder{``0,``1}})"/>
+        </member>
+        <member name="M:Microsoft.Extensions.Hosting.AspireKafkaConsumerExtensions.AddKeyedKafkaConsumer``2(Microsoft.Extensions.Hosting.IHostApplicationBuilder,System.String,System.Action{Confluent.Kafka.ConsumerBuilder{``0,``1}})">
+            <inheritdoc cref="M:Microsoft.Extensions.Hosting.AspireKafkaConsumerExtensions.AddKeyedKafkaConsumer``2(Microsoft.Extensions.Hosting.IHostApplicationBuilder,System.String,System.Action{Aspire.Confluent.Kafka.KafkaConsumerSettings},System.Action{System.IServiceProvider,Confluent.Kafka.ConsumerBuilder{``0,``1}})"/>
+        </member>
+        <member name="M:Microsoft.Extensions.Hosting.AspireKafkaConsumerExtensions.AddKeyedKafkaConsumer``2(Microsoft.Extensions.Hosting.IHostApplicationBuilder,System.String,System.Action{System.IServiceProvider,Confluent.Kafka.ConsumerBuilder{``0,``1}})">
+            <inheritdoc cref="M:Microsoft.Extensions.Hosting.AspireKafkaConsumerExtensions.AddKeyedKafkaConsumer``2(Microsoft.Extensions.Hosting.IHostApplicationBuilder,System.String,System.Action{Aspire.Confluent.Kafka.KafkaConsumerSettings},System.Action{System.IServiceProvider,Confluent.Kafka.ConsumerBuilder{``0,``1}})"/>
+        </member>
+        <member name="M:Microsoft.Extensions.Hosting.AspireKafkaConsumerExtensions.AddKeyedKafkaConsumer``2(Microsoft.Extensions.Hosting.IHostApplicationBuilder,System.String,System.Action{Aspire.Confluent.Kafka.KafkaConsumerSettings},System.Action{Confluent.Kafka.ConsumerBuilder{``0,``1}})">
+            <inheritdoc cref="M:Microsoft.Extensions.Hosting.AspireKafkaConsumerExtensions.AddKeyedKafkaConsumer``2(Microsoft.Extensions.Hosting.IHostApplicationBuilder,System.String,System.Action{Aspire.Confluent.Kafka.KafkaConsumerSettings},System.Action{System.IServiceProvider,Confluent.Kafka.ConsumerBuilder{``0,``1}})"/>
+        </member>
+        <member name="M:Microsoft.Extensions.Hosting.AspireKafkaConsumerExtensions.AddKeyedKafkaConsumer``2(Microsoft.Extensions.Hosting.IHostApplicationBuilder,System.String,System.Action{Aspire.Confluent.Kafka.KafkaConsumerSettings},System.Action{System.IServiceProvider,Confluent.Kafka.ConsumerBuilder{``0,``1}})">
+            <summary>
+            Registers <see cref="T:Confluent.Kafka.IConsumer`2"/> as a keyed singleton for the given <paramref name="name"/> in the services provided by the <paramref name="builder"/>.
+            </summary>
+            <param name="builder">The <see cref="T:Microsoft.Extensions.Hosting.IHostApplicationBuilder" /> to read config from and add services to.</param>
+            <param name="name">The name of the component, which is used as the <see cref="P:Microsoft.Extensions.DependencyInjection.ServiceDescriptor.ServiceKey"/> of the service and also to retrieve the connection string from the ConnectionStrings configuration section.</param>
+            <param name="configureSettings">An optional method for customizing the <see cref="T:Aspire.Confluent.Kafka.KafkaConsumerSettings"/>.</param>
+            <param name="configureBuilder">An optional method used for customizing the <see cref="T:Confluent.Kafka.ConsumerBuilder`2"/>.</param>
+            <remarks>Reads the configuration from "Aspire:Kafka:Consumer:{name}" section.</remarks>
+        </member>
+        <member name="T:Microsoft.Extensions.Hosting.AspireKafkaProducerExtensions">
+            <summary>
+            Extension methods for connecting to a Kafka broker.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Extensions.Hosting.AspireKafkaProducerExtensions.AddKafkaProducer``2(Microsoft.Extensions.Hosting.IHostApplicationBuilder,System.String)">
+            <inheritdoc cref="M:Microsoft.Extensions.Hosting.AspireKafkaProducerExtensions.AddKafkaProducer``2(Microsoft.Extensions.Hosting.IHostApplicationBuilder,System.String,System.Action{Aspire.Confluent.Kafka.KafkaProducerSettings},System.Action{System.IServiceProvider,Confluent.Kafka.ProducerBuilder{``0,``1}})"/>
+        </member>
+        <member name="M:Microsoft.Extensions.Hosting.AspireKafkaProducerExtensions.AddKafkaProducer``2(Microsoft.Extensions.Hosting.IHostApplicationBuilder,System.String,System.Action{Aspire.Confluent.Kafka.KafkaProducerSettings})">
+            <inheritdoc cref="M:Microsoft.Extensions.Hosting.AspireKafkaProducerExtensions.AddKafkaProducer``2(Microsoft.Extensions.Hosting.IHostApplicationBuilder,System.String,System.Action{Aspire.Confluent.Kafka.KafkaProducerSettings},System.Action{System.IServiceProvider,Confluent.Kafka.ProducerBuilder{``0,``1}})"/>
+        </member>
+        <member name="M:Microsoft.Extensions.Hosting.AspireKafkaProducerExtensions.AddKafkaProducer``2(Microsoft.Extensions.Hosting.IHostApplicationBuilder,System.String,System.Action{Confluent.Kafka.ProducerBuilder{``0,``1}})">
+            <inheritdoc cref="M:Microsoft.Extensions.Hosting.AspireKafkaProducerExtensions.AddKafkaProducer``2(Microsoft.Extensions.Hosting.IHostApplicationBuilder,System.String,System.Action{Aspire.Confluent.Kafka.KafkaProducerSettings},System.Action{System.IServiceProvider,Confluent.Kafka.ProducerBuilder{``0,``1}})"/>
+        </member>
+        <member name="M:Microsoft.Extensions.Hosting.AspireKafkaProducerExtensions.AddKafkaProducer``2(Microsoft.Extensions.Hosting.IHostApplicationBuilder,System.String,System.Action{System.IServiceProvider,Confluent.Kafka.ProducerBuilder{``0,``1}})">
+            <inheritdoc cref="M:Microsoft.Extensions.Hosting.AspireKafkaProducerExtensions.AddKafkaProducer``2(Microsoft.Extensions.Hosting.IHostApplicationBuilder,System.String,System.Action{Aspire.Confluent.Kafka.KafkaProducerSettings},System.Action{System.IServiceProvider,Confluent.Kafka.ProducerBuilder{``0,``1}})"/>
+        </member>
+        <member name="M:Microsoft.Extensions.Hosting.AspireKafkaProducerExtensions.AddKafkaProducer``2(Microsoft.Extensions.Hosting.IHostApplicationBuilder,System.String,System.Action{Aspire.Confluent.Kafka.KafkaProducerSettings},System.Action{Confluent.Kafka.ProducerBuilder{``0,``1}})">
+            <inheritdoc cref="M:Microsoft.Extensions.Hosting.AspireKafkaProducerExtensions.AddKafkaProducer``2(Microsoft.Extensions.Hosting.IHostApplicationBuilder,System.String,System.Action{Aspire.Confluent.Kafka.KafkaProducerSettings},System.Action{System.IServiceProvider,Confluent.Kafka.ProducerBuilder{``0,``1}})"/>
+        </member>
+        <member name="M:Microsoft.Extensions.Hosting.AspireKafkaProducerExtensions.AddKafkaProducer``2(Microsoft.Extensions.Hosting.IHostApplicationBuilder,System.String,System.Action{Aspire.Confluent.Kafka.KafkaProducerSettings},System.Action{System.IServiceProvider,Confluent.Kafka.ProducerBuilder{``0,``1}})">
+            <summary>
+            Registers <see cref="T:Confluent.Kafka.IProducer`2"/> as a singleton in the services provided by the <paramref name="builder"/>.
+            </summary>
+            <param name="builder">The <see cref="T:Microsoft.Extensions.Hosting.IHostApplicationBuilder" /> to read config from and add services to.</param>
+            <param name="connectionName">A name used to retrieve the connection string from the ConnectionStrings configuration section.</param>
+            <param name="configureSettings">An optional method used for customizing the <see cref="T:Aspire.Confluent.Kafka.KafkaProducerSettings"/>.</param>
+            <param name="configureBuilder">A method used for customizing the <see cref="T:Confluent.Kafka.ProducerBuilder`2"/>.</param>
+            <remarks>Reads the configuration from "Aspire:Kafka:Producer" section.</remarks>
+        </member>
+        <member name="M:Microsoft.Extensions.Hosting.AspireKafkaProducerExtensions.AddKeyedKafkaProducer``2(Microsoft.Extensions.Hosting.IHostApplicationBuilder,System.String)">
+            <inheritdoc cref="M:Microsoft.Extensions.Hosting.AspireKafkaProducerExtensions.AddKeyedKafkaProducer``2(Microsoft.Extensions.Hosting.IHostApplicationBuilder,System.String,System.Action{Aspire.Confluent.Kafka.KafkaProducerSettings},System.Action{System.IServiceProvider,Confluent.Kafka.ProducerBuilder{``0,``1}})"/>
+        </member>
+        <member name="M:Microsoft.Extensions.Hosting.AspireKafkaProducerExtensions.AddKeyedKafkaProducer``2(Microsoft.Extensions.Hosting.IHostApplicationBuilder,System.String,System.Action{Aspire.Confluent.Kafka.KafkaProducerSettings})">
+            <inheritdoc cref="M:Microsoft.Extensions.Hosting.AspireKafkaProducerExtensions.AddKeyedKafkaProducer``2(Microsoft.Extensions.Hosting.IHostApplicationBuilder,System.String,System.Action{Aspire.Confluent.Kafka.KafkaProducerSettings},System.Action{System.IServiceProvider,Confluent.Kafka.ProducerBuilder{``0,``1}})"/>
+        </member>
+        <member name="M:Microsoft.Extensions.Hosting.AspireKafkaProducerExtensions.AddKeyedKafkaProducer``2(Microsoft.Extensions.Hosting.IHostApplicationBuilder,System.String,System.Action{Confluent.Kafka.ProducerBuilder{``0,``1}})">
+            <inheritdoc cref="M:Microsoft.Extensions.Hosting.AspireKafkaProducerExtensions.AddKeyedKafkaProducer``2(Microsoft.Extensions.Hosting.IHostApplicationBuilder,System.String,System.Action{Aspire.Confluent.Kafka.KafkaProducerSettings},System.Action{System.IServiceProvider,Confluent.Kafka.ProducerBuilder{``0,``1}})"/>
+        </member>
+        <member name="M:Microsoft.Extensions.Hosting.AspireKafkaProducerExtensions.AddKeyedKafkaProducer``2(Microsoft.Extensions.Hosting.IHostApplicationBuilder,System.String,System.Action{System.IServiceProvider,Confluent.Kafka.ProducerBuilder{``0,``1}})">
+            <inheritdoc cref="M:Microsoft.Extensions.Hosting.AspireKafkaProducerExtensions.AddKeyedKafkaProducer``2(Microsoft.Extensions.Hosting.IHostApplicationBuilder,System.String,System.Action{Aspire.Confluent.Kafka.KafkaProducerSettings},System.Action{System.IServiceProvider,Confluent.Kafka.ProducerBuilder{``0,``1}})"/>
+        </member>
+        <member name="M:Microsoft.Extensions.Hosting.AspireKafkaProducerExtensions.AddKeyedKafkaProducer``2(Microsoft.Extensions.Hosting.IHostApplicationBuilder,System.String,System.Action{Aspire.Confluent.Kafka.KafkaProducerSettings},System.Action{Confluent.Kafka.ProducerBuilder{``0,``1}})">
+            <inheritdoc cref="M:Microsoft.Extensions.Hosting.AspireKafkaProducerExtensions.AddKeyedKafkaProducer``2(Microsoft.Extensions.Hosting.IHostApplicationBuilder,System.String,System.Action{Aspire.Confluent.Kafka.KafkaProducerSettings},System.Action{System.IServiceProvider,Confluent.Kafka.ProducerBuilder{``0,``1}})"/>
+        </member>
+        <member name="M:Microsoft.Extensions.Hosting.AspireKafkaProducerExtensions.AddKeyedKafkaProducer``2(Microsoft.Extensions.Hosting.IHostApplicationBuilder,System.String,System.Action{Aspire.Confluent.Kafka.KafkaProducerSettings},System.Action{System.IServiceProvider,Confluent.Kafka.ProducerBuilder{``0,``1}})">
+            <summary>
+            Registers <see cref="T:Confluent.Kafka.IProducer`2"/> as a keyed singleton for the given <paramref name="name"/> in the services provided by the <paramref name="builder"/>.
+            </summary>
+            <param name="builder">The <see cref="T:Microsoft.Extensions.Hosting.IHostApplicationBuilder" /> to read config from and add services to.</param>
+            <param name="name">The name of the component, which is used as the <see cref="P:Microsoft.Extensions.DependencyInjection.ServiceDescriptor.ServiceKey"/> of the service and also to retrieve the connection string from the ConnectionStrings configuration section.</param>
+            <param name="configureSettings">An optional method used for customizing the <see cref="T:Aspire.Confluent.Kafka.KafkaProducerSettings"/>.</param>
+            <param name="configureBuilder">An optional method used for customizing the <see cref="T:Confluent.Kafka.ProducerBuilder`2"/>.</param>
+            <remarks>Reads the configuration from "Aspire:Kafka:Producer:{name}" section.</remarks>
+        </member>
+        <member name="M:Microsoft.Extensions.Configuration.Binder.SourceGeneration.BindingExtensions.Bind_KafkaConsumerSettings(Microsoft.Extensions.Configuration.IConfiguration,System.Object)">
+            <summary>Attempts to bind the given object instance to configuration values by matching property names against configuration keys recursively.</summary>
+        </member>
+        <member name="M:Microsoft.Extensions.Configuration.Binder.SourceGeneration.BindingExtensions.Bind_ConsumerConfig(Microsoft.Extensions.Configuration.IConfiguration,System.Object)">
+            <summary>Attempts to bind the given object instance to configuration values by matching property names against configuration keys recursively.</summary>
+        </member>
+        <member name="M:Microsoft.Extensions.Configuration.Binder.SourceGeneration.BindingExtensions.Bind_KafkaProducerSettings(Microsoft.Extensions.Configuration.IConfiguration,System.Object)">
+            <summary>Attempts to bind the given object instance to configuration values by matching property names against configuration keys recursively.</summary>
+        </member>
+        <member name="M:Microsoft.Extensions.Configuration.Binder.SourceGeneration.BindingExtensions.Bind_ProducerConfig(Microsoft.Extensions.Configuration.IConfiguration,System.Object)">
+            <summary>Attempts to bind the given object instance to configuration values by matching property names against configuration keys recursively.</summary>
+        </member>
+        <member name="M:Microsoft.Extensions.Configuration.Binder.SourceGeneration.BindingExtensions.TryGetConfigurationValue(Microsoft.Extensions.Configuration.IConfiguration,System.String,System.String@)">
+            <summary>Tries to get the configuration value for the specified key.</summary>
+        </member>
+        <member name="M:Microsoft.Extensions.Configuration.Binder.SourceGeneration.BindingExtensions.ValidateConfigurationKeys(System.Type,System.Lazy{System.Collections.Generic.HashSet{System.String}},Microsoft.Extensions.Configuration.IConfiguration,Microsoft.Extensions.Configuration.BinderOptions)">
+            <summary>If required by the binder options, validates that there are no unknown keys in the input configuration object.</summary>
+        </member>
+        <member name="T:Aspire.Confluent.Kafka.KafkaConsumerSettings">
+            <summary>
+            Provides the client configuration settings for connecting to a Kafka message broker to consume messages.
+            </summary>
+        </member>
+        <member name="P:Aspire.Confluent.Kafka.KafkaConsumerSettings.ConnectionString">
+            <summary>
+            Gets or sets the connection string of the Kafka server to connect to.
+            </summary>
+        </member>
+        <member name="P:Aspire.Confluent.Kafka.KafkaConsumerSettings.Config">
+            <summary>
+            Gets the configuration settings for the Kafka consumer.
+            </summary>
+        </member>
+        <member name="P:Aspire.Confluent.Kafka.KafkaConsumerSettings.DisableMetrics">
+            <summary>
+            Gets or sets a boolean value that indicates whether the OpenTelemetry metrics are enabled or not.
+            </summary>
+            <value>
+            The default value is <see langword="false" />.
+            </value>
+        </member>
+        <member name="P:Aspire.Confluent.Kafka.KafkaConsumerSettings.DisableHealthChecks">
+            <summary>
+            Gets or sets a boolean value that indicates whether the Kafka health check is disabled or not.
+            </summary>
+            <value>
+            The default value is <see langword="false" />.
+            </value>
+        </member>
+        <member name="P:Aspire.Confluent.Kafka.KafkaConsumerSettings.DisableTracing">
+            <summary>
+            Gets or sets a boolean value that indicates whether the OpenTelemetry tracing is disabled or not.
+            </summary>
+            <value>
+            The default value is <see langword="false"/>.
+            </value>
+        </member>
+        <member name="T:Aspire.Confluent.Kafka.KafkaProducerSettings">
+            <summary>
+            Provides the client configuration settings for connecting to a Kafka message broker to produce messages.
+            </summary>
+        </member>
+        <member name="P:Aspire.Confluent.Kafka.KafkaProducerSettings.ConnectionString">
+            <summary>
+            Gets or sets the connection string of the Kafka server to connect to.
+            </summary>
+        </member>
+        <member name="P:Aspire.Confluent.Kafka.KafkaProducerSettings.Config">
+            <summary>
+            Gets the configuration settings for the Kafka producer.
+            </summary>
+        </member>
+        <member name="P:Aspire.Confluent.Kafka.KafkaProducerSettings.DisableMetrics">
+            <summary>
+            Gets or sets a boolean value that indicates whether the OpenTelemetry metrics are enabled or not.
+            </summary>
+            <value>
+            The default value is <see langword="false"/>.
+            </value>
+        </member>
+        <member name="P:Aspire.Confluent.Kafka.KafkaProducerSettings.DisableHealthChecks">
+            <summary>
+            Gets or sets a boolean value that indicates whether the Kafka health check is disabled or not.
+            </summary>
+            <value>
+            The default value is <see langword="false"/>.
+            </value>
+        </member>
+        <member name="P:Aspire.Confluent.Kafka.KafkaProducerSettings.DisableTracing">
+            <summary>
+            Gets or sets a boolean value that indicates whether the OpenTelemetry tracing is disabled or not.
+            </summary>
+            <value>
+            The default value is <see langword="false"/>.
+            </value>
+        </member>
+        <member name="T:Aspire.Confluent.Kafka.MetricsChannel">
+            <summary>
+            Metrics are emitted using json data published by librdkafka StatisticsHandler (see https://docs.confluent.io/platform/current/clients/confluent-kafka-dotnet/_site/api/Confluent.Kafka.ConsumerBuilder-2.html#Confluent_Kafka_ConsumerBuilder_2_StatisticsHandler)
+            The <see cref="T:Aspire.Confluent.Kafka.MetricsChannel"/> is written by both StatisticsHandler of <see cref="T:Confluent.Kafka.IConsumer`2"/> and <see cref="T:Confluent.Kafka.IProducer`2"/> and aims
+            to avoid slowing down <see cref="T:Confluent.Kafka.IConsumer`2"/>'s consume thread and <see cref="T:Confluent.Kafka.IProducer`2"/>'s poll thread by offloading the processing of the json.
+            The json processing is performed by <see cref="T:Aspire.Confluent.Kafka.MetricsService"/>.
+            </summary>
+        </member>
+        <member name="T:Aspire.Confluent.Kafka.Statistics">
+            <summary>
+            Maps to the JSON output returned by the <see href="https://github.com/confluentinc/librdkafka/blob/master/STATISTICS.md">librdkafka statistics API</see>. 
+            </summary>
+        </member>
+        <member name="P:Aspire.Confluent.Kafka.StatisticsJsonSerializerContext.Statistics">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Aspire.Confluent.Kafka.StatisticsJsonSerializerContext.Int64">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Aspire.Confluent.Kafka.StatisticsJsonSerializerContext.String">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:Aspire.Confluent.Kafka.StatisticsJsonSerializerContext.Default">
+            <summary>
+            The default <see cref="T:System.Text.Json.Serialization.JsonSerializerContext"/> associated with a default <see cref="T:System.Text.Json.JsonSerializerOptions"/> instance.
+            </summary>
+        </member>
+        <member name="P:Aspire.Confluent.Kafka.StatisticsJsonSerializerContext.GeneratedSerializerOptions">
+            <summary>
+            The source-generated options associated with this context.
+            </summary>
+        </member>
+        <member name="M:Aspire.Confluent.Kafka.StatisticsJsonSerializerContext.#ctor">
+            <inheritdoc/>
+        </member>
+        <member name="M:Aspire.Confluent.Kafka.StatisticsJsonSerializerContext.#ctor(System.Text.Json.JsonSerializerOptions)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Aspire.Confluent.Kafka.StatisticsJsonSerializerContext.GetTypeInfo(System.Type)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Aspire.HealthChecksExtensions.TryAddHealthCheck(Microsoft.Extensions.Hosting.IHostApplicationBuilder,Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration)">
+            <summary>
+            Adds a HealthCheckRegistration if one hasn't already been added to the builder.
+            </summary>
+        </member>
+        <member name="M:Aspire.HealthChecksExtensions.TryAddHealthCheck(Microsoft.Extensions.Hosting.IHostApplicationBuilder,System.String,System.Action{Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder})">
+            <summary>
+            Invokes the <paramref name="addHealthCheck"/> action if the given <paramref name="name"/> hasn't already been added to the builder.
+            </summary>
+        </member>
+        <member name="T:OpenTelemetry.Instrumentation.PropertyFetcher`1">
+            <summary>
+            PropertyFetcher fetches a property from an object.
+            </summary>
+            <typeparam name="T">The type of the property being fetched.</typeparam>
+        </member>
+        <member name="M:OpenTelemetry.Instrumentation.PropertyFetcher`1.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:OpenTelemetry.Instrumentation.PropertyFetcher`1"/> class.
+            </summary>
+            <param name="propertyName">Property name to fetch.</param>
+        </member>
+        <member name="M:OpenTelemetry.Instrumentation.PropertyFetcher`1.TryFetch(System.Object,`0@)">
+            <summary>
+            Try to fetch the property from the object.
+            </summary>
+            <param name="obj">Object to be fetched.</param>
+            <param name="value">Fetched value.</param>
+            <returns><see langword= "true"/> if the property was fetched.</returns>
+        </member>
+        <member name="T:OpenTelemetry.Metrics.MeterProviderBuilderExtensions">
+            <summary>
+            Extension methods to simplify registering of Kafka instrumentation.
+            </summary>
+            <summary>
+            Extension methods to simplify registering of Kafka instrumentation.
+            </summary>
+        </member>
+        <member name="M:OpenTelemetry.Metrics.MeterProviderBuilderExtensions.AddKafkaConsumerInstrumentation``2(OpenTelemetry.Metrics.MeterProviderBuilder)">
+            <summary>
+            Enables automatic data collection of outgoing requests to Kafka.
+            </summary>
+            <typeparam name="TKey">The type of the key.</typeparam>
+            <typeparam name="TValue">The type of the value.</typeparam>
+            <param name="builder"><see cref="T:OpenTelemetry.Metrics.MeterProviderBuilder"/> being configured.</param>
+            <returns>The instance of <see cref="T:OpenTelemetry.Metrics.MeterProviderBuilder"/> to chain the calls.</returns>
+        </member>
+        <member name="M:OpenTelemetry.Metrics.MeterProviderBuilderExtensions.AddKafkaConsumerInstrumentation``2(OpenTelemetry.Metrics.MeterProviderBuilder,System.String)">
+            <summary>
+            Enables automatic data collection of outgoing requests to Kafka.
+            </summary>
+            <typeparam name="TKey">The type of the key.</typeparam>
+            <typeparam name="TValue">The type of the value.</typeparam>
+            <param name="builder"><see cref="T:OpenTelemetry.Metrics.MeterProviderBuilder"/> being configured.</param>
+            <param name="name">The name of the instrumentation.</param>
+            <returns>The instance of <see cref="T:OpenTelemetry.Metrics.MeterProviderBuilder"/> to chain the calls.</returns>
+        </member>
+        <member name="M:OpenTelemetry.Metrics.MeterProviderBuilderExtensions.AddKafkaConsumerInstrumentation``2(OpenTelemetry.Metrics.MeterProviderBuilder,Confluent.Kafka.InstrumentedConsumerBuilder{``0,``1})">
+            <summary>
+            Enables automatic data collection of outgoing requests to Kafka.
+            </summary>
+            <typeparam name="TKey">The type of the key.</typeparam>
+            <typeparam name="TValue">The type of the value.</typeparam>
+            <param name="builder"><see cref="T:OpenTelemetry.Metrics.MeterProviderBuilder"/> being configured.</param>
+            <param name="consumerBuilder"><see cref="T:Confluent.Kafka.InstrumentedConsumerBuilder`2"/> to instrument.</param>
+            <returns>The instance of <see cref="T:OpenTelemetry.Metrics.MeterProviderBuilder"/> to chain the calls.</returns>
+        </member>
+        <member name="M:OpenTelemetry.Metrics.MeterProviderBuilderExtensions.AddKafkaConsumerInstrumentation``2(OpenTelemetry.Metrics.MeterProviderBuilder,System.String,Confluent.Kafka.InstrumentedConsumerBuilder{``0,``1})">
+            <summary>
+            Enables the incoming requests automatic data collection for ASP.NET.
+            </summary>
+            <typeparam name="TKey">The type of the key.</typeparam>
+            <typeparam name="TValue">The type of the value.</typeparam>
+            <param name="builder"><see cref="T:OpenTelemetry.Metrics.MeterProviderBuilder"/> being configured.</param>
+            <param name="name">The name of the instrumentation.</param>
+            <param name="consumerBuilder"><see cref="T:Confluent.Kafka.InstrumentedConsumerBuilder`2"/> to instrument.</param>
+            <returns>The instance of <see cref="T:OpenTelemetry.Metrics.MeterProviderBuilder"/> to chain the calls.</returns>
+        </member>
+        <member name="M:OpenTelemetry.Metrics.MeterProviderBuilderExtensions.AddKafkaProducerInstrumentation``2(OpenTelemetry.Metrics.MeterProviderBuilder)">
+            <summary>
+            Enables automatic data collection of outgoing requests to Kafka.
+            </summary>
+            <typeparam name="TKey">The type of the key.</typeparam>
+            <typeparam name="TValue">The type of the value.</typeparam>
+            <param name="builder"><see cref="T:OpenTelemetry.Metrics.MeterProviderBuilder"/> being configured.</param>
+            <returns>The instance of <see cref="T:OpenTelemetry.Metrics.MeterProviderBuilder"/> to chain the calls.</returns>
+        </member>
+        <member name="M:OpenTelemetry.Metrics.MeterProviderBuilderExtensions.AddKafkaProducerInstrumentation``2(OpenTelemetry.Metrics.MeterProviderBuilder,System.String)">
+            <summary>
+            Enables automatic data collection of outgoing requests to Kafka.
+            </summary>
+            <typeparam name="TKey">The type of the key.</typeparam>
+            <typeparam name="TValue">The type of the value.</typeparam>
+            <param name="builder"><see cref="T:OpenTelemetry.Metrics.MeterProviderBuilder"/> being configured.</param>
+            <param name="name">The name of the instrumentation.</param>
+            <returns>The instance of <see cref="T:OpenTelemetry.Metrics.MeterProviderBuilder"/> to chain the calls.</returns>
+        </member>
+        <member name="M:OpenTelemetry.Metrics.MeterProviderBuilderExtensions.AddKafkaProducerInstrumentation``2(OpenTelemetry.Metrics.MeterProviderBuilder,Confluent.Kafka.InstrumentedProducerBuilder{``0,``1})">
+            <summary>
+            Enables automatic data collection of outgoing requests to Kafka.
+            </summary>
+            <typeparam name="TKey">The type of the key.</typeparam>
+            <typeparam name="TValue">The type of the value.</typeparam>
+            <param name="builder"><see cref="T:OpenTelemetry.Metrics.MeterProviderBuilder"/> being configured.</param>
+            <param name="producerBuilder"><see cref="T:Confluent.Kafka.InstrumentedProducerBuilder`2"/> to instrument.</param>
+            <returns>The instance of <see cref="T:OpenTelemetry.Metrics.MeterProviderBuilder"/> to chain the calls.</returns>
+        </member>
+        <member name="M:OpenTelemetry.Metrics.MeterProviderBuilderExtensions.AddKafkaProducerInstrumentation``2(OpenTelemetry.Metrics.MeterProviderBuilder,System.String,Confluent.Kafka.InstrumentedProducerBuilder{``0,``1})">
+            <summary>
+            Enables the incoming requests automatic data collection for ASP.NET.
+            </summary>
+            <typeparam name="TKey">The type of the key.</typeparam>
+            <typeparam name="TValue">The type of the value.</typeparam>
+            <param name="builder"><see cref="T:OpenTelemetry.Metrics.MeterProviderBuilder"/> being configured.</param>
+            <param name="name">The name of the instrumentation.</param>
+            <param name="producerBuilder"><see cref="T:Confluent.Kafka.InstrumentedProducerBuilder`2"/> to instrument.</param>
+            <returns>The instance of <see cref="T:OpenTelemetry.Metrics.MeterProviderBuilder"/> to chain the calls.</returns>
+        </member>
+        <member name="T:OpenTelemetry.Internal.Guard">
+            <summary>
+            Methods for guarding against exception throwing values.
+            </summary>
+        </member>
+        <member name="M:OpenTelemetry.Internal.Guard.ThrowIfNull(System.Object,System.String)">
+            <summary>
+            Throw an exception if the value is null.
+            </summary>
+            <param name="value">The value to check.</param>
+            <param name="paramName">The parameter name to use in the thrown exception.</param>
+        </member>
+        <member name="M:OpenTelemetry.Internal.Guard.ThrowIfNullOrEmpty(System.String,System.String)">
+            <summary>
+            Throw an exception if the value is null or empty.
+            </summary>
+            <param name="value">The value to check.</param>
+            <param name="paramName">The parameter name to use in the thrown exception.</param>
+        </member>
+        <member name="M:OpenTelemetry.Internal.Guard.ThrowIfNullOrWhitespace(System.String,System.String)">
+            <summary>
+            Throw an exception if the value is null or whitespace.
+            </summary>
+            <param name="value">The value to check.</param>
+            <param name="paramName">The parameter name to use in the thrown exception.</param>
+        </member>
+        <member name="M:OpenTelemetry.Internal.Guard.ThrowIfZero(System.Int32,System.String,System.String)">
+            <summary>
+            Throw an exception if the value is zero.
+            </summary>
+            <param name="value">The value to check.</param>
+            <param name="message">The message to use in the thrown exception.</param>
+            <param name="paramName">The parameter name to use in the thrown exception.</param>
+        </member>
+        <member name="M:OpenTelemetry.Internal.Guard.ThrowIfInvalidTimeout(System.Int32,System.String)">
+            <summary>
+            Throw an exception if the value is not considered a valid timeout.
+            </summary>
+            <param name="value">The value to check.</param>
+            <param name="paramName">The parameter name to use in the thrown exception.</param>
+        </member>
+        <member name="M:OpenTelemetry.Internal.Guard.ThrowIfOutOfRange(System.Int32,System.String,System.Int32,System.Int32,System.String,System.String,System.String)">
+            <summary>
+            Throw an exception if the value is not within the given range.
+            </summary>
+            <param name="value">The value to check.</param>
+            <param name="paramName">The parameter name to use in the thrown exception.</param>
+            <param name="min">The inclusive lower bound.</param>
+            <param name="max">The inclusive upper bound.</param>
+            <param name="minName">The name of the lower bound.</param>
+            <param name="maxName">The name of the upper bound.</param>
+            <param name="message">An optional custom message to use in the thrown exception.</param>
+        </member>
+        <member name="M:OpenTelemetry.Internal.Guard.ThrowIfOutOfRange(System.Double,System.String,System.Double,System.Double,System.String,System.String,System.String)">
+            <summary>
+            Throw an exception if the value is not within the given range.
+            </summary>
+            <param name="value">The value to check.</param>
+            <param name="paramName">The parameter name to use in the thrown exception.</param>
+            <param name="min">The inclusive lower bound.</param>
+            <param name="max">The inclusive upper bound.</param>
+            <param name="minName">The name of the lower bound.</param>
+            <param name="maxName">The name of the upper bound.</param>
+            <param name="message">An optional custom message to use in the thrown exception.</param>
+        </member>
+        <member name="M:OpenTelemetry.Internal.Guard.ThrowIfNotOfType``1(System.Object,System.String)">
+            <summary>
+            Throw an exception if the value is not of the expected type.
+            </summary>
+            <param name="value">The value to check.</param>
+            <param name="paramName">The parameter name to use in the thrown exception.</param>
+            <typeparam name="T">The type attempted to convert to.</typeparam>
+            <returns>The value casted to the specified type.</returns>
+        </member>
+        <member name="T:OpenTelemetry.Trace.SemanticConventions">
+            <summary>
+            Constants for semantic attribute names outlined by the OpenTelemetry specifications.
+            <see href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/README.md"/>.
+            </summary>
+        </member>
+        <member name="T:OpenTelemetry.Trace.TracerProviderBuilderExtensions">
+            <summary>
+            Extension methods to simplify registering of dependency instrumentation.
+            </summary>
+            <summary>
+            Extension methods to simplify registering of dependency instrumentation.
+            </summary>
+        </member>
+        <member name="M:OpenTelemetry.Trace.TracerProviderBuilderExtensions.AddKafkaConsumerInstrumentation``2(OpenTelemetry.Trace.TracerProviderBuilder)">
+            <summary>
+            Enables automatic data collection of outgoing requests to Kafka.
+            </summary>
+            <typeparam name="TKey">The type of the key.</typeparam>
+            <typeparam name="TValue">The type of the value.</typeparam>
+            <param name="builder"><see cref="T:OpenTelemetry.Trace.TracerProviderBuilder"/> being configured.</param>
+            <returns>The instance of <see cref="T:OpenTelemetry.Trace.TracerProviderBuilder"/> to chain the calls.</returns>
+        </member>
+        <member name="M:OpenTelemetry.Trace.TracerProviderBuilderExtensions.AddKafkaConsumerInstrumentation``2(OpenTelemetry.Trace.TracerProviderBuilder,System.String)">
+            <summary>
+            Enables automatic data collection of outgoing requests to Kafka.
+            </summary>
+            <typeparam name="TKey">The type of the key.</typeparam>
+            <typeparam name="TValue">The type of the value.</typeparam>
+            <param name="builder"><see cref="T:OpenTelemetry.Trace.TracerProviderBuilder"/> being configured.</param>
+            <param name="name">The name of the instrumentation.</param>
+            <returns>The instance of <see cref="T:OpenTelemetry.Trace.TracerProviderBuilder"/> to chain the calls.</returns>
+        </member>
+        <member name="M:OpenTelemetry.Trace.TracerProviderBuilderExtensions.AddKafkaConsumerInstrumentation``2(OpenTelemetry.Trace.TracerProviderBuilder,Confluent.Kafka.InstrumentedConsumerBuilder{``0,``1})">
+            <summary>
+            Enables automatic data collection of outgoing requests to Kafka.
+            </summary>
+            <typeparam name="TKey">The type of the key.</typeparam>
+            <typeparam name="TValue">The type of the value.</typeparam>
+            <param name="builder"><see cref="T:OpenTelemetry.Trace.TracerProviderBuilder"/> being configured.</param>
+            <param name="consumerBuilder"><see cref="T:Confluent.Kafka.InstrumentedConsumerBuilder`2"/> to instrument.</param>
+            <returns>The instance of <see cref="T:OpenTelemetry.Trace.TracerProviderBuilder"/> to chain the calls.</returns>
+        </member>
+        <member name="M:OpenTelemetry.Trace.TracerProviderBuilderExtensions.AddKafkaConsumerInstrumentation``2(OpenTelemetry.Trace.TracerProviderBuilder,System.String,Confluent.Kafka.InstrumentedConsumerBuilder{``0,``1})">
+            <summary>
+            Enables automatic data collection of outgoing requests to Kafka.
+            </summary>
+            <typeparam name="TKey">The type of the key.</typeparam>
+            <typeparam name="TValue">The type of the value.</typeparam>
+            <param name="builder"><see cref="T:OpenTelemetry.Trace.TracerProviderBuilder"/> being configured.</param>
+            <param name="name">The name of the instrumentation.</param>
+            <param name="consumerBuilder">Optional <see cref="T:Confluent.Kafka.InstrumentedConsumerBuilder`2"/> to instrument.</param>
+            <returns>The instance of <see cref="T:OpenTelemetry.Trace.TracerProviderBuilder"/> to chain the calls.</returns>
+        </member>
+        <member name="M:OpenTelemetry.Trace.TracerProviderBuilderExtensions.AddKafkaProducerInstrumentation``2(OpenTelemetry.Trace.TracerProviderBuilder)">
+            <summary>
+            Enables automatic data collection of outgoing requests to Kafka.
+            </summary>
+            <typeparam name="TKey">The type of the key.</typeparam>
+            <typeparam name="TValue">The type of the value.</typeparam>
+            <param name="builder"><see cref="T:OpenTelemetry.Trace.TracerProviderBuilder"/> being configured.</param>
+            <returns>The instance of <see cref="T:OpenTelemetry.Trace.TracerProviderBuilder"/> to chain the calls.</returns>
+        </member>
+        <member name="M:OpenTelemetry.Trace.TracerProviderBuilderExtensions.AddKafkaProducerInstrumentation``2(OpenTelemetry.Trace.TracerProviderBuilder,System.String)">
+            <summary>
+            Enables automatic data collection of outgoing requests to Kafka.
+            </summary>
+            <typeparam name="TKey">The type of the key.</typeparam>
+            <typeparam name="TValue">The type of the value.</typeparam>
+            <param name="builder"><see cref="T:OpenTelemetry.Trace.TracerProviderBuilder"/> being configured.</param>
+            <param name="name">The name of the instrumentation.</param>
+            <returns>The instance of <see cref="T:OpenTelemetry.Trace.TracerProviderBuilder"/> to chain the calls.</returns>
+        </member>
+        <member name="M:OpenTelemetry.Trace.TracerProviderBuilderExtensions.AddKafkaProducerInstrumentation``2(OpenTelemetry.Trace.TracerProviderBuilder,Confluent.Kafka.InstrumentedProducerBuilder{``0,``1})">
+            <summary>
+            Enables automatic data collection of outgoing requests to Kafka.
+            </summary>
+            <typeparam name="TKey">The type of the key.</typeparam>
+            <typeparam name="TValue">The type of the value.</typeparam>
+            <param name="builder"><see cref="T:OpenTelemetry.Trace.TracerProviderBuilder"/> being configured.</param>
+            <param name="producerBuilder"><see cref="T:Confluent.Kafka.InstrumentedProducerBuilder`2"/> to instrument.</param>
+            <returns>The instance of <see cref="T:OpenTelemetry.Trace.TracerProviderBuilder"/> to chain the calls.</returns>
+        </member>
+        <member name="M:OpenTelemetry.Trace.TracerProviderBuilderExtensions.AddKafkaProducerInstrumentation``2(OpenTelemetry.Trace.TracerProviderBuilder,System.String,Confluent.Kafka.InstrumentedProducerBuilder{``0,``1})">
+            <summary>
+            Enables automatic data collection of outgoing requests to Kafka.
+            </summary>
+            <typeparam name="TKey">The type of the key.</typeparam>
+            <typeparam name="TValue">The type of the value.</typeparam>
+            <param name="builder"><see cref="T:OpenTelemetry.Trace.TracerProviderBuilder"/> being configured.</param>
+            <param name="name">The name of the instrumentation.</param>
+            <param name="producerBuilder">Optional <see cref="T:Confluent.Kafka.InstrumentedProducerBuilder`2"/> to instrument.</param>
+            <returns>The instance of <see cref="T:OpenTelemetry.Trace.TracerProviderBuilder"/> to chain the calls.</returns>
+        </member>
+        <member name="T:Confluent.Kafka.InstrumentedConsumerBuilder`2">
+            <summary>
+            A builder of <see cref="T:Confluent.Kafka.IConsumer`2"/> with support for instrumentation.
+            </summary>
+            <typeparam name="TKey">Type of the key.</typeparam>
+            <typeparam name="TValue">Type of value.</typeparam>
+        </member>
+        <member name="M:Confluent.Kafka.InstrumentedConsumerBuilder`2.#ctor(System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{System.String,System.String}})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Confluent.Kafka.InstrumentedConsumerBuilder`2"/> class.
+            </summary>
+            <param name="config"> A collection of librdkafka configuration parameters (refer to https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md) and parameters specific to this client (refer to: <see cref="T:Confluent.Kafka.ConfigPropertyNames" />). At a minimum, 'bootstrap.servers' must be specified.</param>
+        </member>
+        <member name="M:Confluent.Kafka.InstrumentedConsumerBuilder`2.Build">
+            <summary>
+            Build a new IConsumer instance.
+            </summary>
+            <returns>an <see cref="T:Confluent.Kafka.IProducer`2"/>.</returns>
+        </member>
+        <member name="T:Confluent.Kafka.InstrumentedProducerBuilder`2">
+            <summary>
+            A builder of <see cref="T:Confluent.Kafka.IProducer`2"/> with support for instrumentation.
+            </summary>
+            <typeparam name="TKey">Type of the key.</typeparam>
+            <typeparam name="TValue">Type of value.</typeparam>
+        </member>
+        <member name="M:Confluent.Kafka.InstrumentedProducerBuilder`2.#ctor(System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{System.String,System.String}})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Confluent.Kafka.InstrumentedProducerBuilder`2"/> class.
+            </summary>
+            <param name="config"> A collection of librdkafka configuration parameters (refer to https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md) and parameters specific to this client (refer to: <see cref="T:Confluent.Kafka.ConfigPropertyNames" />). At a minimum, 'bootstrap.servers' must be specified.</param>
+        </member>
+        <member name="M:Confluent.Kafka.InstrumentedProducerBuilder`2.Build">
+            <summary>
+            Build a new IProducer instance.
+            </summary>
+            <returns>an <see cref="T:Confluent.Kafka.IProducer`2"/>.</returns>
+        </member>
+        <member name="T:Confluent.Kafka.OpenTelemetryConsumeAndProcessMessageHandler`2">
+            <summary>
+            An asynchronous action to process the <see cref="T:Confluent.Kafka.ConsumeResult`2"/>.
+            </summary>
+            <param name="consumeResult">The <see cref="T:Confluent.Kafka.ConsumeResult`2"/>.</param>
+            <param name="activity">The <see cref="T:System.Diagnostics.Activity"/>.</param>
+            <param name="cancellationToken">An optional <see cref="T:System.Threading.CancellationToken"/>.</param>
+            <typeparam name="TKey">The type of key of the <see cref="T:Confluent.Kafka.ConsumeResult`2"/>.</typeparam>
+            <typeparam name="TValue">The type of value of the <see cref="T:Confluent.Kafka.ConsumeResult`2"/>.</typeparam>
+            <returns>A <see cref="T:System.Threading.Tasks.ValueTask"/>.</returns>
+        </member>
+        <member name="T:Confluent.Kafka.OpenTelemetryConsumeResultExtensions">
+            <summary>
+            <see cref="T:Confluent.Kafka.IConsumer`2"/> extension methods.
+            </summary>
+        </member>
+        <member name="M:Confluent.Kafka.OpenTelemetryConsumeResultExtensions.TryExtractPropagationContext``2(Confluent.Kafka.ConsumeResult{``0,``1},OpenTelemetry.Context.Propagation.PropagationContext@)">
+            <summary>
+            Attempts to extract a <see cref="T:OpenTelemetry.Context.Propagation.PropagationContext"/> from the <see cref="T:Confluent.Kafka.ConsumeResult`2"/>'s <see cref="T:Confluent.Kafka.Headers"/> property.
+            </summary>
+            <param name="consumeResult">The <see cref="T:Confluent.Kafka.ConsumeResult`2"/>.</param>
+            <param name="propagationContext">The <see cref="T:OpenTelemetry.Context.Propagation.PropagationContext"/>.</param>
+            <typeparam name="TKey">The type of key of the <see cref="T:Confluent.Kafka.ConsumeResult`2"/>.</typeparam>
+            <typeparam name="TValue">The type of value of the <see cref="T:Confluent.Kafka.ConsumeResult`2"/>.</typeparam>
+            <returns>True when a <see cref="T:OpenTelemetry.Context.Propagation.PropagationContext"/> has been extracted from <see cref="T:Confluent.Kafka.Headers"/>, otherwise false.</returns>
+        </member>
+        <member name="M:Confluent.Kafka.OpenTelemetryConsumeResultExtensions.ConsumeAndProcessMessageAsync``2(Confluent.Kafka.IConsumer{``0,``1},Confluent.Kafka.OpenTelemetryConsumeAndProcessMessageHandler{``0,``1})">
+            <summary>
+            Consumes a message and creates <see href="https://github.com/open-telemetry/semantic-conventions/blob/main/docs/messaging/messaging-spans.md#span-kind">a process span</see> embracing the <see cref="T:Confluent.Kafka.OpenTelemetryConsumeAndProcessMessageHandler`2"/>.
+            </summary>
+            <param name="consumer">The <see cref="T:Confluent.Kafka.IConsumer`2"/>.</param>
+            <param name="handler">A <see cref="T:Confluent.Kafka.OpenTelemetryConsumeAndProcessMessageHandler`2"/>.</param>
+            <typeparam name="TKey">The type of key of the <see cref="T:Confluent.Kafka.ConsumeResult`2"/>.</typeparam>
+            <typeparam name="TValue">The type of value of the <see cref="T:Confluent.Kafka.ConsumeResult`2"/>.</typeparam>
+            <returns>A <see cref="T:System.Threading.Tasks.ValueTask"/>.</returns>
+        </member>
+        <member name="M:Confluent.Kafka.OpenTelemetryConsumeResultExtensions.ConsumeAndProcessMessageAsync``2(Confluent.Kafka.IConsumer{``0,``1},Confluent.Kafka.OpenTelemetryConsumeAndProcessMessageHandler{``0,``1},System.Threading.CancellationToken)">
+            <summary>
+            Consumes a message and creates <see href="https://github.com/open-telemetry/semantic-conventions/blob/main/docs/messaging/messaging-spans.md#span-kind">a process span</see> embracing the <see cref="T:Confluent.Kafka.OpenTelemetryConsumeAndProcessMessageHandler`2"/>.
+            </summary>
+            <param name="consumer">The <see cref="T:Confluent.Kafka.IConsumer`2"/>.</param>
+            <param name="handler">A <see cref="T:Confluent.Kafka.OpenTelemetryConsumeAndProcessMessageHandler`2"/>.</param>
+            <param name="cancellationToken">An optional <see cref="T:System.Threading.CancellationToken"/>.</param>
+            <typeparam name="TKey">The type of key of the <see cref="T:Confluent.Kafka.ConsumeResult`2"/>.</typeparam>
+            <typeparam name="TValue">The type of value of the <see cref="T:Confluent.Kafka.ConsumeResult`2"/>.</typeparam>
+            <returns>A <see cref="T:System.Threading.Tasks.ValueTask"/>.</returns>
+        </member>
+    </members>
+</doc>

@@ -10,7 +10,7 @@ var producer = builder.AddProject<Projects.EventProducer>("producer")
 var consumer = builder.AddPythonApp("consumer", "../python-consumer", "main.py")
     .WithReference(kafka);
 
-var dashboard = builder.AddNpmApp("dashboard", "../node-dashboard", "start")
+var dashboard = builder.AddJavaScriptApp("dashboard", "../node-dashboard", "start")
     .WithReference(kafka)
     .WithHttpEndpoint(env: "PORT")
     .WithExternalHttpEndpoints();

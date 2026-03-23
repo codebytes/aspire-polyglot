@@ -8,6 +8,15 @@
 
 ## Learnings
 
+### OpenTelemetry Integration for Go Bookmarks API (2025-01-XX)
+- Successfully added full OpenTelemetry instrumentation to the Go bookmarks API
+- Used gRPC OTLP exporters for traces, metrics, and logs compatible with Aspire dashboard
+- Implemented conditional initialization checking for `OTEL_EXPORTER_OTLP_ENDPOINT` environment variable
+- Wrapped all HTTP handlers with `otelhttp.NewHandler` middleware for automatic span creation
+- Used standard OpenTelemetry SDK packages: `go.opentelemetry.io/otel`, `go.opentelemetry.io/otel/sdk/*`, and exporters
+- Preserved existing functionality: CORS handling, PostgreSQL/in-memory storage logic remain unchanged
+- The instrumentation is transparent - app runs normally when Aspire environment variables aren't present
+
 ### 2025-07-15: Deep Review of svelte-go-bookmarks
 - **apphost.go** uses correct Aspire Go SDK patterns: `CreateBuilder` → `AddDockerfile` → `AddNpmApp` with proper service wiring
 - **Go API** is stdlib-only (zero deps), thread-safe with `sync.RWMutex`, has full CRUD + search + health endpoint

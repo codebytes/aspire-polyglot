@@ -70,3 +70,13 @@
 
 **Decision #1 (Config Migration):** ✅ RESOLVED — All polyglot samples now use Aspire 13.2 format
 **Decision #3 (13.2 Slides):** ✅ RESOLVED — Expanded from 2 slides to 4 slides covering all major 13.2 features
+
+### OpenTelemetry Integration (completed)
+- Added OpenTelemetry instrumentation to all 4 Python apps: flask-markdown-wiki, django-htmx-polls, vite-react-api (FastAPI backend), polyglot-event-stream/python-consumer
+- All apps now send traces, metrics, and logs to Aspire dashboard via OTLP gRPC
+- Pattern: OTel initialization at TOP of file, before framework app creation, behind `OTEL_EXPORTER_OTLP_ENDPOINT` env var check
+- Flask apps: `FlaskInstrumentor`, Django: `DjangoInstrumentor`, FastAPI: `FastAPIInstrumentor`
+- All apps use standard Aspire-injected env vars: `OTEL_EXPORTER_OTLP_ENDPOINT`, `OTEL_SERVICE_NAME`, `OTEL_RESOURCE_ATTRIBUTES`
+- Added OTel packages to all requirements.txt: `opentelemetry-api`, `opentelemetry-sdk`, `opentelemetry-exporter-otlp-proto-grpc`, framework-specific instrumentation
+- Apps work with or without OTel enabled (graceful degradation)
+- Fixed flask-markdown-wiki aspire.config.json: updated package versions from 13.1.3 to 13.2.0 for `Aspire.Hosting.Redis` and `Aspire.Hosting.Python`

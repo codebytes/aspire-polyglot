@@ -26,19 +26,19 @@ The source deck for this presentation lives in [slides/](./slides/) and is built
 
 | Sample | AppHost | Description |
 |--------|---------|-------------|
-| [vite-react-api](./samples/vite-react-api) | `apphost.cs` | Vite + React + FastAPI + Redis — TODO app with caching |
+| [vite-react-api](./samples/vite-react-api) | `apphost.ts` | Vite + React + FastAPI + Redis — TODO app with caching |
 
 ### Go
 
 | Sample | AppHost | Description |
 |--------|---------|-------------|
-| [svelte-go-bookmarks](./samples/svelte-go-bookmarks) | `apphost.cs` | Svelte SPA + Go API via `AddDockerfile` — bookmark manager with tagging |
+| [svelte-go-bookmarks](./samples/svelte-go-bookmarks) | `apphost.go` | Svelte SPA + Go API via `AddDockerfile` — bookmark manager with tagging |
 
 ### Java
 
 | Sample | AppHost | Description |
 |--------|---------|-------------|
-| [spring-boot-postgres](./samples/spring-boot-postgres) | `apphost.cs` | Spring Boot + PostgreSQL + pgAdmin — notes REST API via `AddDockerfile` |
+| [spring-boot-postgres](./samples/spring-boot-postgres) | `AppHost.java` | Spring Boot + PostgreSQL + pgAdmin — notes REST API via `AddDockerfile` |
 
 ### C# / .NET
 

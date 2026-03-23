@@ -1,14 +1,58 @@
 #!/usr/bin/env python3
 import os
 import json
+
+# --- OpenTelemetry setup (must run before Flask app creation) ---
+if os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT"):
+    from opentelemetry import trace
+    from opentelemetry.sdk.trace import TracerProvider
+    from opentelemetry.sdk.trace.export import BatchSpanProcessor
+    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+    from opentelemetry.sdk.resources import Resource
+    from opentelemetry.instrumentation.flask import FlaskInstrumentor
+    from opentelemetry.instrumentation.requests import RequestsInstrumentor
+    from opentelemetry.sdk.metrics import MeterProvider
+    from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
+    from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import OTLPMetricExporter
+    from opentelemetry.sdk._logs import LoggerProvider, LoggingHandler
+    from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
+    from opentelemetry.exporter.otlp.proto.grpc._log_exporter import OTLPLogExporter
+    import logging
+
+    resource = Resource.create({
+        "service.name": os.environ.get("OTEL_SERVICE_NAME", "python-consumer"),
+    })
+
+    # Traces
+    trace_provider = TracerProvider(resource=resource)
+    trace_provider.add_span_processor(BatchSpanProcessor(OTLPSpanExporter()))
+    trace.set_tracer_provider(trace_provider)
+
+    # Metrics
+    metric_reader = PeriodicExportingMetricReader(OTLPMetricExporter())
+    meter_provider = MeterProvider(resource=resource, metric_readers=[metric_reader])
+
+    # Logs
+    logger_provider = LoggerProvider(resource=resource)
+    logger_provider.add_log_record_processor(BatchLogRecordProcessor(OTLPLogExporter()))
+    handler = LoggingHandler(logger_provider=logger_provider)
+    logging.getLogger().addHandler(handler)
+
+    # Auto-instrument requests
+    RequestsInstrumentor().instrument()
+    _flask_instrumentor = FlaskInstrumentor()
+
 import threading
-from datetime import datetime, timedelta
 from collections import defaultdict, deque
 from confluent_kafka import Consumer, Producer, KafkaError
 from flask import Flask, jsonify
 from waitress import serve
 
 app = Flask(__name__)
+
+# Instrument Flask app if OTel is enabled
+if os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT"):
+    _flask_instrumentor.instrument_app(app)
 
 # Rolling aggregates: store last 5 minutes of readings per sensor
 aggregates = defaultdict(lambda: {

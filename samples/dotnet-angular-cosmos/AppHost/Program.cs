@@ -8,7 +8,7 @@ var api = builder.AddProject<Projects.Api>("api")
     .WithReference(db)
     .WithExternalHttpEndpoints();
 
-var frontend = builder.AddNpmApp("frontend", "../frontend", "start")
+var frontend = builder.AddJavaScriptApp("frontend", "../frontend", "start")
     .WithReference(api)
     .WithHttpEndpoint(env: "PORT")
     .WithExternalHttpEndpoints();

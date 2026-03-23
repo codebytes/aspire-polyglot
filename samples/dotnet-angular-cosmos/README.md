@@ -119,7 +119,7 @@ dotnet-angular-cosmos/
 ```csharp
 var cosmos = builder.AddAzureCosmosDB("cosmos")
     .RunAsEmulator();  // No Azure subscription needed!
-var db = cosmos.AddDatabase("recipesdb");
+var db = cosmos.AddCosmosDatabase("recipesdb");
 ```
 
 ### Service References
@@ -131,7 +131,7 @@ var api = builder.AddProject<Projects.Api>("api")
 
 ### NPM App Support
 ```csharp
-var frontend = builder.AddNpmApp("frontend", "../frontend", "start")
+var frontend = builder.AddJavaScriptApp("frontend", "../frontend", "start")
     .WithReference(api)  // Discover API endpoint
     .WithHttpEndpoint(env: "PORT")
     .WithExternalHttpEndpoints();
@@ -182,7 +182,7 @@ public record Recipe
 - **ASP.NET Core Minimal APIs** - Lightweight HTTP API
 - **Angular 19** - Modern standalone components
 - **Azure Cosmos DB SDK** - NoSQL document database client
-- **Aspire 9.2.1** - Cloud-native orchestration
+- **Aspire 13.1.3** - Cloud-native orchestration
 - **OpenTelemetry** - Distributed tracing & metrics
 
 ## Differences from David Fowler's Samples

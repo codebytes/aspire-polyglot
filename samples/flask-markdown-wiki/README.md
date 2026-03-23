@@ -1,14 +1,38 @@
 # Flask Markdown Wiki
 
-A simple Markdown-based wiki application built with Flask and SQLite, orchestrated by Aspire.
+A simple Markdown-based wiki application built with Flask, SQLite, and Redis caching, orchestrated by Aspire.
 
 ## Features
 
 - **Markdown Editing**: Write and edit wiki pages using Markdown syntax
 - **SQLite Backend**: Lightweight database for storing wiki pages
+- **Redis Cache**: Aspire-managed Redis caches rendered HTML for fast page loads
 - **Simple UI**: Clean, responsive interface for viewing and editing pages
 - **Page Management**: Create new pages, edit existing ones, and view all pages
 - **Aspire Orchestration**: Managed by Aspire for easy deployment and monitoring
+- **Graceful Fallback**: Works without Redis — cache is optional
+
+## Architecture
+
+```
+┌─────────────────────────────────────────┐
+│         Aspire AppHost                  │
+│   (Orchestration & Service Discovery)   │
+└────────────┬──────────────┬─────────────┘
+             │              │
+             │ Python App   │ Container
+             ▼              ▼
+┌──────────────────┐  ┌───────────┐
+│   Flask Wiki     │  │   Redis   │
+│  ┌────────────┐  │  │  (cache)  │
+│  │  Waitress  │  │  └───────────┘
+│  │     ↓      │  │        ▲
+│  │   Views  ──┼──┼────────┘
+│  │     ↓      │  │  cached HTML
+│  │  SQLite    │  │
+│  └────────────┘  │
+└──────────────────┘
+```
 
 ## Project Structure
 
@@ -28,6 +52,7 @@ flask-markdown-wiki/
 - .NET 9.0 SDK
 - Python 3.8+
 - Aspire workload
+- Docker (for Redis container)
 
 ## Running the Application
 
@@ -108,14 +133,16 @@ The database is automatically initialized on startup with a default "Home" page.
 - **Flask**: Web framework
 - **markdown**: Markdown to HTML conversion
 - **waitress**: Production-ready WSGI server
+- **redis**: Redis client for caching rendered pages
 
 ## Configuration
 
 The application reads the following environment variables:
 
 - `PORT`: HTTP port to listen on (default: 8080)
+- `ConnectionStrings__cache`: Redis connection string (injected by Aspire)
 
-When orchestrated by Aspire, these are automatically configured.
+When orchestrated by Aspire, these are automatically configured. Without Aspire, the app runs without caching.
 
 ## Markdown Support
 

@@ -146,7 +146,7 @@ var consumer = builder.AddPythonApp("consumer", "../python-consumer", "main.py")
     .WithReference(kafka);
 
 // Node.js Dashboard
-var dashboard = builder.AddNpmApp("dashboard", "../node-dashboard", "start")
+var dashboard = builder.AddJavaScriptApp("dashboard", "../node-dashboard", "start")
     .WithReference(kafka);
 ```
 

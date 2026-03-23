@@ -1,0 +1,476 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Aspire.Hosting.Azure.CosmosDB</name>
+    </assembly>
+    <members>
+        <member name="T:Aspire.Hosting.Azure.AzureCosmosDBContainerResource">
+            <summary>
+            Represents an Azure Cosmos DB Database Container.
+            </summary>
+            <remarks>
+            Use <see cref="M:Aspire.Hosting.AzureProvisioningResourceExtensions.ConfigureInfrastructure``1(Aspire.Hosting.ApplicationModel.IResourceBuilder{``0},System.Action{Aspire.Hosting.Azure.AzureResourceInfrastructure})"/> to configure specific <see cref="N:Aspire.Hosting.Azure.Provisioning"/> properties.
+            </remarks>
+        </member>
+        <member name="M:Aspire.Hosting.Azure.AzureCosmosDBContainerResource.#ctor(System.String,System.String,System.Collections.Generic.IEnumerable{System.String},Aspire.Hosting.Azure.AzureCosmosDBDatabaseResource)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Aspire.Hosting.Azure.AzureCosmosDBContainerResource"/> class.
+            </summary>
+            <param name="name">The resource name.</param>
+            <param name="containerName">The container name.</param>
+            <param name="partitionKeyPaths">The hierarchical partition key paths.</param>
+            <param name="parent">The parent Azure Cosmos DB database resource.</param>
+        </member>
+        <member name="M:Aspire.Hosting.Azure.AzureCosmosDBContainerResource.#ctor(System.String,System.String,System.String,Aspire.Hosting.Azure.AzureCosmosDBDatabaseResource)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Aspire.Hosting.Azure.AzureCosmosDBContainerResource"/> class.
+            </summary>
+            <param name="name">The resource name.</param>
+            <param name="containerName">The container name.</param>
+            <param name="partitionKeyPath">The partition key path.</param>
+            <param name="parent">The parent Azure Cosmos DB database resource.</param>
+        </member>
+        <member name="P:Aspire.Hosting.Azure.AzureCosmosDBContainerResource.ContainerProperties">
+            <summary>
+            Gets the container properties for this azure cosmos db container resource.
+            </summary>
+        </member>
+        <member name="P:Aspire.Hosting.Azure.AzureCosmosDBContainerResource.ContainerName">
+            <summary>
+            Gets or sets the container name.
+            </summary>
+        </member>
+        <member name="P:Aspire.Hosting.Azure.AzureCosmosDBContainerResource.PartitionKeyPath">
+            <summary>
+            Gets or sets the partition key path.
+            </summary>
+        </member>
+        <member name="P:Aspire.Hosting.Azure.AzureCosmosDBContainerResource.PartitionKeyPaths">
+            <summary>
+            Gets or sets the hierarchical partition keys.
+            </summary>
+        </member>
+        <member name="P:Aspire.Hosting.Azure.AzureCosmosDBContainerResource.Parent">
+            <summary>
+            Gets the parent Azure Cosmos DB database resource.
+            </summary>
+        </member>
+        <member name="P:Aspire.Hosting.Azure.AzureCosmosDBContainerResource.ConnectionStringExpression">
+            <summary>
+            Gets the connection string expression for the Azure Cosmos DB Database Container.
+            </summary>
+        </member>
+        <member name="T:Aspire.Hosting.Azure.AzureCosmosDBDatabaseResource">
+            <summary>
+            Represents an Azure Cosmos DB Database.
+            Initializes a new instance of the <see cref="T:Aspire.Hosting.Azure.AzureCosmosDBDatabaseResource"/> class.
+            </summary>
+            <remarks>
+            Use <see cref="M:Aspire.Hosting.AzureProvisioningResourceExtensions.ConfigureInfrastructure``1(Aspire.Hosting.ApplicationModel.IResourceBuilder{``0},System.Action{Aspire.Hosting.Azure.AzureResourceInfrastructure})"/> to configure specific <see cref="N:Aspire.Hosting.Azure.Provisioning"/> properties.
+            </remarks>
+        </member>
+        <member name="M:Aspire.Hosting.Azure.AzureCosmosDBDatabaseResource.#ctor(System.String,System.String,Aspire.Hosting.AzureCosmosDBResource)">
+            <summary>
+            Represents an Azure Cosmos DB Database.
+            Initializes a new instance of the <see cref="T:Aspire.Hosting.Azure.AzureCosmosDBDatabaseResource"/> class.
+            </summary>
+            <remarks>
+            Use <see cref="M:Aspire.Hosting.AzureProvisioningResourceExtensions.ConfigureInfrastructure``1(Aspire.Hosting.ApplicationModel.IResourceBuilder{``0},System.Action{Aspire.Hosting.Azure.AzureResourceInfrastructure})"/> to configure specific <see cref="N:Aspire.Hosting.Azure.Provisioning"/> properties.
+            </remarks>
+        </member>
+        <member name="P:Aspire.Hosting.Azure.AzureCosmosDBDatabaseResource.DatabaseName">
+            <summary>
+            Gets or sets the database name.
+            </summary>
+        </member>
+        <member name="P:Aspire.Hosting.Azure.AzureCosmosDBDatabaseResource.Containers">
+            <summary>
+            The containers for this database.
+            </summary>
+        </member>
+        <member name="P:Aspire.Hosting.Azure.AzureCosmosDBDatabaseResource.Parent">
+            <summary>
+            Gets the parent Azure Cosmos DB account resource.
+            </summary>
+        </member>
+        <member name="P:Aspire.Hosting.Azure.AzureCosmosDBDatabaseResource.ConnectionStringExpression">
+            <summary>
+            Gets the connection string expression for the Azure Cosmos DB database.
+            </summary>
+        </member>
+        <member name="T:Aspire.Hosting.Azure.AzureCosmosDBEmulatorResource">
+            <summary>
+            Wraps an <see cref="T:Aspire.Hosting.AzureCosmosDBResource" /> in a type that exposes container extension methods.
+            </summary>
+            <param name="innerResource">The inner resource used to store annotations.</param>
+        </member>
+        <member name="M:Aspire.Hosting.Azure.AzureCosmosDBEmulatorResource.#ctor(Aspire.Hosting.AzureCosmosDBResource)">
+            <summary>
+            Wraps an <see cref="T:Aspire.Hosting.AzureCosmosDBResource" /> in a type that exposes container extension methods.
+            </summary>
+            <param name="innerResource">The inner resource used to store annotations.</param>
+        </member>
+        <member name="P:Aspire.Hosting.Azure.AzureCosmosDBEmulatorResource.Annotations">
+            <inheritdoc />
+        </member>
+        <member name="F:Aspire.Hosting.Azure.CosmosDB.CosmosDBEmulatorContainerImageTags.Registry">
+            <remarks>mcr.microsoft.com</remarks>
+        </member>
+        <member name="F:Aspire.Hosting.Azure.CosmosDB.CosmosDBEmulatorContainerImageTags.Image">
+            <remarks>cosmosdb/linux/azure-cosmos-emulator</remarks>
+        </member>
+        <member name="F:Aspire.Hosting.Azure.CosmosDB.CosmosDBEmulatorContainerImageTags.Tag">
+            <remarks>latest</remarks>
+        </member>
+        <member name="F:Aspire.Hosting.Azure.CosmosDB.CosmosDBEmulatorContainerImageTags.TagVNextPreview">
+            <remarks>vnext-preview</remarks>
+        </member>
+        <member name="F:Aspire.Hosting.Azure.CosmosDB.CosmosConstants.CosmosApplicationName">
+            <summary>
+            Defines the application name used to interact with the Azure Cosmos database. This will be suffixed to the
+            Cosmos user-agent to include with every Azure Cosmos database service interaction.
+            </summary>
+        </member>
+        <member name="F:Aspire.Hosting.Azure.CosmosDB.CosmosConstants.EmulatorAccountKey">
+            <summary>
+            Gets the well-known and documented Azure Cosmos DB emulator account key.
+            See <a href="https://learn.microsoft.com/azure/cosmos-db/emulator#authentication"></a>
+            </summary>
+        </member>
+        <member name="F:Aspire.Hosting.Azure.CosmosDB.CosmosConstants.EnableServerlessCapability">
+            <summary>
+            Gets the well-known and documented capability value used to enable serverless mode for Azure Cosmos DB accounts.
+            </summary>
+        </member>
+        <member name="M:Aspire.Hosting.Azure.CosmosDB.CosmosUtils.ParseConnectionString(System.String)">
+            <summary>
+            Parses the connection string to extract the account endpoint and connection string.
+            </summary>
+            <remarks>
+            The connection string can be in the following formats:
+            A valid Uri
+            AccountEndpoint={valid Uri} - optionally with [;Database={databaseName}[;Container={containerName}]]
+            {valid CosmosDB ConnectionString} - optionally with [;Database={databaseName}[;Container={containerName}]]
+            </remarks>
+        </member>
+        <member name="T:Aspire.Hosting.AzureCosmosExtensions">
+            <summary>
+            Extension methods for adding Azure Cosmos DB resources to the application model.
+            </summary>
+        </member>
+        <member name="M:Aspire.Hosting.AzureCosmosExtensions.AddAzureCosmosDB(Aspire.Hosting.IDistributedApplicationBuilder,System.String)">
+            <summary>
+            Adds an Azure Cosmos DB connection to the application model.
+            </summary>
+            <param name="builder">The <see cref="T:Aspire.Hosting.IDistributedApplicationBuilder"/>.</param>
+            <param name="name">The name of the resource. This name will be used as the connection string name when referenced in a dependency.</param>
+            <returns>A reference to the <see cref="T:Aspire.Hosting.ApplicationModel.IResourceBuilder`1"/>.</returns>
+        </member>
+        <member name="M:Aspire.Hosting.AzureCosmosExtensions.RunAsEmulator(Aspire.Hosting.ApplicationModel.IResourceBuilder{Aspire.Hosting.AzureCosmosDBResource},System.Action{Aspire.Hosting.ApplicationModel.IResourceBuilder{Aspire.Hosting.Azure.AzureCosmosDBEmulatorResource}})">
+            <summary>
+            Configures an Azure Cosmos DB resource to be emulated using the Azure Cosmos DB emulator with the NoSQL API. This resource requires an <see cref="T:Aspire.Hosting.AzureCosmosDBResource"/> to be added to the application model.
+            For more information on the Azure Cosmos DB emulator, see <a href="https://learn.microsoft.com/azure/cosmos-db/emulator#authentication"></a>.
+            </summary>
+            <param name="builder">The Azure Cosmos DB resource builder.</param>
+            <param name="configureContainer">Callback that exposes underlying container used for emulation to allow for customization.</param>
+            <returns>A reference to the <see cref="T:Aspire.Hosting.ApplicationModel.IResourceBuilder`1"/>.</returns>
+            <remarks>
+            When using the Azure Cosmos DB emulator, the container requires a TLS/SSL certificate.
+            For more information, see <a href="https://learn.microsoft.com/azure/cosmos-db/how-to-develop-emulator?tabs=docker-linux#export-the-emulators-tlsssl-certificate"></a>.
+            This version of the package defaults to the <inheritdoc cref="F:Aspire.Hosting.Azure.CosmosDB.CosmosDBEmulatorContainerImageTags.Tag"/> tag of the <inheritdoc cref="F:Aspire.Hosting.Azure.CosmosDB.CosmosDBEmulatorContainerImageTags.Registry"/>/<inheritdoc cref="F:Aspire.Hosting.Azure.CosmosDB.CosmosDBEmulatorContainerImageTags.Image"/> container image.
+            </remarks>
+        </member>
+        <member name="M:Aspire.Hosting.AzureCosmosExtensions.RunAsPreviewEmulator(Aspire.Hosting.ApplicationModel.IResourceBuilder{Aspire.Hosting.AzureCosmosDBResource},System.Action{Aspire.Hosting.ApplicationModel.IResourceBuilder{Aspire.Hosting.Azure.AzureCosmosDBEmulatorResource}})">
+            <summary>
+            Configures an Azure Cosmos DB resource to be emulated using the Azure Cosmos DB Linux-based emulator (preview) with the NoSQL API. This resource requires an <see cref="T:Aspire.Hosting.AzureCosmosDBResource"/> to be added to the application model.
+            For more information on the Azure Cosmos DB emulator, see <a href="https://learn.microsoft.com/azure/cosmos-db/emulator-linux"></a>.
+            </summary>
+            <param name="builder">The Azure Cosmos DB resource builder.</param>
+            <param name="configureContainer">Callback that exposes underlying container used for emulation to allow for customization.</param>
+            <returns>A reference to the <see cref="T:Aspire.Hosting.ApplicationModel.IResourceBuilder`1"/>.</returns>
+            <remarks>
+            This version of the package defaults to the <inheritdoc cref="F:Aspire.Hosting.Azure.CosmosDB.CosmosDBEmulatorContainerImageTags.TagVNextPreview"/> tag of the <inheritdoc cref="F:Aspire.Hosting.Azure.CosmosDB.CosmosDBEmulatorContainerImageTags.Registry"/>/<inheritdoc cref="F:Aspire.Hosting.Azure.CosmosDB.CosmosDBEmulatorContainerImageTags.Image"/> container image.
+            </remarks>
+        </member>
+        <member name="M:Aspire.Hosting.AzureCosmosExtensions.WithDataVolume(Aspire.Hosting.ApplicationModel.IResourceBuilder{Aspire.Hosting.Azure.AzureCosmosDBEmulatorResource},System.String)">
+            <summary>
+            Adds a named volume for the data folder to an Azure Cosmos DB emulator resource.
+            </summary>
+            <param name="builder">The builder for the <see cref="T:Aspire.Hosting.Azure.AzureCosmosDBEmulatorResource"/>.</param>
+            <param name="name">The name of the volume. Defaults to an auto-generated name based on the application and resource names.</param>
+            <returns>A builder for the <see cref="T:Aspire.Hosting.Azure.AzureCosmosDBEmulatorResource"/>.</returns>
+        </member>
+        <member name="M:Aspire.Hosting.AzureCosmosExtensions.WithGatewayPort(Aspire.Hosting.ApplicationModel.IResourceBuilder{Aspire.Hosting.Azure.AzureCosmosDBEmulatorResource},System.Nullable{System.Int32})">
+            <summary>
+            Configures the gateway port for the Azure Cosmos DB emulator.
+            </summary>
+            <param name="builder">Builder for the Cosmos emulator container</param>
+            <param name="port">Host port to bind to the emulator gateway port.</param>
+            <returns>Cosmos emulator resource builder.</returns>
+        </member>
+        <member name="M:Aspire.Hosting.AzureCosmosExtensions.WithPartitionCount(Aspire.Hosting.ApplicationModel.IResourceBuilder{Aspire.Hosting.Azure.AzureCosmosDBEmulatorResource},System.Int32)">
+            <summary>
+            Configures the partition count for the Azure Cosmos DB emulator.
+            </summary>
+            <param name="builder">Builder for the Cosmos emulator container</param>
+            <param name="count">Desired partition count.</param>
+            <returns>Cosmos emulator resource builder.</returns>
+            <remarks>Not calling this method will result in the default of 10 partitions. The actual started partitions is always one more than specified.
+            See <a href="https://learn.microsoft.com/azure/cosmos-db/emulator-windows-arguments#change-the-number-of-default-containers">this documentation</a> about setting the partition count.
+            </remarks>
+        </member>
+        <member name="M:Aspire.Hosting.AzureCosmosExtensions.AddDatabase(Aspire.Hosting.ApplicationModel.IResourceBuilder{Aspire.Hosting.AzureCosmosDBResource},System.String)">
+            <summary>
+            Adds a database to the associated Cosmos DB account resource.
+            </summary>
+            <param name="builder">AzureCosmosDB resource builder.</param>
+            <param name="databaseName">Name of database.</param>
+            <returns>A reference to the <see cref="T:Aspire.Hosting.ApplicationModel.IResourceBuilder`1"/>.</returns>
+            <remarks>This method is not available in polyglot app hosts. Use <see cref="M:Aspire.Hosting.AzureCosmosExtensions.AddCosmosDatabase(Aspire.Hosting.ApplicationModel.IResourceBuilder{Aspire.Hosting.AzureCosmosDBResource},System.String,System.String)"/> instead.</remarks>
+        </member>
+        <member name="M:Aspire.Hosting.AzureCosmosExtensions.AddCosmosDatabase(Aspire.Hosting.ApplicationModel.IResourceBuilder{Aspire.Hosting.AzureCosmosDBResource},System.String,System.String)">
+            <summary>
+            Adds a database to the associated Cosmos DB account resource.
+            </summary>
+            <param name="builder">AzureCosmosDB resource builder.</param>
+            <param name="name">The name of the database resource.</param>
+            <param name="databaseName">The name of the database. If not provided, this defaults to the same value as <paramref name="name"/>.</param>
+            <returns>A reference to the <see cref="T:Aspire.Hosting.ApplicationModel.IResourceBuilder`1"/>.</returns>
+        </member>
+        <member name="M:Aspire.Hosting.AzureCosmosExtensions.AddContainer(Aspire.Hosting.ApplicationModel.IResourceBuilder{Aspire.Hosting.Azure.AzureCosmosDBDatabaseResource},System.String,System.String,System.String)">
+            <summary>
+            Adds a container to the associated Cosmos DB database resource.
+            </summary>
+            <param name="builder">CosmosDBDatabase resource builder.</param>
+            <param name="name">Name of container resource.</param>
+            <param name="partitionKeyPath">Partition key path for the container.</param>
+            <param name="containerName">The name of the container. If not provided, this defaults to the same value as <paramref name="name"/>.</param>
+            <returns>A reference to the <see cref="T:Aspire.Hosting.ApplicationModel.IResourceBuilder`1"/>.</returns>
+        </member>
+        <member name="M:Aspire.Hosting.AzureCosmosExtensions.AddContainer(Aspire.Hosting.ApplicationModel.IResourceBuilder{Aspire.Hosting.Azure.AzureCosmosDBDatabaseResource},System.String,System.Collections.Generic.IEnumerable{System.String},System.String)">
+            <summary>
+            Adds a container to the associated Cosmos DB database resource with hierarchical partition keys.
+            </summary>
+            <param name="builder">CosmosDBDatabase resource builder.</param>
+            <param name="name">Name of container resource.</param>
+            <param name="partitionKeyPaths">Hierarchical partition key paths for the container.</param>
+            <param name="containerName">The name of the container. If not provided, this defaults to the same value as <paramref name="name"/>.</param>
+            <returns>A reference to the <see cref="T:Aspire.Hosting.ApplicationModel.IResourceBuilder`1"/>.</returns>
+        </member>
+        <member name="M:Aspire.Hosting.AzureCosmosExtensions.WithDefaultAzureSku(Aspire.Hosting.ApplicationModel.IResourceBuilder{Aspire.Hosting.AzureCosmosDBResource})">
+            <summary>
+            Configures the Azure Cosmos DB resource to be deployed use the default SKU provided by Azure.
+            </summary>
+            <param name="builder">The builder for the Azure Cosmos DB resource.</param>
+            <returns>A reference to the <see cref="T:Aspire.Hosting.ApplicationModel.IResourceBuilder`1"/>.</returns>
+        </member>
+        <member name="M:Aspire.Hosting.AzureCosmosExtensions.WithDataExplorer(Aspire.Hosting.ApplicationModel.IResourceBuilder{Aspire.Hosting.Azure.AzureCosmosDBEmulatorResource},System.Nullable{System.Int32})">
+            <summary>
+            Configures the Azure Cosmos DB preview emulator to expose the Data Explorer endpoint.
+            </summary>
+            <param name="builder">Builder for the Cosmos emulator container</param>
+            <param name="port">Optional host port to bind the Data Explorer to.</param>
+            <returns>Cosmos emulator resource builder.</returns>
+            <remarks>
+            The Data Explorer is only available with <see cref="M:Aspire.Hosting.AzureCosmosExtensions.RunAsPreviewEmulator(Aspire.Hosting.ApplicationModel.IResourceBuilder{Aspire.Hosting.AzureCosmosDBResource},System.Action{Aspire.Hosting.ApplicationModel.IResourceBuilder{Aspire.Hosting.Azure.AzureCosmosDBEmulatorResource}})"/>.
+            </remarks>
+        </member>
+        <member name="M:Aspire.Hosting.AzureCosmosExtensions.WithAccessKeyAuthentication(Aspire.Hosting.ApplicationModel.IResourceBuilder{Aspire.Hosting.AzureCosmosDBResource})">
+             <summary>
+             Configures the resource to use access key authentication with Azure Cosmos DB.
+             </summary>
+             <param name="builder">The Azure Cosmos DB resource builder.</param>
+             <returns>A reference to the <see cref="T:Aspire.Hosting.ApplicationModel.IResourceBuilder`1"/> builder.</returns>
+             <remarks>
+             <example>
+             The following example creates an Azure Cosmos DB resource that uses access key authentication.
+             <code lang="csharp">
+             var builder = DistributedApplication.CreateBuilder(args);
+            
+             var cosmosdb = builder.AddAzureCosmosDB("cache")
+                 .WithAccessKeyAuthentication();
+            
+             builder.AddProject&lt;Projects.ProductService&gt;()
+                 .WithReference(cosmosdb);
+            
+             builder.Build().Run();
+             </code>
+             </example>
+             </remarks>
+        </member>
+        <member name="M:Aspire.Hosting.AzureCosmosExtensions.WithAccessKeyAuthentication(Aspire.Hosting.ApplicationModel.IResourceBuilder{Aspire.Hosting.AzureCosmosDBResource},Aspire.Hosting.ApplicationModel.IResourceBuilder{Aspire.Hosting.Azure.IAzureKeyVaultResource})">
+            <summary>
+            Configures the resource to use access key authentication with Azure Cosmos DB.
+            </summary>
+            <param name="builder">The Azure Cosmos DB resource builder.</param>
+            <param name="keyVaultBuilder">The Azure Key Vault resource builder where the connection string used to connect to this AzureCosmosDBResource will be stored.</param>
+            <returns>A reference to the <see cref="T:Aspire.Hosting.ApplicationModel.IResourceBuilder`1"/> builder.</returns>
+        </member>
+        <member name="T:Aspire.Hosting.AzureCosmosDBResource">
+            <summary>
+            A resource that represents an Azure Cosmos DB.
+            </summary>
+        </member>
+        <member name="M:Aspire.Hosting.AzureCosmosDBResource.#ctor(System.String,System.Action{Aspire.Hosting.Azure.AzureResourceInfrastructure})">
+            <summary>
+            A resource that represents an Azure Cosmos DB.
+            </summary>
+        </member>
+        <member name="P:Aspire.Hosting.AzureCosmosDBResource.ConnectionString">
+            <summary>
+            Gets the "connectionString" reference from the secret outputs of the Azure Cosmos DB resource.
+            </summary>
+        </member>
+        <member name="P:Aspire.Hosting.AzureCosmosDBResource.ConnectionStringOutput">
+             <summary>
+             Gets the "connectionString" output reference from the bicep template for the Azure Cosmos DB resource.
+            
+             This is used when Entra ID authentication is used. The connection string is an output of the bicep template.
+             </summary>
+             <remarks>
+             The value is taken from the cosmos.properties.documentEndpoint bicep property and contains an endpoint.
+             </remarks>
+        </member>
+        <member name="P:Aspire.Hosting.AzureCosmosDBResource.UseDefaultAzureSku">
+            <summary>
+            Whether or not to use the default Azure Cosmos DB SKU. By default, this is set to false, and the Cosmos DB
+            account is created as a serverless account. If true, it will use the default Azure Cosmos DB SKU, which is
+            typically a provisioned throughput account.
+            </summary>
+        </member>
+        <member name="P:Aspire.Hosting.AzureCosmosDBResource.ConnectionStringSecretOutput">
+             <summary>
+             Gets the "connectionString" secret reference from the key vault associated with this resource.
+            
+             This is set when access key authentication is used. The connection string is stored in a secret in the Azure Key Vault.
+             </summary>
+        </member>
+        <member name="P:Aspire.Hosting.AzureCosmosDBResource.PrimaryAccessKeySecretOutput">
+             <summary>
+             Gets the "primaryAccessKey" secret reference from the key vault associated with this resource.
+            
+             This is set when access key authentication is used. The Access Key string is stored in a secret in the Azure Key Vault.
+             </summary>
+        </member>
+        <member name="P:Aspire.Hosting.AzureCosmosDBResource.NameOutputReference">
+            <summary>
+            Gets the "name" output reference for the resource.
+            </summary>
+        </member>
+        <member name="P:Aspire.Hosting.AzureCosmosDBResource.Id">
+            <summary>
+            Gets the "id" output reference for the resource.
+            </summary>
+        </member>
+        <member name="P:Aspire.Hosting.AzureCosmosDBResource.UseAccessKeyAuthentication">
+            <summary>
+            Gets a value indicating whether the resource uses access key authentication.
+            </summary>
+        </member>
+        <member name="P:Aspire.Hosting.AzureCosmosDBResource.IsEmulator">
+            <summary>
+            Gets a value indicating whether the Azure Cosmos DB resource is running in the local emulator.
+            </summary>
+        </member>
+        <member name="P:Aspire.Hosting.AzureCosmosDBResource.IsPreviewEmulator">
+            <summary>
+            Is this instance running a preview emulator version?
+            </summary>
+        </member>
+        <member name="P:Aspire.Hosting.AzureCosmosDBResource.UriExpression">
+            <summary>
+            Gets the account endpoint URI expression for the Cosmos DB account.
+            </summary>
+            <remarks>
+            Format: <c>https://{name}.documents.azure.com:443/</c>.
+            </remarks>
+        </member>
+        <member name="P:Aspire.Hosting.AzureCosmosDBResource.AccountKey">
+            <summary>
+            Gets the account key expression for the Cosmos DB account.
+            </summary>
+            <remarks>
+            This is only available for emulator and access key authentication. For Entra ID authentication, this property will be null.
+            </remarks>
+        </member>
+        <member name="P:Aspire.Hosting.AzureCosmosDBResource.ConnectionStringExpression">
+            <summary>
+            Gets the connection string template for the manifest for the Azure Cosmos DB resource.
+            </summary>
+        </member>
+        <member name="M:Aspire.Hosting.AzureCosmosDBResource.AddAsExistingResource(Aspire.Hosting.Azure.AzureResourceInfrastructure)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Aspire.Hosting.AzureCosmosDBResource.AddRoleAssignments(Aspire.Hosting.Azure.IAddRoleAssignmentsContext)">
+            <inheritdoc/>
+        </member>
+        <member name="T:Aspire.StableConnectionStringBuilder">
+            <summary>
+            Parses and manages connection strings in the form: Key1=Value1;Key2=Value2;...
+            Preserves the exact placement of empty segments and semicolons. It also preserves
+            spaces and case in keys and values.
+            </summary>
+            <remarks>
+            This connection string builder should be used when you need to maintain the exact format of a connection string
+            while adding or removing keys and values. When only parsing/reading connection string it is recommended to use
+            <see cref="T:System.Data.Common.DbConnectionStringBuilder"/> as it handles escaping too.
+            </remarks>
+        </member>
+        <member name="P:Aspire.StableConnectionStringBuilder.ConnectionString">
+            <summary>
+            The current connection string, always up-to-date.
+            </summary>
+        </member>
+        <member name="M:Aspire.StableConnectionStringBuilder.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Aspire.StableConnectionStringBuilder"/> class.
+            </summary>
+            <param name="connectionString">The connection string to parse.</param>
+        </member>
+        <member name="M:Aspire.StableConnectionStringBuilder.#ctor">
+            <summary>
+            Initializes a new empty instance of the <see cref="T:Aspire.StableConnectionStringBuilder"/> class.
+            </summary>
+        </member>
+        <member name="M:Aspire.StableConnectionStringBuilder.TryParse(System.String,Aspire.StableConnectionStringBuilder@)">
+            <summary>
+            Tries to parse the given connection string into a <see cref="T:Aspire.StableConnectionStringBuilder"/>.
+            Returns true if parsing succeeds, false otherwise.
+            </summary>
+        </member>
+        <member name="P:Aspire.StableConnectionStringBuilder.Item(System.String)">
+            <summary>
+            Gets or sets the value associated with the specified key (case-insensitive).
+            Returns an empty string if the value is empty, and null if the key does not exist.
+            Setting a value to null removes the key/value pair and its following semicolon.
+            </summary>
+        </member>
+        <member name="M:Aspire.StableConnectionStringBuilder.Remove(System.String)">
+            <summary>
+            Removes the specified key and its following semicolon (if present) from the connection string.
+            Returns true if the key was found and removed; otherwise, false.
+            </summary>
+        </member>
+        <member name="M:Aspire.StableConnectionStringBuilder.TryGetValue(System.String,System.String@)">
+            <summary>
+            Tries to get the value associated with the specified key (case-insensitive).
+            </summary>
+        </member>
+        <member name="M:Aspire.StableConnectionStringBuilder.ToString">
+            <summary>
+            Returns the connection string in the original order, preserving empty segments and semicolons.
+            </summary>
+        </member>
+        <member name="M:Aspire.AzureCredentialHelper.CreateDefaultAzureCredential">
+            <summary>
+            Creates a <see cref="T:Azure.Core.TokenCredential"/> for code that can run in local development or deployed to Azure.
+            </summary>
+        </member>
+        <member name="M:Aspire.AzureCredentialHelper.CreateDevelopmentAzureCredential">
+            <summary>
+            Creates a <see cref="T:Azure.Identity.DefaultAzureCredential"/> optimized for local development by excluding
+            credential types not applicable on developer machines.
+            </summary>
+        </member>
+    </members>
+</doc>

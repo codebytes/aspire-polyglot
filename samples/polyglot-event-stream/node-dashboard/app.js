@@ -1,3 +1,5 @@
+require('./instrumentation');
+
 const express = require('express');
 const { Kafka } = require('kafkajs');
 const path = require('path');

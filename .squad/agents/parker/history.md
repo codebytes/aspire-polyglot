@@ -96,3 +96,13 @@
 - Parker's vite-react-api TypeScript migration verified and approved
 - Decisions #2 and #4 archived to decisions.md
 - ts-starter demo validated in Stark's slide review (Demo 1, accurate API usage)
+
+### 2026-03-23 — OpenTelemetry Added to polyglot-event-stream node-dashboard
+- **Added full OTel instrumentation to node-dashboard** following ts-starter reference pattern
+- Created `instrumentation.js` (CommonJS equivalent of ts-starter's `instrumentation.ts`) with NodeSDK, auto-instrumentations, and OTLP exporters for traces, metrics, and logs
+- Added OTel packages to `package.json` matching ts-starter versions: `@opentelemetry/sdk-node@0.213.0`, `@opentelemetry/auto-instrumentations-node@0.71.0`, `@opentelemetry/sdk-metrics@2.6.0`, and OTLP exporters for traces/metrics/logs
+- Updated `app.js` to require `./instrumentation` as the VERY FIRST line (before any other modules) to ensure all Express/Kafka modules are auto-instrumented
+- OTel SDK only initializes when `OTEL_EXPORTER_OTLP_ENDPOINT` is set (Aspire injects this automatically)
+- Graceful shutdown: OTel SDK listens for SIGTERM/SIGINT and shuts down before process exit
+- **Key learning: CommonJS requires `require()` not `import`, and instrumentation must be the first module loaded**
+- This completes OTel parity across all Node.js samples in the repo — ts-starter already had it, now node-dashboard does too

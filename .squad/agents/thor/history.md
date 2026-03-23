@@ -89,3 +89,14 @@
 
 **Decision #1 (Config Migration):** ✅ RESOLVED — All polyglot samples now use Aspire 13.2 format
 **Decision #3 (13.2 Slides):** ✅ RESOLVED — Expanded from 2 slides to 4 slides covering all major 13.2 features
+
+### 2025-01-XX — OpenTelemetry Integration: Spring Boot + Aspire Dashboard
+- **Challenge:** Spring Boot sample had ZERO telemetry instrumentation — no traces, metrics, or logs sent to Aspire dashboard
+- **Approach:** Used `opentelemetry-spring-boot-starter` (v2.12.0) for zero-code auto-instrumentation instead of Java agent (no `AddSpringApp` in file-based AppHost)
+- **Key changes:**
+  1. Added `opentelemetry-instrumentation-bom` dependency management + `opentelemetry-spring-boot-starter` dependency to `pom.xml`
+  2. Configured OTel exporters in `application.properties` (grpc protocol, otlp exporters for logs/metrics/traces)
+  3. Starter auto-reads `OTEL_EXPORTER_OTLP_ENDPOINT`, `OTEL_SERVICE_NAME`, `OTEL_RESOURCE_ATTRIBUTES` from Aspire-injected env vars
+- **Bonus fix:** Corrected environment variable mismatch in `AppHost.java` — replaced `PG_HOST`, `PG_PORT`, `PG_USER`, `PG_PASSWORD`, `PG_DB` with `NOTESDB_JDBCCONNECTIONSTRING`, `NOTESDB_USERNAME`, `NOTESDB_PASSWORD` to match what Spring Boot actually reads from `application.properties`
+- **Outcome:** Full observability stack (traces, metrics, logs) now flows from Spring Boot → Aspire dashboard with zero Java code changes — pure config-driven setup
+- **Learning:** Spring Boot OTel starter is ideal for Aspire integration in Java file-based AppHosts where Java agent path injection isn't available
