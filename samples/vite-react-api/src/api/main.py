@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 
 # --- OpenTelemetry setup (must run before FastAPI app creation) ---
 if os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT"):
-    from opentelemetry import trace
+    from opentelemetry import trace, metrics
     from opentelemetry.sdk.trace import TracerProvider
     from opentelemetry.sdk.trace.export import BatchSpanProcessor
     from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
@@ -33,8 +33,7 @@ if os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT"):
     # Metrics
     metric_reader = PeriodicExportingMetricReader(OTLPMetricExporter())
     meter_provider = MeterProvider(resource=resource, metric_readers=[metric_reader])
-
-    # Logs
+    metrics.set_meter_provider(meter_provider)
     logger_provider = LoggerProvider(resource=resource)
     logger_provider.add_log_record_processor(BatchLogRecordProcessor(OTLPLogExporter()))
     handler = LoggingHandler(logger_provider=logger_provider)

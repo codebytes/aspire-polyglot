@@ -30,6 +30,10 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to add api: %v", err)
 	}
+	_, err = api.WithOtlpExporter()
+	if err != nil {
+		log.Fatalf("Failed to configure OTLP exporter for api: %v", err)
+	}
 	// Manually wire connection string since plain containers don't support WithReference
 	pgEndpoint, err := pg.GetEndpoint("tcp")
 	if err != nil {

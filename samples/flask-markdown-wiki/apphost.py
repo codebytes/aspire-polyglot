@@ -9,6 +9,7 @@ builder = create_builder()
 cache = builder.add_container("cache", "redis:latest")
 
 wiki = builder.add_dockerfile("wiki", "./src")
+wiki.with_otlp_exporter()
 wiki.with_external_http_endpoints()
 wiki.with_http_endpoint(target_port=8080, env="PORT")
 

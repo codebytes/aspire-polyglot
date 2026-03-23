@@ -10,6 +10,7 @@ const cache = builder.addContainer("cache", "redis:latest");
 
 // FastAPI backend (./src/api has a Dockerfile)
 const api = builder.addDockerfile("api", "./src/api")
+  .withOtlpExporter()
   .withEnvironment("REDIS_HOST", "cache")
   .withEnvironment("REDIS_PORT", "6379")
   .withHttpEndpoint({ targetPort: 8080, env: "PORT" })

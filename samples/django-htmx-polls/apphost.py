@@ -11,6 +11,7 @@ postgres.with_environment("POSTGRES_DB", "pollsdb")
 postgres.with_environment("POSTGRES_PASSWORD", "postgres")
 
 polls = builder.add_dockerfile("polls", "./src")
+polls.with_otlp_exporter()
 polls.with_external_http_endpoints()
 polls.with_http_endpoint(target_port=8080, env="PORT")
 
