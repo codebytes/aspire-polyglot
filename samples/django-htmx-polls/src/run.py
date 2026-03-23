@@ -12,7 +12,6 @@ if os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT"):
     from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
     from opentelemetry.sdk.resources import Resource
     from opentelemetry.instrumentation.django import DjangoInstrumentor
-    from opentelemetry.instrumentation.requests import RequestsInstrumentor
     from opentelemetry.sdk.metrics import MeterProvider
     from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
     from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import OTLPMetricExporter
@@ -42,9 +41,8 @@ if os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT"):
     logging.getLogger().addHandler(handler)
     logging.getLogger().setLevel(logging.INFO)
 
-    # Auto-instrument Django and requests
+    # Auto-instrument Django
     DjangoInstrumentor().instrument()
-    RequestsInstrumentor().instrument()
 
 # Set Django settings module
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "pollsite.settings")

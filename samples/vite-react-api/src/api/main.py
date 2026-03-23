@@ -12,7 +12,6 @@ if os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT"):
     from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
     from opentelemetry.sdk.resources import Resource
     from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-    from opentelemetry.instrumentation.requests import RequestsInstrumentor
     from opentelemetry.sdk.metrics import MeterProvider
     from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
     from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import OTLPMetricExporter
@@ -40,8 +39,6 @@ if os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT"):
     logging.getLogger().addHandler(handler)
     logging.getLogger().setLevel(logging.INFO)
 
-    # Auto-instrument requests
-    RequestsInstrumentor().instrument()
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware

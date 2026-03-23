@@ -13,7 +13,6 @@ if os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT"):
     from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
     from opentelemetry.sdk.resources import Resource
     from opentelemetry.instrumentation.flask import FlaskInstrumentor
-    from opentelemetry.instrumentation.requests import RequestsInstrumentor
     from opentelemetry.sdk.metrics import MeterProvider
     from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
     from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import OTLPMetricExporter
@@ -41,8 +40,6 @@ if os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT"):
     logging.getLogger().addHandler(handler)
     logging.getLogger().setLevel(logging.INFO)
 
-    # Auto-instrument requests
-    RequestsInstrumentor().instrument()
     _flask_instrumentor = FlaskInstrumentor()
 
 import threading
