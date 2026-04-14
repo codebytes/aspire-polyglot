@@ -1,6 +1,7 @@
 import os
 import sys
 import logging
+import glob as _glob
 
 logger = logging.getLogger(__name__)
 
@@ -8,8 +9,58 @@ logger = logging.getLogger(__name__)
 # DjangoInstrumentor) to avoid Django falling back to the dummy database backend.
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "pollsite.settings")
 
+
+def _load_grpc_ssl_credentials():
+    """Build gRPC SSL credentials that trust the Aspire dev certificate.
+
+    The Python gRPC library ships its own root certificates and ignores
+    SSL_CERT_DIR. Aspire injects the dev-cert PEM via SSL_CERT_DIR.
+    We combine system CAs with the Aspire cert and return gRPC credentials.
+    Returns None when no Aspire certs are found.
+    """
+    ssl_cert_dirs = os.environ.get("SSL_CERT_DIR", "")
+    if not ssl_cert_dirs:
+        return None
+
+    aspire_pems: list[str] = []
+    for cert_dir in ssl_cert_dirs.split(":"):
+        if "aspire" in cert_dir.lower():
+            for pem_path in sorted(_glob.glob(os.path.join(cert_dir, "*.pem"))):
+                try:
+                    with open(pem_path) as fh:
+                        aspire_pems.append(fh.read())
+                except OSError:
+                    pass
+
+    if not aspire_pems:
+        return None
+
+    system_bundle = ""
+    for ca_path in ("/etc/ssl/certs/ca-certificates.crt", "/etc/ssl/cert.pem"):
+        if os.path.exists(ca_path):
+            with open(ca_path) as fh:
+                system_bundle = fh.read()
+            break
+
+    combined = system_bundle + "\n" + "\n".join(aspire_pems)
+
+    # Also set env var as a fallback for any other gRPC channels
+    combined_path = os.path.join(os.environ.get("HOME", "/app"), ".aspire-combined-ca.pem")
+    try:
+        with open(combined_path, "w") as out:
+            out.write(combined)
+        os.environ["GRPC_DEFAULT_SSL_ROOTS_FILE_PATH"] = combined_path
+    except OSError:
+        pass
+
+    import grpc
+    return grpc.ssl_channel_credentials(root_certificates=combined.encode("utf-8"))
+
+
 # --- OpenTelemetry setup (must run before Django setup) ---
 if os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT"):
+    _grpc_creds = _load_grpc_ssl_credentials()
+
     from opentelemetry import trace, metrics
     from opentelemetry.sdk.trace import TracerProvider
     from opentelemetry.sdk.trace.export import BatchSpanProcessor
@@ -28,19 +79,21 @@ if os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT"):
         "service.name": os.environ.get("OTEL_SERVICE_NAME", "django-polls"),
     })
 
+    _exporter_kwargs = {"credentials": _grpc_creds} if _grpc_creds else {}
+
     # Traces
     trace_provider = TracerProvider(resource=resource)
-    trace_provider.add_span_processor(BatchSpanProcessor(OTLPSpanExporter()))
+    trace_provider.add_span_processor(BatchSpanProcessor(OTLPSpanExporter(**_exporter_kwargs)))
     trace.set_tracer_provider(trace_provider)
 
     # Metrics
-    metric_reader = PeriodicExportingMetricReader(OTLPMetricExporter())
+    metric_reader = PeriodicExportingMetricReader(OTLPMetricExporter(**_exporter_kwargs))
     meter_provider = MeterProvider(resource=resource, metric_readers=[metric_reader])
     metrics.set_meter_provider(meter_provider)
 
     # Logs
     logger_provider = LoggerProvider(resource=resource)
-    logger_provider.add_log_record_processor(BatchLogRecordProcessor(OTLPLogExporter()))
+    logger_provider.add_log_record_processor(BatchLogRecordProcessor(OTLPLogExporter(**_exporter_kwargs)))
     handler = LoggingHandler(logger_provider=logger_provider)
     logging.getLogger().addHandler(handler)
     logging.getLogger().setLevel(logging.INFO)

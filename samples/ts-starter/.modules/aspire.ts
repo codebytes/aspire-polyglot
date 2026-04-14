@@ -332,6 +332,12 @@ export enum WaitBehavior {
 // DTO Interfaces
 // ============================================================================
 
+/** DTO interface for AddContainerOptions */
+export interface AddContainerOptions {
+    image?: string;
+    tag?: string;
+}
+
 /** DTO interface for CommandOptions */
 export interface CommandOptions {
     description?: string;
@@ -360,6 +366,27 @@ export interface ExecuteCommandResult {
     success?: boolean;
     canceled?: boolean;
     errorMessage?: string;
+}
+
+/** DTO interface for GenerateParameterDefault */
+export interface GenerateParameterDefault {
+    minLength?: number;
+    lower?: boolean;
+    upper?: boolean;
+    numeric?: boolean;
+    special?: boolean;
+    minLower?: number;
+    minUpper?: number;
+    minNumeric?: number;
+    minSpecial?: number;
+}
+
+/** DTO interface for ReferenceEnvironmentInjectionOptions */
+export interface ReferenceEnvironmentInjectionOptions {
+    connectionString?: boolean;
+    connectionProperties?: boolean;
+    serviceDiscovery?: boolean;
+    endpoints?: boolean;
 }
 
 /** DTO interface for ResourceEventDto */
@@ -411,6 +438,11 @@ export interface AddParameterFromConfigurationOptions {
 
 export interface AddParameterOptions {
     secret?: boolean;
+}
+
+export interface AddParameterWithGeneratedValueOptions {
+    secret?: boolean;
+    persist?: boolean;
 }
 
 export interface AddParameterWithValueOptions {
@@ -515,6 +547,12 @@ export interface WithBunOptions {
 
 export interface WithCommandOptions {
     commandOptions?: CommandOptions;
+}
+
+export interface WithContainerCertificatePathsOptions {
+    customCertificatesDestination?: string;
+    defaultCertificateBundlePaths?: string[];
+    defaultCertificateDirectoryPaths?: string[];
 }
 
 export interface WithDescriptionOptions {
@@ -1150,6 +1188,16 @@ export class EndpointReference {
         get: async (): Promise<boolean> => {
             return await this._client.invokeCapability<boolean>(
                 'Aspire.Hosting.ApplicationModel/EndpointReference.tlsEnabled',
+                { context: this._handle }
+            );
+        },
+    };
+
+    /** Gets the ExcludeReferenceEndpoint property */
+    excludeReferenceEndpoint = {
+        get: async (): Promise<boolean> => {
+            return await this._client.invokeCapability<boolean>(
+                'Aspire.Hosting.ApplicationModel/EndpointReference.excludeReferenceEndpoint',
                 { context: this._handle }
             );
         },
@@ -2886,7 +2934,7 @@ export class DistributedApplicationBuilder {
 
     /** Adds a container resource */
     /** @internal */
-    async _addContainerInternal(name: string, image: string): Promise<ContainerResource> {
+    async _addContainerInternal(name: string, image: string | AddContainerOptions): Promise<ContainerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, name, image };
         const result = await this._client.invokeCapability<ContainerResourceHandle>(
             'Aspire.Hosting/addContainer',
@@ -2895,7 +2943,7 @@ export class DistributedApplicationBuilder {
         return new ContainerResource(result, this._client);
     }
 
-    addContainer(name: string, image: string): ContainerResourcePromise {
+    addContainer(name: string, image: string | AddContainerOptions): ContainerResourcePromise {
         return new ContainerResourcePromise(this._addContainerInternal(name, image));
     }
 
@@ -3046,6 +3094,25 @@ export class DistributedApplicationBuilder {
         return new ParameterResourcePromise(this._addParameterFromConfigurationInternal(name, configurationKey, secret));
     }
 
+    /** Adds a parameter with a generated default value */
+    /** @internal */
+    async _addParameterWithGeneratedValueInternal(name: string, value: GenerateParameterDefault, secret?: boolean, persist?: boolean): Promise<ParameterResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
+        if (secret !== undefined) rpcArgs.secret = secret;
+        if (persist !== undefined) rpcArgs.persist = persist;
+        const result = await this._client.invokeCapability<ParameterResourceHandle>(
+            'Aspire.Hosting/addParameterWithGeneratedValue',
+            rpcArgs
+        );
+        return new ParameterResource(result, this._client);
+    }
+
+    addParameterWithGeneratedValue(name: string, value: GenerateParameterDefault, options?: AddParameterWithGeneratedValueOptions): ParameterResourcePromise {
+        const secret = options?.secret;
+        const persist = options?.persist;
+        return new ParameterResourcePromise(this._addParameterWithGeneratedValueInternal(name, value, secret, persist));
+    }
+
     /** Adds a connection string resource */
     /** @internal */
     async _addConnectionStringInternal(name: string, environmentVariableName?: string): Promise<ResourceWithConnectionString> {
@@ -3061,6 +3128,21 @@ export class DistributedApplicationBuilder {
     addConnectionString(name: string, options?: AddConnectionStringOptions): ResourceWithConnectionStringPromise {
         const environmentVariableName = options?.environmentVariableName;
         return new ResourceWithConnectionStringPromise(this._addConnectionStringInternal(name, environmentVariableName));
+    }
+
+    /** Adds a .NET project resource without a launch profile */
+    /** @internal */
+    async _addProjectWithoutLaunchProfileInternal(name: string, projectPath: string): Promise<ProjectResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, name, projectPath };
+        const result = await this._client.invokeCapability<ProjectResourceHandle>(
+            'Aspire.Hosting/addProjectWithoutLaunchProfile',
+            rpcArgs
+        );
+        return new ProjectResource(result, this._client);
+    }
+
+    addProjectWithoutLaunchProfile(name: string, projectPath: string): ProjectResourcePromise {
+        return new ProjectResourcePromise(this._addProjectWithoutLaunchProfileInternal(name, projectPath));
     }
 
     /** Adds a .NET project resource */
@@ -3266,7 +3348,7 @@ export class DistributedApplicationBuilderPromise implements PromiseLike<Distrib
     }
 
     /** Adds a container resource */
-    addContainer(name: string, image: string): ContainerResourcePromise {
+    addContainer(name: string, image: string | AddContainerOptions): ContainerResourcePromise {
         return new ContainerResourcePromise(this._promise.then(obj => obj.addContainer(name, image)));
     }
 
@@ -3315,9 +3397,19 @@ export class DistributedApplicationBuilderPromise implements PromiseLike<Distrib
         return new ParameterResourcePromise(this._promise.then(obj => obj.addParameterFromConfiguration(name, configurationKey, options)));
     }
 
+    /** Adds a parameter with a generated default value */
+    addParameterWithGeneratedValue(name: string, value: GenerateParameterDefault, options?: AddParameterWithGeneratedValueOptions): ParameterResourcePromise {
+        return new ParameterResourcePromise(this._promise.then(obj => obj.addParameterWithGeneratedValue(name, value, options)));
+    }
+
     /** Adds a connection string resource */
     addConnectionString(name: string, options?: AddConnectionStringOptions): ResourceWithConnectionStringPromise {
         return new ResourceWithConnectionStringPromise(this._promise.then(obj => obj.addConnectionString(name, options)));
+    }
+
+    /** Adds a .NET project resource without a launch profile */
+    addProjectWithoutLaunchProfile(name: string, projectPath: string): ProjectResourcePromise {
+        return new ProjectResourcePromise(this._promise.then(obj => obj.addProjectWithoutLaunchProfile(name, projectPath)));
     }
 
     /** Adds a .NET project resource */
@@ -4291,7 +4383,7 @@ export class ConnectionStringResource extends ResourceBuilderBase<ConnectionStri
     }
 
     /** @internal */
-    private async _withConnectionPropertyInternal(name: string, value: ReferenceExpression): Promise<ConnectionStringResource> {
+    private async _withConnectionPropertyInternal(name: string, value: string | ReferenceExpression): Promise<ConnectionStringResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
         const result = await this._client.invokeCapability<ConnectionStringResourceHandle>(
             'Aspire.Hosting/withConnectionProperty',
@@ -4300,8 +4392,8 @@ export class ConnectionStringResource extends ResourceBuilderBase<ConnectionStri
         return new ConnectionStringResource(result, this._client);
     }
 
-    /** Adds a connection property with a reference expression */
-    withConnectionProperty(name: string, value: ReferenceExpression): ConnectionStringResourcePromise {
+    /** Adds a connection property with a string or reference expression value */
+    withConnectionProperty(name: string, value: string | ReferenceExpression): ConnectionStringResourcePromise {
         return new ConnectionStringResourcePromise(this._withConnectionPropertyInternal(name, value));
     }
 
@@ -4564,6 +4656,21 @@ export class ConnectionStringResource extends ResourceBuilderBase<ConnectionStri
     withCommand(name: string, displayName: string, executeCommand: (arg: ExecuteCommandContext) => Promise<ExecuteCommandResult>, options?: WithCommandOptions): ConnectionStringResourcePromise {
         const commandOptions = options?.commandOptions;
         return new ConnectionStringResourcePromise(this._withCommandInternal(name, displayName, executeCommand, commandOptions));
+    }
+
+    /** @internal */
+    private async _withRelationshipInternal(resourceBuilder: ResourceBuilderBase, type: string): Promise<ConnectionStringResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, resourceBuilder, type };
+        const result = await this._client.invokeCapability<ConnectionStringResourceHandle>(
+            'Aspire.Hosting/withBuilderRelationship',
+            rpcArgs
+        );
+        return new ConnectionStringResource(result, this._client);
+    }
+
+    /** Adds a relationship to another resource */
+    withRelationship(resourceBuilder: ResourceBuilderBase, type: string): ConnectionStringResourcePromise {
+        return new ConnectionStringResourcePromise(this._withRelationshipInternal(resourceBuilder, type));
     }
 
     /** @internal */
@@ -4837,8 +4944,8 @@ export class ConnectionStringResourcePromise implements PromiseLike<ConnectionSt
         return new ConnectionStringResourcePromise(this._promise.then(obj => obj.withRequiredCommand(command, options)));
     }
 
-    /** Adds a connection property with a reference expression */
-    withConnectionProperty(name: string, value: ReferenceExpression): ConnectionStringResourcePromise {
+    /** Adds a connection property with a string or reference expression value */
+    withConnectionProperty(name: string, value: string | ReferenceExpression): ConnectionStringResourcePromise {
         return new ConnectionStringResourcePromise(this._promise.then(obj => obj.withConnectionProperty(name, value)));
     }
 
@@ -4920,6 +5027,11 @@ export class ConnectionStringResourcePromise implements PromiseLike<ConnectionSt
     /** Adds a resource command */
     withCommand(name: string, displayName: string, executeCommand: (arg: ExecuteCommandContext) => Promise<ExecuteCommandResult>, options?: WithCommandOptions): ConnectionStringResourcePromise {
         return new ConnectionStringResourcePromise(this._promise.then(obj => obj.withCommand(name, displayName, executeCommand, options)));
+    }
+
+    /** Adds a relationship to another resource */
+    withRelationship(resourceBuilder: ResourceBuilderBase, type: string): ConnectionStringResourcePromise {
+        return new ConnectionStringResourcePromise(this._promise.then(obj => obj.withRelationship(resourceBuilder, type)));
     }
 
     /** Sets the parent relationship */
@@ -5207,6 +5319,21 @@ export class ContainerRegistryResource extends ResourceBuilderBase<ContainerRegi
     withCommand(name: string, displayName: string, executeCommand: (arg: ExecuteCommandContext) => Promise<ExecuteCommandResult>, options?: WithCommandOptions): ContainerRegistryResourcePromise {
         const commandOptions = options?.commandOptions;
         return new ContainerRegistryResourcePromise(this._withCommandInternal(name, displayName, executeCommand, commandOptions));
+    }
+
+    /** @internal */
+    private async _withRelationshipInternal(resourceBuilder: ResourceBuilderBase, type: string): Promise<ContainerRegistryResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, resourceBuilder, type };
+        const result = await this._client.invokeCapability<ContainerRegistryResourceHandle>(
+            'Aspire.Hosting/withBuilderRelationship',
+            rpcArgs
+        );
+        return new ContainerRegistryResource(result, this._client);
+    }
+
+    /** Adds a relationship to another resource */
+    withRelationship(resourceBuilder: ResourceBuilderBase, type: string): ContainerRegistryResourcePromise {
+        return new ContainerRegistryResourcePromise(this._withRelationshipInternal(resourceBuilder, type));
     }
 
     /** @internal */
@@ -5505,6 +5632,11 @@ export class ContainerRegistryResourcePromise implements PromiseLike<ContainerRe
         return new ContainerRegistryResourcePromise(this._promise.then(obj => obj.withCommand(name, displayName, executeCommand, options)));
     }
 
+    /** Adds a relationship to another resource */
+    withRelationship(resourceBuilder: ResourceBuilderBase, type: string): ContainerRegistryResourcePromise {
+        return new ContainerRegistryResourcePromise(this._promise.then(obj => obj.withRelationship(resourceBuilder, type)));
+    }
+
     /** Sets the parent relationship */
     withParentRelationship(parent: ResourceBuilderBase): ContainerRegistryResourcePromise {
         return new ContainerRegistryResourcePromise(this._promise.then(obj => obj.withParentRelationship(parent)));
@@ -5780,17 +5912,17 @@ export class ContainerResource extends ResourceBuilderBase<ContainerResourceHand
     }
 
     /** @internal */
-    private async _withBuildArgInternal(name: string, value: ParameterResource): Promise<ContainerResource> {
+    private async _withBuildArgInternal(name: string, value: string | ParameterResource): Promise<ContainerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
         const result = await this._client.invokeCapability<ContainerResourceHandle>(
-            'Aspire.Hosting/withParameterBuildArg',
+            'Aspire.Hosting/withBuildArg',
             rpcArgs
         );
         return new ContainerResource(result, this._client);
     }
 
-    /** Adds a build argument from a parameter resource */
-    withBuildArg(name: string, value: ParameterResource): ContainerResourcePromise {
+    /** Adds a build argument from a string value or parameter resource */
+    withBuildArg(name: string, value: string | ParameterResource): ContainerResourcePromise {
         return new ContainerResourcePromise(this._withBuildArgInternal(name, value));
     }
 
@@ -5807,6 +5939,27 @@ export class ContainerResource extends ResourceBuilderBase<ContainerResourceHand
     /** Adds a build secret from a parameter resource */
     withBuildSecret(name: string, value: ParameterResource): ContainerResourcePromise {
         return new ContainerResourcePromise(this._withBuildSecretInternal(name, value));
+    }
+
+    /** @internal */
+    private async _withContainerCertificatePathsInternal(customCertificatesDestination?: string, defaultCertificateBundlePaths?: string[], defaultCertificateDirectoryPaths?: string[]): Promise<ContainerResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle };
+        if (customCertificatesDestination !== undefined) rpcArgs.customCertificatesDestination = customCertificatesDestination;
+        if (defaultCertificateBundlePaths !== undefined) rpcArgs.defaultCertificateBundlePaths = defaultCertificateBundlePaths;
+        if (defaultCertificateDirectoryPaths !== undefined) rpcArgs.defaultCertificateDirectoryPaths = defaultCertificateDirectoryPaths;
+        const result = await this._client.invokeCapability<ContainerResourceHandle>(
+            'Aspire.Hosting/withContainerCertificatePaths',
+            rpcArgs
+        );
+        return new ContainerResource(result, this._client);
+    }
+
+    /** Overrides container certificate bundle and directory paths used for trust configuration */
+    withContainerCertificatePaths(options?: WithContainerCertificatePathsOptions): ContainerResourcePromise {
+        const customCertificatesDestination = options?.customCertificatesDestination;
+        const defaultCertificateBundlePaths = options?.defaultCertificateBundlePaths;
+        const defaultCertificateDirectoryPaths = options?.defaultCertificateDirectoryPaths;
+        return new ContainerResourcePromise(this._withContainerCertificatePathsInternal(customCertificatesDestination, defaultCertificateBundlePaths, defaultCertificateDirectoryPaths));
     }
 
     /** @internal */
@@ -6072,6 +6225,21 @@ export class ContainerResource extends ResourceBuilderBase<ContainerResourceHand
     /** Sets command-line arguments via async callback */
     withArgsCallbackAsync(callback: (arg: CommandLineArgsCallbackContext) => Promise<void>): ContainerResourcePromise {
         return new ContainerResourcePromise(this._withArgsCallbackAsyncInternal(callback));
+    }
+
+    /** @internal */
+    private async _withReferenceEnvironmentInternal(options: ReferenceEnvironmentInjectionOptions): Promise<ContainerResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, options };
+        const result = await this._client.invokeCapability<ContainerResourceHandle>(
+            'Aspire.Hosting/withReferenceEnvironment',
+            rpcArgs
+        );
+        return new ContainerResource(result, this._client);
+    }
+
+    /** Configures which reference values are injected into environment variables */
+    withReferenceEnvironment(options: ReferenceEnvironmentInjectionOptions): ContainerResourcePromise {
+        return new ContainerResourcePromise(this._withReferenceEnvironmentInternal(options));
     }
 
     /** @internal */
@@ -6601,6 +6769,21 @@ export class ContainerResource extends ResourceBuilderBase<ContainerResourceHand
     }
 
     /** @internal */
+    private async _withRelationshipInternal(resourceBuilder: ResourceBuilderBase, type: string): Promise<ContainerResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, resourceBuilder, type };
+        const result = await this._client.invokeCapability<ContainerResourceHandle>(
+            'Aspire.Hosting/withBuilderRelationship',
+            rpcArgs
+        );
+        return new ContainerResource(result, this._client);
+    }
+
+    /** Adds a relationship to another resource */
+    withRelationship(resourceBuilder: ResourceBuilderBase, type: string): ContainerResourcePromise {
+        return new ContainerResourcePromise(this._withRelationshipInternal(resourceBuilder, type));
+    }
+
+    /** @internal */
     private async _withParentRelationshipInternal(parent: ResourceBuilderBase): Promise<ContainerResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, parent };
         const result = await this._client.invokeCapability<ContainerResourceHandle>(
@@ -6999,14 +7182,19 @@ export class ContainerResourcePromise implements PromiseLike<ContainerResource> 
         return new ContainerResourcePromise(this._promise.then(obj => obj.withContainerName(name)));
     }
 
-    /** Adds a build argument from a parameter resource */
-    withBuildArg(name: string, value: ParameterResource): ContainerResourcePromise {
+    /** Adds a build argument from a string value or parameter resource */
+    withBuildArg(name: string, value: string | ParameterResource): ContainerResourcePromise {
         return new ContainerResourcePromise(this._promise.then(obj => obj.withBuildArg(name, value)));
     }
 
     /** Adds a build secret from a parameter resource */
     withBuildSecret(name: string, value: ParameterResource): ContainerResourcePromise {
         return new ContainerResourcePromise(this._promise.then(obj => obj.withBuildSecret(name, value)));
+    }
+
+    /** Overrides container certificate bundle and directory paths used for trust configuration */
+    withContainerCertificatePaths(options?: WithContainerCertificatePathsOptions): ContainerResourcePromise {
+        return new ContainerResourcePromise(this._promise.then(obj => obj.withContainerCertificatePaths(options)));
     }
 
     /** Configures endpoint proxy support */
@@ -7087,6 +7275,11 @@ export class ContainerResourcePromise implements PromiseLike<ContainerResource> 
     /** Sets command-line arguments via async callback */
     withArgsCallbackAsync(callback: (arg: CommandLineArgsCallbackContext) => Promise<void>): ContainerResourcePromise {
         return new ContainerResourcePromise(this._promise.then(obj => obj.withArgsCallbackAsync(callback)));
+    }
+
+    /** Configures which reference values are injected into environment variables */
+    withReferenceEnvironment(options: ReferenceEnvironmentInjectionOptions): ContainerResourcePromise {
+        return new ContainerResourcePromise(this._promise.then(obj => obj.withReferenceEnvironment(options)));
     }
 
     /** Adds a reference to another resource */
@@ -7237,6 +7430,11 @@ export class ContainerResourcePromise implements PromiseLike<ContainerResource> 
     /** Removes HTTPS certificate configuration */
     withoutHttpsCertificate(): ContainerResourcePromise {
         return new ContainerResourcePromise(this._promise.then(obj => obj.withoutHttpsCertificate()));
+    }
+
+    /** Adds a relationship to another resource */
+    withRelationship(resourceBuilder: ResourceBuilderBase, type: string): ContainerResourcePromise {
+        return new ContainerResourcePromise(this._promise.then(obj => obj.withRelationship(resourceBuilder, type)));
     }
 
     /** Sets the parent relationship */
@@ -7620,6 +7818,21 @@ export class CSharpAppResource extends ResourceBuilderBase<CSharpAppResourceHand
     /** Sets command-line arguments via async callback */
     withArgsCallbackAsync(callback: (arg: CommandLineArgsCallbackContext) => Promise<void>): CSharpAppResourcePromise {
         return new CSharpAppResourcePromise(this._withArgsCallbackAsyncInternal(callback));
+    }
+
+    /** @internal */
+    private async _withReferenceEnvironmentInternal(options: ReferenceEnvironmentInjectionOptions): Promise<CSharpAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, options };
+        const result = await this._client.invokeCapability<CSharpAppResourceHandle>(
+            'Aspire.Hosting/withReferenceEnvironment',
+            rpcArgs
+        );
+        return new CSharpAppResource(result, this._client);
+    }
+
+    /** Configures which reference values are injected into environment variables */
+    withReferenceEnvironment(options: ReferenceEnvironmentInjectionOptions): CSharpAppResourcePromise {
+        return new CSharpAppResourcePromise(this._withReferenceEnvironmentInternal(options));
     }
 
     /** @internal */
@@ -8164,6 +8377,21 @@ export class CSharpAppResource extends ResourceBuilderBase<CSharpAppResourceHand
     }
 
     /** @internal */
+    private async _withRelationshipInternal(resourceBuilder: ResourceBuilderBase, type: string): Promise<CSharpAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, resourceBuilder, type };
+        const result = await this._client.invokeCapability<CSharpAppResourceHandle>(
+            'Aspire.Hosting/withBuilderRelationship',
+            rpcArgs
+        );
+        return new CSharpAppResource(result, this._client);
+    }
+
+    /** Adds a relationship to another resource */
+    withRelationship(resourceBuilder: ResourceBuilderBase, type: string): CSharpAppResourcePromise {
+        return new CSharpAppResourcePromise(this._withRelationshipInternal(resourceBuilder, type));
+    }
+
+    /** @internal */
     private async _withParentRelationshipInternal(parent: ResourceBuilderBase): Promise<CSharpAppResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, parent };
         const result = await this._client.invokeCapability<CSharpAppResourceHandle>(
@@ -8563,6 +8791,11 @@ export class CSharpAppResourcePromise implements PromiseLike<CSharpAppResource> 
         return new CSharpAppResourcePromise(this._promise.then(obj => obj.withArgsCallbackAsync(callback)));
     }
 
+    /** Configures which reference values are injected into environment variables */
+    withReferenceEnvironment(options: ReferenceEnvironmentInjectionOptions): CSharpAppResourcePromise {
+        return new CSharpAppResourcePromise(this._promise.then(obj => obj.withReferenceEnvironment(options)));
+    }
+
     /** Adds a reference to another resource */
     withReference(source: ResourceBuilderBase, options?: WithReferenceOptions): CSharpAppResourcePromise {
         return new CSharpAppResourcePromise(this._promise.then(obj => obj.withReference(source, options)));
@@ -8716,6 +8949,11 @@ export class CSharpAppResourcePromise implements PromiseLike<CSharpAppResource> 
     /** Removes HTTPS certificate configuration */
     withoutHttpsCertificate(): CSharpAppResourcePromise {
         return new CSharpAppResourcePromise(this._promise.then(obj => obj.withoutHttpsCertificate()));
+    }
+
+    /** Adds a relationship to another resource */
+    withRelationship(resourceBuilder: ResourceBuilderBase, type: string): CSharpAppResourcePromise {
+        return new CSharpAppResourcePromise(this._promise.then(obj => obj.withRelationship(resourceBuilder, type)));
     }
 
     /** Sets the parent relationship */
@@ -9197,6 +9435,21 @@ export class DotnetToolResource extends ResourceBuilderBase<DotnetToolResourceHa
     /** Sets command-line arguments via async callback */
     withArgsCallbackAsync(callback: (arg: CommandLineArgsCallbackContext) => Promise<void>): DotnetToolResourcePromise {
         return new DotnetToolResourcePromise(this._withArgsCallbackAsyncInternal(callback));
+    }
+
+    /** @internal */
+    private async _withReferenceEnvironmentInternal(options: ReferenceEnvironmentInjectionOptions): Promise<DotnetToolResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, options };
+        const result = await this._client.invokeCapability<DotnetToolResourceHandle>(
+            'Aspire.Hosting/withReferenceEnvironment',
+            rpcArgs
+        );
+        return new DotnetToolResource(result, this._client);
+    }
+
+    /** Configures which reference values are injected into environment variables */
+    withReferenceEnvironment(options: ReferenceEnvironmentInjectionOptions): DotnetToolResourcePromise {
+        return new DotnetToolResourcePromise(this._withReferenceEnvironmentInternal(options));
     }
 
     /** @internal */
@@ -9726,6 +9979,21 @@ export class DotnetToolResource extends ResourceBuilderBase<DotnetToolResourceHa
     }
 
     /** @internal */
+    private async _withRelationshipInternal(resourceBuilder: ResourceBuilderBase, type: string): Promise<DotnetToolResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, resourceBuilder, type };
+        const result = await this._client.invokeCapability<DotnetToolResourceHandle>(
+            'Aspire.Hosting/withBuilderRelationship',
+            rpcArgs
+        );
+        return new DotnetToolResource(result, this._client);
+    }
+
+    /** Adds a relationship to another resource */
+    withRelationship(resourceBuilder: ResourceBuilderBase, type: string): DotnetToolResourcePromise {
+        return new DotnetToolResourcePromise(this._withRelationshipInternal(resourceBuilder, type));
+    }
+
+    /** @internal */
     private async _withParentRelationshipInternal(parent: ResourceBuilderBase): Promise<DotnetToolResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, parent };
         const result = await this._client.invokeCapability<DotnetToolResourceHandle>(
@@ -10160,6 +10428,11 @@ export class DotnetToolResourcePromise implements PromiseLike<DotnetToolResource
         return new DotnetToolResourcePromise(this._promise.then(obj => obj.withArgsCallbackAsync(callback)));
     }
 
+    /** Configures which reference values are injected into environment variables */
+    withReferenceEnvironment(options: ReferenceEnvironmentInjectionOptions): DotnetToolResourcePromise {
+        return new DotnetToolResourcePromise(this._promise.then(obj => obj.withReferenceEnvironment(options)));
+    }
+
     /** Adds a reference to another resource */
     withReference(source: ResourceBuilderBase, options?: WithReferenceOptions): DotnetToolResourcePromise {
         return new DotnetToolResourcePromise(this._promise.then(obj => obj.withReference(source, options)));
@@ -10308,6 +10581,11 @@ export class DotnetToolResourcePromise implements PromiseLike<DotnetToolResource
     /** Removes HTTPS certificate configuration */
     withoutHttpsCertificate(): DotnetToolResourcePromise {
         return new DotnetToolResourcePromise(this._promise.then(obj => obj.withoutHttpsCertificate()));
+    }
+
+    /** Adds a relationship to another resource */
+    withRelationship(resourceBuilder: ResourceBuilderBase, type: string): DotnetToolResourcePromise {
+        return new DotnetToolResourcePromise(this._promise.then(obj => obj.withRelationship(resourceBuilder, type)));
     }
 
     /** Sets the parent relationship */
@@ -10699,6 +10977,21 @@ export class ExecutableResource extends ResourceBuilderBase<ExecutableResourceHa
     /** Sets command-line arguments via async callback */
     withArgsCallbackAsync(callback: (arg: CommandLineArgsCallbackContext) => Promise<void>): ExecutableResourcePromise {
         return new ExecutableResourcePromise(this._withArgsCallbackAsyncInternal(callback));
+    }
+
+    /** @internal */
+    private async _withReferenceEnvironmentInternal(options: ReferenceEnvironmentInjectionOptions): Promise<ExecutableResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, options };
+        const result = await this._client.invokeCapability<ExecutableResourceHandle>(
+            'Aspire.Hosting/withReferenceEnvironment',
+            rpcArgs
+        );
+        return new ExecutableResource(result, this._client);
+    }
+
+    /** Configures which reference values are injected into environment variables */
+    withReferenceEnvironment(options: ReferenceEnvironmentInjectionOptions): ExecutableResourcePromise {
+        return new ExecutableResourcePromise(this._withReferenceEnvironmentInternal(options));
     }
 
     /** @internal */
@@ -11228,6 +11521,21 @@ export class ExecutableResource extends ResourceBuilderBase<ExecutableResourceHa
     }
 
     /** @internal */
+    private async _withRelationshipInternal(resourceBuilder: ResourceBuilderBase, type: string): Promise<ExecutableResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, resourceBuilder, type };
+        const result = await this._client.invokeCapability<ExecutableResourceHandle>(
+            'Aspire.Hosting/withBuilderRelationship',
+            rpcArgs
+        );
+        return new ExecutableResource(result, this._client);
+    }
+
+    /** Adds a relationship to another resource */
+    withRelationship(resourceBuilder: ResourceBuilderBase, type: string): ExecutableResourcePromise {
+        return new ExecutableResourcePromise(this._withRelationshipInternal(resourceBuilder, type));
+    }
+
+    /** @internal */
     private async _withParentRelationshipInternal(parent: ResourceBuilderBase): Promise<ExecutableResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, parent };
         const result = await this._client.invokeCapability<ExecutableResourceHandle>(
@@ -11632,6 +11940,11 @@ export class ExecutableResourcePromise implements PromiseLike<ExecutableResource
         return new ExecutableResourcePromise(this._promise.then(obj => obj.withArgsCallbackAsync(callback)));
     }
 
+    /** Configures which reference values are injected into environment variables */
+    withReferenceEnvironment(options: ReferenceEnvironmentInjectionOptions): ExecutableResourcePromise {
+        return new ExecutableResourcePromise(this._promise.then(obj => obj.withReferenceEnvironment(options)));
+    }
+
     /** Adds a reference to another resource */
     withReference(source: ResourceBuilderBase, options?: WithReferenceOptions): ExecutableResourcePromise {
         return new ExecutableResourcePromise(this._promise.then(obj => obj.withReference(source, options)));
@@ -11780,6 +12093,11 @@ export class ExecutableResourcePromise implements PromiseLike<ExecutableResource
     /** Removes HTTPS certificate configuration */
     withoutHttpsCertificate(): ExecutableResourcePromise {
         return new ExecutableResourcePromise(this._promise.then(obj => obj.withoutHttpsCertificate()));
+    }
+
+    /** Adds a relationship to another resource */
+    withRelationship(resourceBuilder: ResourceBuilderBase, type: string): ExecutableResourcePromise {
+        return new ExecutableResourcePromise(this._promise.then(obj => obj.withRelationship(resourceBuilder, type)));
     }
 
     /** Sets the parent relationship */
@@ -12104,6 +12422,21 @@ export class ExternalServiceResource extends ResourceBuilderBase<ExternalService
     }
 
     /** @internal */
+    private async _withRelationshipInternal(resourceBuilder: ResourceBuilderBase, type: string): Promise<ExternalServiceResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, resourceBuilder, type };
+        const result = await this._client.invokeCapability<ExternalServiceResourceHandle>(
+            'Aspire.Hosting/withBuilderRelationship',
+            rpcArgs
+        );
+        return new ExternalServiceResource(result, this._client);
+    }
+
+    /** Adds a relationship to another resource */
+    withRelationship(resourceBuilder: ResourceBuilderBase, type: string): ExternalServiceResourcePromise {
+        return new ExternalServiceResourcePromise(this._withRelationshipInternal(resourceBuilder, type));
+    }
+
+    /** @internal */
     private async _withParentRelationshipInternal(parent: ResourceBuilderBase): Promise<ExternalServiceResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, parent };
         const result = await this._client.invokeCapability<ExternalServiceResourceHandle>(
@@ -12402,6 +12735,11 @@ export class ExternalServiceResourcePromise implements PromiseLike<ExternalServi
     /** Adds a resource command */
     withCommand(name: string, displayName: string, executeCommand: (arg: ExecuteCommandContext) => Promise<ExecuteCommandResult>, options?: WithCommandOptions): ExternalServiceResourcePromise {
         return new ExternalServiceResourcePromise(this._promise.then(obj => obj.withCommand(name, displayName, executeCommand, options)));
+    }
+
+    /** Adds a relationship to another resource */
+    withRelationship(resourceBuilder: ResourceBuilderBase, type: string): ExternalServiceResourcePromise {
+        return new ExternalServiceResourcePromise(this._promise.then(obj => obj.withRelationship(resourceBuilder, type)));
     }
 
     /** Sets the parent relationship */
@@ -12803,6 +13141,21 @@ export class JavaScriptAppResource extends ResourceBuilderBase<JavaScriptAppReso
     /** Sets command-line arguments via async callback */
     withArgsCallbackAsync(callback: (arg: CommandLineArgsCallbackContext) => Promise<void>): JavaScriptAppResourcePromise {
         return new JavaScriptAppResourcePromise(this._withArgsCallbackAsyncInternal(callback));
+    }
+
+    /** @internal */
+    private async _withReferenceEnvironmentInternal(options: ReferenceEnvironmentInjectionOptions): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, options };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withReferenceEnvironment',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Configures which reference values are injected into environment variables */
+    withReferenceEnvironment(options: ReferenceEnvironmentInjectionOptions): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._withReferenceEnvironmentInternal(options));
     }
 
     /** @internal */
@@ -13362,6 +13715,21 @@ export class JavaScriptAppResource extends ResourceBuilderBase<JavaScriptAppReso
     }
 
     /** @internal */
+    private async _withRelationshipInternal(resourceBuilder: ResourceBuilderBase, type: string): Promise<JavaScriptAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, resourceBuilder, type };
+        const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
+            'Aspire.Hosting/withBuilderRelationship',
+            rpcArgs
+        );
+        return new JavaScriptAppResource(result, this._client);
+    }
+
+    /** Adds a relationship to another resource */
+    withRelationship(resourceBuilder: ResourceBuilderBase, type: string): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._withRelationshipInternal(resourceBuilder, type));
+    }
+
+    /** @internal */
     private async _withParentRelationshipInternal(parent: ResourceBuilderBase): Promise<JavaScriptAppResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, parent };
         const result = await this._client.invokeCapability<JavaScriptAppResourceHandle>(
@@ -13895,6 +14263,11 @@ export class JavaScriptAppResourcePromise implements PromiseLike<JavaScriptAppRe
         return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withArgsCallbackAsync(callback)));
     }
 
+    /** Configures which reference values are injected into environment variables */
+    withReferenceEnvironment(options: ReferenceEnvironmentInjectionOptions): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withReferenceEnvironment(options)));
+    }
+
     /** Adds a reference to another resource */
     withReference(source: ResourceBuilderBase, options?: WithReferenceOptions): JavaScriptAppResourcePromise {
         return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withReference(source, options)));
@@ -14053,6 +14426,11 @@ export class JavaScriptAppResourcePromise implements PromiseLike<JavaScriptAppRe
     /** Removes HTTPS certificate configuration */
     withoutHttpsCertificate(): JavaScriptAppResourcePromise {
         return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withoutHttpsCertificate()));
+    }
+
+    /** Adds a relationship to another resource */
+    withRelationship(resourceBuilder: ResourceBuilderBase, type: string): JavaScriptAppResourcePromise {
+        return new JavaScriptAppResourcePromise(this._promise.then(obj => obj.withRelationship(resourceBuilder, type)));
     }
 
     /** Sets the parent relationship */
@@ -14509,6 +14887,21 @@ export class NodeAppResource extends ResourceBuilderBase<NodeAppResourceHandle> 
     /** Sets command-line arguments via async callback */
     withArgsCallbackAsync(callback: (arg: CommandLineArgsCallbackContext) => Promise<void>): NodeAppResourcePromise {
         return new NodeAppResourcePromise(this._withArgsCallbackAsyncInternal(callback));
+    }
+
+    /** @internal */
+    private async _withReferenceEnvironmentInternal(options: ReferenceEnvironmentInjectionOptions): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, options };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withReferenceEnvironment',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Configures which reference values are injected into environment variables */
+    withReferenceEnvironment(options: ReferenceEnvironmentInjectionOptions): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._withReferenceEnvironmentInternal(options));
     }
 
     /** @internal */
@@ -15083,6 +15476,21 @@ export class NodeAppResource extends ResourceBuilderBase<NodeAppResourceHandle> 
     }
 
     /** @internal */
+    private async _withRelationshipInternal(resourceBuilder: ResourceBuilderBase, type: string): Promise<NodeAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, resourceBuilder, type };
+        const result = await this._client.invokeCapability<NodeAppResourceHandle>(
+            'Aspire.Hosting/withBuilderRelationship',
+            rpcArgs
+        );
+        return new NodeAppResource(result, this._client);
+    }
+
+    /** Adds a relationship to another resource */
+    withRelationship(resourceBuilder: ResourceBuilderBase, type: string): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._withRelationshipInternal(resourceBuilder, type));
+    }
+
+    /** @internal */
     private async _withParentRelationshipInternal(parent: ResourceBuilderBase): Promise<NodeAppResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, parent };
         const result = await this._client.invokeCapability<NodeAppResourceHandle>(
@@ -15616,6 +16024,11 @@ export class NodeAppResourcePromise implements PromiseLike<NodeAppResource> {
         return new NodeAppResourcePromise(this._promise.then(obj => obj.withArgsCallbackAsync(callback)));
     }
 
+    /** Configures which reference values are injected into environment variables */
+    withReferenceEnvironment(options: ReferenceEnvironmentInjectionOptions): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withReferenceEnvironment(options)));
+    }
+
     /** Adds a reference to another resource */
     withReference(source: ResourceBuilderBase, options?: WithReferenceOptions): NodeAppResourcePromise {
         return new NodeAppResourcePromise(this._promise.then(obj => obj.withReference(source, options)));
@@ -15779,6 +16192,11 @@ export class NodeAppResourcePromise implements PromiseLike<NodeAppResource> {
     /** Removes HTTPS certificate configuration */
     withoutHttpsCertificate(): NodeAppResourcePromise {
         return new NodeAppResourcePromise(this._promise.then(obj => obj.withoutHttpsCertificate()));
+    }
+
+    /** Adds a relationship to another resource */
+    withRelationship(resourceBuilder: ResourceBuilderBase, type: string): NodeAppResourcePromise {
+        return new NodeAppResourcePromise(this._promise.then(obj => obj.withRelationship(resourceBuilder, type)));
     }
 
     /** Sets the parent relationship */
@@ -16136,6 +16554,21 @@ export class ParameterResource extends ResourceBuilderBase<ParameterResourceHand
     }
 
     /** @internal */
+    private async _withRelationshipInternal(resourceBuilder: ResourceBuilderBase, type: string): Promise<ParameterResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, resourceBuilder, type };
+        const result = await this._client.invokeCapability<ParameterResourceHandle>(
+            'Aspire.Hosting/withBuilderRelationship',
+            rpcArgs
+        );
+        return new ParameterResource(result, this._client);
+    }
+
+    /** Adds a relationship to another resource */
+    withRelationship(resourceBuilder: ResourceBuilderBase, type: string): ParameterResourcePromise {
+        return new ParameterResourcePromise(this._withRelationshipInternal(resourceBuilder, type));
+    }
+
+    /** @internal */
     private async _withParentRelationshipInternal(parent: ResourceBuilderBase): Promise<ParameterResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, parent };
         const result = await this._client.invokeCapability<ParameterResourceHandle>(
@@ -16434,6 +16867,11 @@ export class ParameterResourcePromise implements PromiseLike<ParameterResource> 
     /** Adds a resource command */
     withCommand(name: string, displayName: string, executeCommand: (arg: ExecuteCommandContext) => Promise<ExecuteCommandResult>, options?: WithCommandOptions): ParameterResourcePromise {
         return new ParameterResourcePromise(this._promise.then(obj => obj.withCommand(name, displayName, executeCommand, options)));
+    }
+
+    /** Adds a relationship to another resource */
+    withRelationship(resourceBuilder: ResourceBuilderBase, type: string): ParameterResourcePromise {
+        return new ParameterResourcePromise(this._promise.then(obj => obj.withRelationship(resourceBuilder, type)));
     }
 
     /** Sets the parent relationship */
@@ -16792,6 +17230,21 @@ export class ProjectResource extends ResourceBuilderBase<ProjectResourceHandle> 
     /** Sets command-line arguments via async callback */
     withArgsCallbackAsync(callback: (arg: CommandLineArgsCallbackContext) => Promise<void>): ProjectResourcePromise {
         return new ProjectResourcePromise(this._withArgsCallbackAsyncInternal(callback));
+    }
+
+    /** @internal */
+    private async _withReferenceEnvironmentInternal(options: ReferenceEnvironmentInjectionOptions): Promise<ProjectResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, options };
+        const result = await this._client.invokeCapability<ProjectResourceHandle>(
+            'Aspire.Hosting/withReferenceEnvironment',
+            rpcArgs
+        );
+        return new ProjectResource(result, this._client);
+    }
+
+    /** Configures which reference values are injected into environment variables */
+    withReferenceEnvironment(options: ReferenceEnvironmentInjectionOptions): ProjectResourcePromise {
+        return new ProjectResourcePromise(this._withReferenceEnvironmentInternal(options));
     }
 
     /** @internal */
@@ -17336,6 +17789,21 @@ export class ProjectResource extends ResourceBuilderBase<ProjectResourceHandle> 
     }
 
     /** @internal */
+    private async _withRelationshipInternal(resourceBuilder: ResourceBuilderBase, type: string): Promise<ProjectResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, resourceBuilder, type };
+        const result = await this._client.invokeCapability<ProjectResourceHandle>(
+            'Aspire.Hosting/withBuilderRelationship',
+            rpcArgs
+        );
+        return new ProjectResource(result, this._client);
+    }
+
+    /** Adds a relationship to another resource */
+    withRelationship(resourceBuilder: ResourceBuilderBase, type: string): ProjectResourcePromise {
+        return new ProjectResourcePromise(this._withRelationshipInternal(resourceBuilder, type));
+    }
+
+    /** @internal */
     private async _withParentRelationshipInternal(parent: ResourceBuilderBase): Promise<ProjectResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, parent };
         const result = await this._client.invokeCapability<ProjectResourceHandle>(
@@ -17735,6 +18203,11 @@ export class ProjectResourcePromise implements PromiseLike<ProjectResource> {
         return new ProjectResourcePromise(this._promise.then(obj => obj.withArgsCallbackAsync(callback)));
     }
 
+    /** Configures which reference values are injected into environment variables */
+    withReferenceEnvironment(options: ReferenceEnvironmentInjectionOptions): ProjectResourcePromise {
+        return new ProjectResourcePromise(this._promise.then(obj => obj.withReferenceEnvironment(options)));
+    }
+
     /** Adds a reference to another resource */
     withReference(source: ResourceBuilderBase, options?: WithReferenceOptions): ProjectResourcePromise {
         return new ProjectResourcePromise(this._promise.then(obj => obj.withReference(source, options)));
@@ -17888,6 +18361,11 @@ export class ProjectResourcePromise implements PromiseLike<ProjectResource> {
     /** Removes HTTPS certificate configuration */
     withoutHttpsCertificate(): ProjectResourcePromise {
         return new ProjectResourcePromise(this._promise.then(obj => obj.withoutHttpsCertificate()));
+    }
+
+    /** Adds a relationship to another resource */
+    withRelationship(resourceBuilder: ResourceBuilderBase, type: string): ProjectResourcePromise {
+        return new ProjectResourcePromise(this._promise.then(obj => obj.withRelationship(resourceBuilder, type)));
     }
 
     /** Sets the parent relationship */
@@ -18309,6 +18787,21 @@ export class ViteAppResource extends ResourceBuilderBase<ViteAppResourceHandle> 
     /** Sets command-line arguments via async callback */
     withArgsCallbackAsync(callback: (arg: CommandLineArgsCallbackContext) => Promise<void>): ViteAppResourcePromise {
         return new ViteAppResourcePromise(this._withArgsCallbackAsyncInternal(callback));
+    }
+
+    /** @internal */
+    private async _withReferenceEnvironmentInternal(options: ReferenceEnvironmentInjectionOptions): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, options };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withReferenceEnvironment',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Configures which reference values are injected into environment variables */
+    withReferenceEnvironment(options: ReferenceEnvironmentInjectionOptions): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._withReferenceEnvironmentInternal(options));
     }
 
     /** @internal */
@@ -18868,6 +19361,21 @@ export class ViteAppResource extends ResourceBuilderBase<ViteAppResourceHandle> 
     }
 
     /** @internal */
+    private async _withRelationshipInternal(resourceBuilder: ResourceBuilderBase, type: string): Promise<ViteAppResource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, resourceBuilder, type };
+        const result = await this._client.invokeCapability<ViteAppResourceHandle>(
+            'Aspire.Hosting/withBuilderRelationship',
+            rpcArgs
+        );
+        return new ViteAppResource(result, this._client);
+    }
+
+    /** Adds a relationship to another resource */
+    withRelationship(resourceBuilder: ResourceBuilderBase, type: string): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._withRelationshipInternal(resourceBuilder, type));
+    }
+
+    /** @internal */
     private async _withParentRelationshipInternal(parent: ResourceBuilderBase): Promise<ViteAppResource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, parent };
         const result = await this._client.invokeCapability<ViteAppResourceHandle>(
@@ -19416,6 +19924,11 @@ export class ViteAppResourcePromise implements PromiseLike<ViteAppResource> {
         return new ViteAppResourcePromise(this._promise.then(obj => obj.withArgsCallbackAsync(callback)));
     }
 
+    /** Configures which reference values are injected into environment variables */
+    withReferenceEnvironment(options: ReferenceEnvironmentInjectionOptions): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withReferenceEnvironment(options)));
+    }
+
     /** Adds a reference to another resource */
     withReference(source: ResourceBuilderBase, options?: WithReferenceOptions): ViteAppResourcePromise {
         return new ViteAppResourcePromise(this._promise.then(obj => obj.withReference(source, options)));
@@ -19574,6 +20087,11 @@ export class ViteAppResourcePromise implements PromiseLike<ViteAppResource> {
     /** Removes HTTPS certificate configuration */
     withoutHttpsCertificate(): ViteAppResourcePromise {
         return new ViteAppResourcePromise(this._promise.then(obj => obj.withoutHttpsCertificate()));
+    }
+
+    /** Adds a relationship to another resource */
+    withRelationship(resourceBuilder: ResourceBuilderBase, type: string): ViteAppResourcePromise {
+        return new ViteAppResourcePromise(this._promise.then(obj => obj.withRelationship(resourceBuilder, type)));
     }
 
     /** Sets the parent relationship */
@@ -20035,6 +20553,21 @@ export class Resource extends ResourceBuilderBase<IResourceHandle> {
     }
 
     /** @internal */
+    private async _withRelationshipInternal(resourceBuilder: ResourceBuilderBase, type: string): Promise<Resource> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, resourceBuilder, type };
+        const result = await this._client.invokeCapability<IResourceHandle>(
+            'Aspire.Hosting/withBuilderRelationship',
+            rpcArgs
+        );
+        return new Resource(result, this._client);
+    }
+
+    /** Adds a relationship to another resource */
+    withRelationship(resourceBuilder: ResourceBuilderBase, type: string): ResourcePromise {
+        return new ResourcePromise(this._withRelationshipInternal(resourceBuilder, type));
+    }
+
+    /** @internal */
     private async _withParentRelationshipInternal(parent: ResourceBuilderBase): Promise<Resource> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, parent };
         const result = await this._client.invokeCapability<IResourceHandle>(
@@ -20330,6 +20863,11 @@ export class ResourcePromise implements PromiseLike<Resource> {
         return new ResourcePromise(this._promise.then(obj => obj.withCommand(name, displayName, executeCommand, options)));
     }
 
+    /** Adds a relationship to another resource */
+    withRelationship(resourceBuilder: ResourceBuilderBase, type: string): ResourcePromise {
+        return new ResourcePromise(this._promise.then(obj => obj.withRelationship(resourceBuilder, type)));
+    }
+
     /** Sets the parent relationship */
     withParentRelationship(parent: ResourceBuilderBase): ResourcePromise {
         return new ResourcePromise(this._promise.then(obj => obj.withParentRelationship(parent)));
@@ -20500,7 +21038,7 @@ export class ResourceWithConnectionString extends ResourceBuilderBase<IResourceW
     }
 
     /** @internal */
-    private async _withConnectionPropertyInternal(name: string, value: ReferenceExpression): Promise<ResourceWithConnectionString> {
+    private async _withConnectionPropertyInternal(name: string, value: string | ReferenceExpression): Promise<ResourceWithConnectionString> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, name, value };
         const result = await this._client.invokeCapability<IResourceWithConnectionStringHandle>(
             'Aspire.Hosting/withConnectionProperty',
@@ -20509,8 +21047,8 @@ export class ResourceWithConnectionString extends ResourceBuilderBase<IResourceW
         return new ResourceWithConnectionString(result, this._client);
     }
 
-    /** Adds a connection property with a reference expression */
-    withConnectionProperty(name: string, value: ReferenceExpression): ResourceWithConnectionStringPromise {
+    /** Adds a connection property with a string or reference expression value */
+    withConnectionProperty(name: string, value: string | ReferenceExpression): ResourceWithConnectionStringPromise {
         return new ResourceWithConnectionStringPromise(this._withConnectionPropertyInternal(name, value));
     }
 
@@ -20575,8 +21113,8 @@ export class ResourceWithConnectionStringPromise implements PromiseLike<Resource
         return this._promise.then(onfulfilled, onrejected);
     }
 
-    /** Adds a connection property with a reference expression */
-    withConnectionProperty(name: string, value: ReferenceExpression): ResourceWithConnectionStringPromise {
+    /** Adds a connection property with a string or reference expression value */
+    withConnectionProperty(name: string, value: string | ReferenceExpression): ResourceWithConnectionStringPromise {
         return new ResourceWithConnectionStringPromise(this._promise.then(obj => obj.withConnectionProperty(name, value)));
     }
 
@@ -21097,6 +21635,21 @@ export class ResourceWithEnvironment extends ResourceBuilderBase<IResourceWithEn
     }
 
     /** @internal */
+    private async _withReferenceEnvironmentInternal(options: ReferenceEnvironmentInjectionOptions): Promise<ResourceWithEnvironment> {
+        const rpcArgs: Record<string, unknown> = { builder: this._handle, options };
+        const result = await this._client.invokeCapability<IResourceWithEnvironmentHandle>(
+            'Aspire.Hosting/withReferenceEnvironment',
+            rpcArgs
+        );
+        return new ResourceWithEnvironment(result, this._client);
+    }
+
+    /** Configures which reference values are injected into environment variables */
+    withReferenceEnvironment(options: ReferenceEnvironmentInjectionOptions): ResourceWithEnvironmentPromise {
+        return new ResourceWithEnvironmentPromise(this._withReferenceEnvironmentInternal(options));
+    }
+
+    /** @internal */
     private async _withReferenceInternal(source: ResourceBuilderBase, connectionName?: string, optional?: boolean, name?: string): Promise<ResourceWithEnvironment> {
         const rpcArgs: Record<string, unknown> = { builder: this._handle, source };
         if (connectionName !== undefined) rpcArgs.connectionName = connectionName;
@@ -21274,6 +21827,11 @@ export class ResourceWithEnvironmentPromise implements PromiseLike<ResourceWithE
     /** Sets an environment variable from a connection string resource */
     withEnvironmentConnectionString(envVarName: string, resource: ResourceBuilderBase): ResourceWithEnvironmentPromise {
         return new ResourceWithEnvironmentPromise(this._promise.then(obj => obj.withEnvironmentConnectionString(envVarName, resource)));
+    }
+
+    /** Configures which reference values are injected into environment variables */
+    withReferenceEnvironment(options: ReferenceEnvironmentInjectionOptions): ResourceWithEnvironmentPromise {
+        return new ResourceWithEnvironmentPromise(this._promise.then(obj => obj.withReferenceEnvironment(options)));
     }
 
     /** Adds a reference to another resource */
