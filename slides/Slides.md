@@ -62,7 +62,11 @@ Your team doesn't use one language — it uses **five**.
 
 ---
 
+<!-- _class: gradient -->
+
 # <!--fit--> Aspire: The Polyglot Answer
+
+<!-- Transition from problem to solution -->
 
 ---
 
@@ -165,7 +169,7 @@ await builder.build().run();
 
 ---
 
-<!-- _class: compact code-compact -->
+<!-- _class: dense code-compact -->
 
 # AppHost Languages
 
@@ -192,20 +196,20 @@ Dashboard, service discovery, and telemetry work **identically**. C# has the ric
 </div>
 <div>
 
-🐍 **Python** — `apphost.py` **FUTURE STATE**
+🐍 **Python** — `apphost.py` **EXPERIMENTAL**
 ```python
 api = builder.add_dockerfile("api", "./src")
 api.with_http_endpoint(target_port=8080, env="PORT")
 ```
 
-☕ **Java** — `AppHost.java` **FUTURE STATE**
+☕ **Java** — `AppHost.java` **EXPERIMENTAL**
 ```java
 builder.addDockerfile("api", "./src", null, null)
   .withExternalHttpEndpoints();
 ```
 
 
-🟢 **Go** — `apphost.go` **FUTURE STATE**
+🟢 **Go** — `apphost.go` **EXPERIMENTAL**
 ```go
 api, _ := builder.AddDockerfile("api", "./src", nil, nil)
 api.WithHttpEndpoint(nil, float64Ptr(8080), stringPtr("http"), nil, nil)
@@ -227,13 +231,13 @@ api.WithHttpEndpoint(nil, float64Ptr(8080), stringPtr("http"), nil, nil)
 ```json
 {
   "appHost": { "path": "apphost.py", "language": "python" },
-  "sdk": { 
-  "version": "13.2.0" },
-   "packages": {
-    "Aspire.Hosting.Redis": "13.2.0",
-    "Aspire.Hosting.JavaScript": "13.2.0",
-    "Aspire.Hosting.Python": "13.2.0",
-    "Aspire.Hosting.OpenAI": "13.2.0"
+  "sdk": { "version": "13.2.0" },
+  "channel": "stable",
+  "features": { "polyglotSupportEnabled": true },
+  "profiles": {
+    "default": {
+      "applicationUrl": "https://localhost:17000;http://localhost:15000"
+    }
   }
 }
 ```
@@ -244,8 +248,9 @@ api.WithHttpEndpoint(nil, float64Ptr(8080), stringPtr("http"), nil, nil)
 **What it does:**
 - `appHost.path` + `appHost.language` — declares your stack
 - `sdk.version` — pins the Aspire SDK version (e.g. `13.2.0`)
+- `channel` — release channel (`stable`, `preview`)
+- `profiles` — dashboard URLs (replaces `apphost.run.json`)
 - Feature flags use **boolean `true`** (not string `"true"`)
-- Replaces old `.aspire/settings.json` split config
 
 </div>
 <div>
@@ -263,6 +268,8 @@ api.WithHttpEndpoint(nil, float64Ptr(8080), stringPtr("http"), nil, nil)
 <!-- This is the key file. Drop aspire.config.json in your project root, point it at your AppHost file, set the language, and aspire run just works. The CLI reads this to know how to build and launch your app. -->
 
 ---
+
+<!-- _class: invert -->
 
 # <!--fit--> How It Works
 
@@ -321,6 +328,8 @@ String apiUrl = System.getenv("services__api__http__0");
 
 ---
 
+<!-- _class: compact code-compact -->
+
 # Connection Strings
 
 **Infrastructure resources get connection strings automatically:**
@@ -344,10 +353,9 @@ client = redis.from_url(f"redis://{os.environ['CONNECTIONSTRINGS__cache']}")
 const kafka = new Kafka({ brokers: [process.env.CONNECTIONSTRINGS__messaging] });
 ```
 
-```properties
-# Java Spring Boot — via explicit env vars from AppHost
-spring.datasource.url=jdbc:postgresql://${PG_HOST:localhost}:${PG_PORT:5432}/${PG_DB:notesdb}
-spring.datasource.username=${PG_USER:postgres}
+```java
+// Java — PostgreSQL via env vars
+String url = "jdbc:postgresql://" + System.getenv("PG_HOST") + ":" + System.getenv("PG_PORT") + "/" + System.getenv("PG_DB");
 ```
 
 **Aspire injects environment variables** — your service reads them using its language's standard env var mechanism.
@@ -374,16 +382,7 @@ spring.datasource.username=${PG_USER:postgres}
 </div>
 <div>
 
-**Cross-language tracing example:**
-```
-Trace ID: abc123...
-└─ POST /api/process (Python, 245ms)
-   ├─ POST /data (.NET, 200ms)
-   │  ├─ SQL SELECT (PostgreSQL, 50ms)
-   │  └─ POST /notify (Node.js, 100ms)
-   │     └─ Redis SET (25ms)
-   └─ Render response (40ms)
-```
+![w:520px](./img/aspire-dashboard.png)
 
 Aspire sets `OTEL_EXPORTER_OTLP_ENDPOINT` automatically — add OpenTelemetry to your service and traces flow to the dashboard.
 
@@ -414,7 +413,7 @@ curl -sSL https://aspire.dev/install.sh | bash  # macOS / Linux
 **Day-to-day workflow**
 ```bash
 aspire run              # Start everything
-aspire run --detach     # Background mode
+aspire start            # Start in background
 aspire ps               # List running apps
 aspire stop             # Stop everything
 aspire describe --follow  # Watch resources live
@@ -428,7 +427,9 @@ aspire describe --follow  # Watch resources live
 aspire doctor           # Check SDK, certs, Docker, WSL2
 aspire restore          # Regenerate SDK code
 aspire export           # Capture telemetry to zip
-aspire update --self    # Upgrade CLI
+aspire update           # Update integrations
+aspire otel             # View OpenTelemetry data
+aspire logs             # Display resource logs
 aspire docs search "redis"  # Docs from terminal
 ```
 
@@ -448,8 +449,9 @@ aspire docs search "redis"  # Docs from terminal
 **Start a new project in your team's language:**
 
 ```bash
-aspire new aspire-ts-starter -n my-app    # TypeScript AppHost
-aspire new aspire-starter -n my-app       # C# AppHost (classic)
+aspire new aspire-py-starter -n my-app   # Python (FastAPI/React)
+aspire new aspire-ts-starter -n my-app   # TypeScript (Express/React)
+aspire new aspire-starter -n my-app      # C# (ASP.NET Core/Blazor)
 ```
 
 ```bash
@@ -466,11 +468,146 @@ cd my-app && aspire run   # Runs immediately — no extra setup
 
 ---
 
+<!-- _class: purple -->
+
 # <!--fit--> Demos
+
+8 samples — live with the Aspire dashboard
 
 <!-- Time to see Aspire in action! We'll walk through 8 samples — each running live with the Aspire dashboard. Watch for: service startup ordering, cross-language logs, and the unified trace view. -->
 
 ---
+
+<!-- _class: compact -->
+
+# 8 Live Demos
+
+<div class="columns">
+<div>
+
+🟦 **TypeScript AppHosts**
+1. **ts-starter** — Express + React
+2. **vite-react-api** — FastAPI + React + Redis
+
+🐍 **Python AppHosts**
+3. **flask-markdown-wiki** — Flask + Redis
+4. **django-htmx-polls** — Django + HTMX + PostgreSQL
+
+</div>
+<div>
+
+☕ **Java / 🟢 Go AppHosts**
+5. **spring-boot-postgres** — Spring Boot + PostgreSQL
+6. **svelte-go-bookmarks** — Go API + Svelte + PostgreSQL
+
+💜 **C# AppHosts**
+7. **dotnet-angular-cosmos** — Angular + .NET + CosmosDB
+8. **polyglot-event-stream** — .NET + Python + Node.js + Kafka
+
+</div>
+</div>
+
+<!-- Each demo runs live with the Aspire dashboard — same CLI, same dashboard, different languages. -->
+
+---
+
+<!-- _class: compact -->
+
+# Demo: TypeScript Starter
+
+**TypeScript AppHost** → Express API + React Frontend
+
+![w:780px center](./img/ts-starter-architecture.drawio)
+
+<!-- The simplest polyglot demo. TypeScript AppHost with auto-wired API and frontend. -->
+
+---
+
+<!-- _class: compact -->
+
+# Demo: Vite React + FastAPI
+
+**TypeScript AppHost** → React Frontend + Python FastAPI + Redis
+
+![w:780px center](./img/vite-react-api-architecture.drawio)
+
+<!-- Full-stack TypeScript-orchestrated app with Python backend and Redis caching. -->
+
+---
+
+<!-- _class: compact -->
+
+# Demo: Flask Markdown Wiki
+
+**Python AppHost** → Flask Wiki App + Redis Cache
+
+![w:780px center](./img/flask-markdown-wiki.drawio)
+
+<!-- Python orchestrating Python — the AppHost and the service are both Python. -->
+
+---
+
+<!-- _class: compact -->
+
+# Demo: Django HTMX Polls
+
+**Python AppHost** → Django + HTMX + PostgreSQL
+
+![w:780px center](./img/django-htmx-voting-polls.drawio.svg)
+
+<!-- Real-time voting with HTMX partial updates, Django backend, PostgreSQL persistence. -->
+
+---
+
+<!-- _class: compact -->
+
+# Demo: Spring Boot Notes
+
+**Java AppHost** → Spring Boot API + PostgreSQL
+
+![w:780px center](./img/spring-boot-postgres.drawio)
+
+<!-- Java orchestrating Java — experimental Java AppHost with Spring Boot and PostgreSQL. -->
+
+---
+
+<!-- _class: compact -->
+
+# Demo: Svelte + Go Bookmarks
+
+**Go AppHost** → Go REST API + Svelte Frontend + PostgreSQL
+
+![w:780px center](./img/go-svelte-bookmarks.drawio.svg)
+
+<!-- Go orchestrating a full-stack app — Go API backend with Svelte frontend. -->
+
+---
+
+<!-- _class: compact -->
+
+# Demo: Angular + .NET + CosmosDB
+
+**C# AppHost** → Angular Frontend + .NET API + Azure CosmosDB
+
+![w:780px center](./img/dotnet-angular-cosmos.drawio)
+
+<!-- Classic .NET AppHost orchestrating Angular frontend with CosmosDB emulator. -->
+
+---
+
+<!-- _class: compact -->
+
+# Demo: Polyglot Event Stream
+
+**C# AppHost** → .NET Producer + Python Consumer + Node.js Dashboard + Kafka
+
+![w:780px center](./img/event-stream-architecture.drawio.svg)
+
+<!-- The ultimate polyglot demo — three languages, one event pipeline, full distributed tracing. -->
+
+---
+
+<!-- _class: gradient -->
 
 # <!--fit--> Wrap-Up
 
@@ -480,7 +617,7 @@ cd my-app && aspire run   # Runs immediately — no extra setup
 
 🌍 **Aspire is a polyglot orchestrator** — not just for .NET
 
-🗣️ **AppHost languages** — C#, TypeScript, *Python, *Go, *Java
+🗣️ **AppHost languages** — C# ✅, TypeScript (preview), Python/Go/Java (experimental)
 
 📡 **Universal patterns** — `services__name__http__0` and `CONNECTIONSTRINGS__resource` work in every language
 
@@ -530,6 +667,8 @@ cd my-app && aspire run   # Runs immediately — no extra setup
 
 ---
 
+<!-- _class: invert -->
+
 # <!--fit--> Appendix
 
 ---
@@ -559,6 +698,8 @@ cd my-app && aspire run   # Runs immediately — no extra setup
 - .NET project → `AddProject<T>()`
 - JavaScript → `AddJavaScriptApp()`
 - Any Dockerfile → `AddDockerfile()`
+- Go → `AddGolangApp()` (Community Toolkit)
+- Java / Spring Boot → `AddSpringApp()` (Community Toolkit)
 - Any executable → `AddExecutable()`
 
 </div>
@@ -574,6 +715,7 @@ cd my-app && aspire run   # Runs immediately — no extra setup
 .WithNpm()
 .WithBun()
 .WithBuildSecret("key", secret)
+.WithRunScript("dev")
 .WithHttpHealthCheck("/health")
 .WithMcpServer("mcp")
 ```
@@ -618,20 +760,20 @@ trace.set_tracer_provider(provider)
 
 **Node.js:**
 ```javascript
-const { NodeTracerProvider } =
-  require('@opentelemetry/sdk-trace-node');
+const { NodeSDK } =
+  require('@opentelemetry/sdk-node');
+const { getNodeAutoInstrumentations } =
+  require('@opentelemetry/auto-instrumentations-node');
 const { OTLPTraceExporter } =
   require('@opentelemetry/exporter-trace-otlp-grpc');
-const { BatchSpanProcessor } =
-  require('@opentelemetry/sdk-trace-base');
 
-const provider = new NodeTracerProvider();
-provider.addSpanProcessor(
-  new BatchSpanProcessor(new OTLPTraceExporter({
+const sdk = new NodeSDK({
+  traceExporter: new OTLPTraceExporter({
     url: process.env.OTEL_EXPORTER_OTLP_ENDPOINT
-  }))
-);
-provider.register();
+  }),
+  instrumentations: [getNodeAutoInstrumentations()]
+});
+sdk.start();
 ```
 
 </div>
@@ -659,8 +801,9 @@ provider.register();
 
 ```bash
 aspire run       # Local development
-aspire deploy    # Deploy to Azure Container Apps
-aspire publish   # Generate deployment artifacts
+aspire deploy    # Deploy to target (Preview)
+aspire publish   # Generate deployment artifacts (Preview)
+aspire do        # Execute a pipeline step (Preview)
 ```
 
 **What Aspire generates:**
