@@ -60,9 +60,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Connect to Redis using Aspire connection string
-redis_conn_str = os.environ.get("ConnectionStrings__cache", "localhost:6379")
-redis_client = redis.Redis.from_url(f"redis://{redis_conn_str}", decode_responses=True)
+# Connect to Redis using environment variables set by the Aspire AppHost
+redis_host = os.environ.get("REDIS_HOST", "localhost")
+redis_port = int(os.environ.get("REDIS_PORT", "6379"))
+redis_client = redis.Redis(host=redis_host, port=redis_port, decode_responses=True)
 
 TODOS_KEY = "todos"
 
