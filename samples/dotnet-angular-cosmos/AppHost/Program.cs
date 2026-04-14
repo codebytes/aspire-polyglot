@@ -1,7 +1,12 @@
+#pragma warning disable ASPIRECOSMOSDB001
+
 var builder = DistributedApplication.CreateBuilder(args);
 
 var cosmos = builder.AddAzureCosmosDB("cosmos")
-    .RunAsEmulator();
+    .RunAsPreviewEmulator(emulator =>
+    {
+        emulator.WithDataExplorer();
+    });
 var db = cosmos.AddCosmosDatabase("recipesdb");
 
 var api = builder.AddProject<Projects.Api>("api")

@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>Aspire.AppHost.Sdk</id>
+    <version>13.2.2</version>
+    <authors>Microsoft</authors>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <license type="expression">MIT</license>
+    <licenseUrl>https://licenses.nuget.org/MIT</licenseUrl>
+    <icon>Icon.png</icon>
+    <projectUrl>https://github.com/microsoft/aspire</projectUrl>
+    <description>Aspire AppHost SDK. Must be referenced by Aspire AppHost projects.</description>
+    <copyright>© Microsoft Corporation. All rights reserved.</copyright>
+    <tags>aspire apphost sdk</tags>
+    <serviceable>true</serviceable>
+    <packageTypes>
+      <packageType name="DotnetPlatform" />
+    </packageTypes>
+    <repository type="git" url="https://github.com/microsoft/aspire" commit="25961cf7043e413abaf8ad84348988f2904b90d5" />
+  </metadata>
+</package>

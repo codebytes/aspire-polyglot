@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>Aspire.Dashboard.Sdk.osx-arm64</id>
+    <version>13.2.2</version>
+    <authors>Microsoft</authors>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <license type="expression">MIT</license>
+    <licenseUrl>https://licenses.nuget.org/MIT</licenseUrl>
+    <icon>Icon.png</icon>
+    <projectUrl>https://github.com/microsoft/aspire</projectUrl>
+    <description>Dashboard browser interface for Aspire.</description>
+    <copyright>© Microsoft Corporation. All rights reserved.</copyright>
+    <serviceable>true</serviceable>
+    <repository type="git" url="https://github.com/microsoft/aspire" commit="25961cf7043e413abaf8ad84348988f2904b90d5" />
+  </metadata>
+</package>
