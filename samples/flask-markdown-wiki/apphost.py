@@ -6,9 +6,10 @@ from aspire import create_builder
 
 builder = create_builder()
 
-cache = builder.add_container("cache", "redis:latest")
+cache = builder.add_redis("cache")
 
 wiki = builder.add_dockerfile("wiki", "./src")
+wiki.with_reference(cache)
 wiki.with_otlp_exporter()
 wiki.with_external_http_endpoints()
 wiki.with_http_endpoint(target_port=8080, env="PORT")
