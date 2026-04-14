@@ -4,6 +4,10 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# Must set DJANGO_SETTINGS_MODULE before any Django-related imports (including OTel
+# DjangoInstrumentor) to avoid Django falling back to the dummy database backend.
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "pollsite.settings")
+
 # --- OpenTelemetry setup (must run before Django setup) ---
 if os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT"):
     from opentelemetry import trace, metrics
@@ -43,9 +47,6 @@ if os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT"):
 
     # Auto-instrument Django
     DjangoInstrumentor().instrument()
-
-# Set Django settings module
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "pollsite.settings")
 
 # Run migrations automatically on startup
 import django
