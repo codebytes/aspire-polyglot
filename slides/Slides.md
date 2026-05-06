@@ -32,6 +32,9 @@ footer: '@Chris_L_Ayers - https://chris-ayers.com'
 
 # The Polyglot Problem
 
+> Modern apps are a **big city without a map** — and for polyglot teams,
+> the streets are in five different languages.
+
 Your team doesn't use one language — it uses **five**.
 
 <div class="columns">
@@ -66,7 +69,44 @@ Your team doesn't use one language — it uses **five**.
 
 # <!--fit--> Aspire: The Polyglot Answer
 
-<!-- Transition from problem to solution -->
+<p style="color:#ffffff; font-weight:500; max-width:1000px; margin:0.5em auto 0;">Aspire is an agent-ready, code-first tool to compose, debug, and deploy any distributed app.</p>
+
+<!-- Use the official positioning sentence verbatim — it sets up everything that follows. Then transition to the four pillars. -->
+
+---
+
+<!-- _class: compact -->
+
+# The Four Pillars
+
+**These are the four parts of Aspire you'll see today — across every language.**
+
+<div class="columns">
+<div>
+
+## 🛠 Aspire CLI
+**Your control plane**
+`aspire init` · `aspire run` · `aspire deploy` — agent-ready, interactive, the same commands for every stack.
+
+## 🗺 Aspire AppHost
+**Your stack in code**
+One file declares every service and how they connect — C#, TypeScript, Python, or `aspire.config.json`.
+
+</div>
+<div>
+
+## 📊 Aspire Dashboard
+**Your app at a glance**
+Logs, traces, metrics, and health for every resource — powered by OpenTelemetry, surfaced over an MCP server for agents.
+
+## 🧩 Aspire Integrations
+**Building blocks, not black boxes**
+**100+** prebuilt packages for databases, caches, queues, AI, and clouds — or bring your own container, CLI, or agent.
+
+</div>
+</div>
+
+<!-- The official Spring '26 deck names exactly these four pillars. Every slide in the rest of the talk maps back to one of them — call that out. -->
 
 ---
 
@@ -323,8 +363,9 @@ String url = "jdbc:postgresql://" + System.getenv("PG_HOST") + ":" + System.gete
 **Dependency Order:** Infrastructure → Backend Services → Frontend
 **Health Monitoring:** `WithHttpHealthCheck("/health")` — automatic restarts on failure
 **Graceful Shutdown:** Clean termination of all processes
+**Backed by 100+ integrations** — Postgres, Redis, Kafka, Cosmos, OpenAI, Ollama, and your own containers all participate in the same lifecycle.
 
-<!-- Aspire manages startup ordering automatically based on WithReference and WaitFor dependencies. Infrastructure comes up first, then backends, then frontends. -->
+<!-- Aspire manages startup ordering automatically based on WithReference and WaitFor dependencies. Infrastructure comes up first, then backends, then frontends. Over 100 integrations are wired to the same lifecycle so health/dependency rules apply to everything in the AppHost. -->
 
 ---
 
@@ -564,6 +605,50 @@ aspire export                # Capture to zip
 
 ---
 
+<!-- _class: compact -->
+
+# Agent-Ready CLI
+
+### Ready for any coding agent.
+
+<div class="columns">
+<div>
+
+**The Aspire CLI hands every coding agent a live map of your system.**
+
+- 🧠 **MCP server** — agents query the running AppHost: services, endpoints, env vars, recent logs, traces
+- 📝 **Project context** — the AppHost is the source of truth: agents see what you actually built, not just what you wrote
+- 🔄 **Closed loop** — agent edits code → `aspire run` → dashboard tells the agent if the change worked
+- 🔌 **Bring your own** — Copilot, Claude, Codex, Cursor: any MCP-aware client just works
+
+</div>
+<div>
+
+```bash
+# Start your stack and the MCP endpoint
+$ aspire run
+
+  Dashboard: http://localhost:15888
+  MCP:       http://localhost:15889/mcp
+
+# Point your coding agent at it
+$ claude --mcp http://localhost:15889/mcp
+$ code . # GitHub Copilot picks it up
+          # via .vscode/mcp.json
+```
+
+**Polyglot bonus:** the agent sees Python tracebacks,
+Go panics, Java stack traces, and Node errors
+through the same OTEL pipeline —
+one mental model across every language.
+
+</div>
+</div>
+
+<!-- This is the 2026 Aspire pitch and it lands hard for polyglot stacks: in a multi-language repo the agent has the worst time finding context, and Aspire's MCP server is exactly that context. -->
+
+---
+
 <!-- _class: purple -->
 
 # <!--fit--> Demos
@@ -703,11 +788,35 @@ aspire export                # Capture to zip
 
 # From Dev to Production
 
-**Same AppHost model** for local, staging, and production.
+**Same AppHost model** for local, staging, and production — one arc, two commands.
 
 <div class="columns">
 <div>
 
+**`aspire run` (local)**
+```text
+✅ redis (cache)         healthy   :6379
+✅ postgres (db)         healthy   :5432
+✅ ml-service (python)   running   :8000
+✅ frontend (vite)       running   :5173
+✅ api (.net)            running   :8080
+
+Dashboard: http://localhost:15888
+```
+
+**`aspire deploy` (target)**
+```text
+→ Building images for python, node, .net
+→ Pushing to acrcdbytes.azurecr.io
+→ Provisioning Container Apps environment
+→ Wiring Postgres + Redis connection strings
+✅ Deployed to dev environment in 4m 12s
+```
+
+</div>
+<div>
+
+**Same model, two commands:**
 ```bash
 aspire run       # Local development
 aspire deploy    # Deploy to target (Preview)
@@ -715,19 +824,18 @@ aspire publish   # Generate artifacts (Preview)
 aspire do        # Pipeline step (Preview)
 ```
 
-</div>
-<div>
-
-**What Aspire generates:**
+**What Aspire generates from your AppHost:**
 - Container images for all languages
 - Azure Container Apps / Kubernetes manifests
 - Infrastructure wiring (Redis, Postgres, Kafka…)
 - Service connections + environment variables
 
+**No separate deploy config.** The AppHost is the contract.
+
 </div>
 </div>
 
-<!-- The same AppHost that runs locally can drive your deployment pipeline. No separate config needed. -->
+<!-- The pivot here is `aspire run → aspire deploy`: same code-first AppHost drives both. The polyglot point: this works whether your services are Python, Go, Java, TypeScript, .NET — you don't need per-language deploy plumbing. -->
 
 ---
 
