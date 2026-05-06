@@ -6,18 +6,27 @@
 /* ── Aspire Brand Colors ── */
 :root {
   --aspire-surface: #f9f8ff;
-  --aspire-purple: #864df5;
-  --aspire-primary: #7455dd;
-  --aspire-secondary: #b9aaed;
-  --aspire-muted: #dbd3f4;
-  --aspire-black: #1f1e31;
-  --aspire-grey: #dcdfe6;
-  --aspire-white: #fefffe;
-  --aspire-magenta: #9d72f8;
-  --aspire-flamingo: #b793fa;
-  --aspire-blue: #0078d7;
-  --aspire-cyan: #28c2d1;
-  --aspire-dotnet-purple: #1f1e31;
+  /* Aligned with https://microsoft.github.io/aspire-brand/ */
+  --aspire-primary:   #7455dd;        /* Aspire primary  */
+  --aspire-purple:    #512bd4;        /* Aspire purple   */
+  --aspire-secondary: #b9aaee;        /* Aspire secondary */
+  --aspire-muted:     #dcd5f6;        /* Aspire muted    */
+  --aspire-grey:      #dce0e8;        /* Aspire grey     */
+  --aspire-black:     #1f1e33;        /* Aspire black    */
+  --aspire-white:     #ffffff;        /* Aspire white    */
+  /* Brand accent palette */
+  --aspire-magenta:   #b30f87;        /* accent magenta  */
+  --aspire-flamingo:  #f65163;        /* accent flamingo */
+  --aspire-blue:      #0078d7;        /* accent blue     */
+  --aspire-cyan:      #0b7e84;        /* accent cyan     */
+  --aspire-yellow:    #9b8308;        /* accent yellow   */
+  /* Backwards-compatible alias used by section.purple */
+  --aspire-dotnet-purple: #1f1e33;
+  /* Official supporting gradients */
+  --aspire-gradient-purple-magenta:  linear-gradient(90deg, #7455dd 0%, #b30f87 100%);
+  --aspire-gradient-blue-purple:     linear-gradient(90deg, #0078d7 0%, #7455dd 100%);
+  --aspire-gradient-flamingo-purple: linear-gradient(90deg, #f65163 0%, #7455dd 100%);
+  --aspire-gradient-purple-cyan:     linear-gradient(90deg, #7455dd 0%, #0b7e84 100%);
 
   --aspire-gray-1: #eceef1;
   --aspire-gray-2: #c6c8cc;
