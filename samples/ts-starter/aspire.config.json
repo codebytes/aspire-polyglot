@@ -4,7 +4,7 @@
     "language": "typescript/nodejs"
   },
   "packages": {
-    "Aspire.Hosting.JavaScript": "13.3.0-preview.1.26171.3"
+    "Aspire.Hosting.JavaScript": "13.2.4"
   },
   "profiles": {
     "https": {
