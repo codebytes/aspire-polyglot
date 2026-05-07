@@ -401,6 +401,8 @@ slides/package-lock.json
 **/*.tsbuildinfo
 **/vite.config.d.ts
 **/vite.config.js
+# Negation: samples that author Vite config in plain JS (not compiled from .ts)
+!samples/svelte-go-bookmarks/frontend/vite.config.js
 
 # Local nuget package cache (sample-specific)
 **/.nugetpackages/

@@ -125,11 +125,12 @@ One dashboard for logs, traces, and metrics across **all** services via OpenTele
 
 ---
 
-<!-- _class: compact code-compact -->
-
 # Your Stack in One File
 
 **One C# AppHost wires Python, React, and .NET — auto-discovery, observability, lifecycle:**
+
+<div class="columns">
+<div>
 
 ```csharp
 var builder = DistributedApplication.CreateBuilder(args);
@@ -142,6 +143,12 @@ builder.AddUvicornApp("ml-service", "../python", "main:app")
        .WithUv()
        .WithReference(redis);
 
+```
+
+</div>
+<div>
+
+```
 builder.AddViteApp("frontend", "../react")
        .WithHttpEndpoint(env: "PORT")
        .WithReference(postgres);
@@ -152,6 +159,9 @@ builder.AddProject<Projects.Api>("api")
 
 builder.Build().Run();
 ```
+
+</div>
+</div>
 
 <!-- This is the Aspire AppHost — the central brain that starts everything and wires it together. Python, React, .NET, all visible in one dashboard. -->
 
@@ -186,8 +196,6 @@ Aspire sets `OTEL_EXPORTER_OTLP_ENDPOINT` automatically — add OpenTelemetry to
 
 ---
 
-<!-- _class: compact -->
-
 # Standalone Dashboard — No AppHost Required
 
 ### Already on OTEL? Get the dashboard with zero rewrites.
@@ -210,8 +218,6 @@ Open `http://localhost:18888` — done.
 <!-- This closes a real adoption gap for polyglot teams: "I'm not on .NET, can I still use any of this?" Yes — start here. -->
 
 ---
-
-<!-- _class: dense code-compact -->
 
 # Wire Any OTEL App in 30 Seconds
 
@@ -237,8 +243,6 @@ sdk.start();
 <!-- Once they like the UI, the AppHost story becomes a much easier sell. -->
 
 ---
-
-<!-- _class: compact code-compact -->
 
 # OpenTelemetry — Python
 
@@ -267,8 +271,6 @@ trace.set_tracer_provider(provider)
 <!-- Add the OTel SDK, point at the env var Aspire injects, and you're done. -->
 
 ---
-
-<!-- _class: compact code-compact -->
 
 # OpenTelemetry — Node.js
 
@@ -337,8 +339,6 @@ services__frontend__http__0=http://localhost:3000
 
 ---
 
-<!-- _class: compact code-compact -->
-
 # Service Discovery — Read It Anywhere
 
 **Same env-var pattern, every language:**
@@ -378,8 +378,6 @@ String apiUrl = System.getenv("services__api__http__0");
 
 ---
 
-<!-- _class: compact code-compact -->
-
 # Connection Strings — The Pattern
 
 **Infrastructure resources get connection strings as environment variables:**
@@ -403,8 +401,6 @@ client = redis.from_url(
 <!-- Aspire handles connection-string complexity so you don't manage .env files. -->
 
 ---
-
-<!-- _class: compact code-compact -->
 
 # Same Pattern, Every Language
 
@@ -444,8 +440,6 @@ String url = "jdbc:postgresql://"
 
 ---
 
-<!-- _class: compact code-compact -->
-
 # The AppHost — C#
 
 **Write your AppHost in the language your team knows. Here's C#:**
@@ -469,8 +463,6 @@ builder.Build().Run();
 
 ---
 
-<!-- _class: compact code-compact -->
-
 # The AppHost — TypeScript
 
 **Same model, different syntax. Best fit for Node.js / TS workspaces:**
@@ -493,8 +485,6 @@ await builder.build().run();
 <!-- The TypeScript AppHost uses the same integration packages as C#. -->
 
 ---
-
-<!-- _class: compact code-compact -->
 
 # Two AppHost Languages
 
@@ -530,7 +520,6 @@ via `AddProject`, `AddJavaScriptApp`, `AddPythonApp`, `AddDockerfile`, `AddConta
 
 ---
 
-<!-- _class: dense code-compact -->
 
 # Write Once with ATS
 
@@ -557,8 +546,6 @@ public static class MyIntegrationExtensions
 <!-- Integration authors don't write a TS binding by hand — the analyzer + ATS scanner generates it. -->
 
 ---
-
-<!-- _class: dense code-compact -->
 
 # Use From TypeScript — Zero Bindings
 
@@ -604,8 +591,6 @@ const svc = await addMyService(builder, "svc");
 
 ---
 
-<!-- _class: compact code-compact -->
-
 # Cheat Sheet — Common Patterns
 
 **Chainable methods you'll use everywhere:**
@@ -626,8 +611,6 @@ const svc = await addMyService(builder, "svc");
 <!-- Keep this slide handy — these are the building blocks for everything we covered. -->
 
 ---
-
-<!-- _class: compact code-compact -->
 
 # `aspire.config.json` — The File
 
@@ -672,8 +655,6 @@ const svc = await addMyService(builder, "svc");
 
 ---
 
-<!-- _class: compact code-compact -->
-
 # Manage Config From the CLI
 
 **No manual JSON editing required:**
@@ -698,8 +679,6 @@ aspire certs trust
 <!-- The CLI is the friendlier surface — most teams never edit aspire.config.json directly. -->
 
 ---
-
-<!-- _class: compact code-compact -->
 
 # Getting Started
 
@@ -755,8 +734,6 @@ aspire export                # Capture to zip
 <!-- Per aspire.dev/get-started/aspire-mcp-server/. CLI MCP = stdio + `aspire agent init`. Dashboard MCP = streamable HTTP + API key from the dashboard UI. -->
 
 ---
-
-<!-- _class: dense code-compact -->
 
 # Wire It Up in 30 Seconds
 
@@ -923,7 +900,6 @@ $ code .    # reads .vscode/mcp.json
 
 ---
 
-<!-- _class: compact code-compact -->
 
 # Same Model, Two Commands
 
@@ -949,7 +925,6 @@ aspire do        # Pipeline step      (Preview)
 
 ---
 
-<!-- _class: compact code-compact -->
 
 # What That Looks Like
 

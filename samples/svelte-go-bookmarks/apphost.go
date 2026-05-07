@@ -56,8 +56,19 @@ func main() {
 		log.Fatalf("Failed to get api endpoint: %v", err)
 	}
 	frontend.WithEnvironmentEndpoint("services__api__http__0", apiEndpoint)
-	frontend.WithHttpEndpoint(nil, nil, stringPtr("PORT"), nil, nil)
+	// Vite dev server defaults to 5173. We bind targetPort=5173 explicitly so
+	// Aspire knows where to proxy traffic, and inject env="PORT" so vite.config.js
+	// can also pull it from process.env.PORT (matching vite-react-api's pattern).
+	// (Previous arg order put "PORT" in the endpoint NAME slot, leaving the
+	// dashboard URL pointing at an unbound port and Vite stuck on its default.)
+	frontend.WithHttpEndpoint(nil, float64Ptr(5173), stringPtr("http"), stringPtr("PORT"), nil)
 	frontend.WithExternalHttpEndpoints()
+	// WaitFor establishes both startup ordering and a Reference relationship
+	// visible on the dashboard. (Plain ContainerResources like api can't be
+	// used with WithReference — they don't expose a connection string.)
+	if _, err := frontend.WaitFor(aspire.NewIResource(api.Handle(), api.Client())); err != nil {
+		log.Fatalf("Failed to wait for api: %v", err)
+	}
 
 	app, err := builder.Build()
 	if err != nil {
