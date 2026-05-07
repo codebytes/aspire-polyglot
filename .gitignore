@@ -367,39 +367,40 @@ slides/package-lock.json
 # === Aspire Polyglot ===
 
 # Aspire CLI runtime artifacts
-*.aspire.run.log
-aspire.run.log
-.modules/.codegen-hash
+**/aspire.run.log
+**/.modules/.codegen-hash
 # Note: keep .modules/aspire.{py,java,ts,go} tracked — that's the generated hosting code
 
 # Python (virtualenvs + caches)
-.venv/
-venv/
-env/
-.mypy_cache/
-.pytest_cache/
-.ruff_cache/
-.tox/
-.coverage
-htmlcov/
-*.egg-info/
+**/.venv/
+**/venv/
+**/env/
+**/.mypy_cache/
+**/.pytest_cache/
+**/.ruff_cache/
+**/.tox/
+**/.coverage
+**/htmlcov/
+**/*.egg-info/
 
 # Java (compiled output, not source)
-*.class
-target/
-.gradle/
-build/
-hs_err_pid*
+**/*.class
+**/target/
+**/.gradle/
+**/build/
+**/hs_err_pid*
 
 # Frontend build outputs & caches
-.angular/
-.svelte-kit/
-.vite/
-.next/
-.nuxt/
-dist/
-.cache/
-*.tsbuildinfo
+**/.angular/
+**/.svelte-kit/
+**/.vite/
+**/.next/
+**/.nuxt/
+**/dist/
+**/.cache/
+**/*.tsbuildinfo
+**/vite.config.d.ts
+**/vite.config.js
 
 # Local nuget package cache (sample-specific)
 **/.nugetpackages/
