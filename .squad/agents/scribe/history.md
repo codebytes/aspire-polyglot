@@ -142,3 +142,5 @@ Initial setup complete.
 4. **Build artifacts branch-scoped:**  When multiple agent branches generate artifacts independently, post-merge cleanup needs cross-branch scope check. This task verified 10 untracked source files (legitimate OTel work) vs. build cruft — only OTel work should remain after cleanup + ignore fix.
 
 5. **Index (staged deletions) behavior:** Deleted files show as `D` in `git status -s` after deletion from disk. This is normal and expected. Stage them with `git add` after confirming they're build artifacts, NOT source code.
+
+**Trap: `find -delete` without `git add -u`:** Using `find` to delete files from disk bypasses git's index. Files deleted this way remain *tracked* until staged with `git add -u -- <pattern>`. After physical deletion, use `git add -u` (not bare `git add`) to stage the removal — common pattern when batch-deleting build artifacts.
