@@ -20,7 +20,7 @@ footer: '@Chris_L_Ayers - https://chris-ayers.com'
 
 ## Chris Ayers
 
-### Principal Software Engineer<br>Azure CXP AzRel<br>Microsoft
+### Principal Software Engineer<br>Azure EngOps AzRel<br>Microsoft
 
 <i class="fa-brands fa-bluesky"></i> BlueSky: [@chris-ayers.com](https://bsky.app/profile/chris-ayers.com)
 <i class="fa-brands fa-linkedin"></i> LinkedIn: - [chris\-l\-ayers](https://linkedin.com/in/chris-l-ayers/)
@@ -37,9 +37,6 @@ footer: '@Chris_L_Ayers - https://chris-ayers.com'
 
 Your team doesn't use one language — it uses **five**.
 
-<div class="columns">
-<div>
-
 **Your stack today**
 - Python ML services
 - Go microservices
@@ -47,21 +44,24 @@ Your team doesn't use one language — it uses **five**.
 - TypeScript/React frontends
 - .NET backend APIs
 
-</div>
-<div>
-
-**Your orchestration pain**
-- Docker Compose: manual port wiring, no built-in telemetry, no health-aware startup ordering
-- Each language has its own config format (`.env`, YAML, `application.properties`...)
-- No unified observability — good luck tracing a request across 4 services
-- 15-step README to run locally — "just `docker-compose up`" never works first time
-
-</div>
-</div>
-
 **The question:** How do you orchestrate, observe, and wire all of this **from one place**?
 
-<!-- We've all been there: README says "just run docker-compose up" but it never works the first time. Each language has its own logging, its own config format, its own service discovery pattern. You end up with hardcoded URLs everywhere. -->
+<!-- We've all been there. The README says "just run docker-compose up" but it never works the first time. Five languages, one app, no map. -->
+
+---
+
+<!-- _class: compact -->
+
+# The Orchestration Pain
+
+**Five stacks. Five toolchains. Zero shared model.**
+
+- 🚢 **Docker Compose** — manual port wiring, no built-in telemetry, no health-aware startup ordering
+- 📄 **Config sprawl** — `.env`, YAML, `application.properties`, `appsettings.json` — each language has its own format
+- 🔍 **No unified observability** — good luck tracing a request across four services in three runtimes
+- 📜 **15-step READMEs** — "just `docker-compose up`" never works first time
+
+<!-- Each language has its own logging, its own config format, its own service discovery pattern. You end up with hardcoded URLs everywhere. -->
 
 ---
 
@@ -77,12 +77,9 @@ Your team doesn't use one language — it uses **five**.
 
 <!-- _class: compact -->
 
-# The Four Pillars
+# The Four Pillars (1/2)
 
-**These are the four parts of Aspire you'll see today — across every language.**
-
-<div class="columns">
-<div>
+**Two of the four parts of Aspire — your control plane and your stack model.**
 
 ## 🛠 Aspire CLI
 **Your control plane**
@@ -92,8 +89,15 @@ Your team doesn't use one language — it uses **five**.
 **Your stack in code**
 One file declares every service and how they connect — C#, TypeScript, Python, or `aspire.config.json`.
 
-</div>
-<div>
+<!-- The official Spring '26 deck names four pillars. Two here, two on the next slide. -->
+
+---
+
+<!-- _class: compact -->
+
+# The Four Pillars (2/2)
+
+**The other two — your live runtime view and your building blocks.**
 
 ## 📊 Aspire Dashboard
 **Your app at a glance**
@@ -103,33 +107,34 @@ Logs, traces, metrics, and health for every resource — powered by OpenTelemetr
 **Building blocks, not black boxes**
 **100+** prebuilt packages for databases, caches, queues, AI, and clouds — or bring your own container, CLI, or agent.
 
-</div>
-</div>
-
-<!-- The official Spring '26 deck names exactly these four pillars. Every slide in the rest of the talk maps back to one of them — call that out. -->
+<!-- Every slide in the rest of the talk maps back to one of these four pillars — call that out. -->
 
 ---
 
-<!-- _class: compact code-compact -->
+<!-- _class: compact -->
 
 # One Orchestrator for Every Language
 
 **Aspire gives you three things, regardless of language:**
 
-<div class="columns">
-<div>
-
 🎯 **Orchestration**
-Define your entire stack — Python, Go, Java, TypeScript, .NET — in one AppHost file
+Define your entire stack — Python, Go, Java, TypeScript, .NET — in one AppHost file.
 
 📡 **Service Discovery**
-Endpoints and connection strings auto-injected as environment variables
+Endpoints and connection strings auto-injected as environment variables.
 
 📊 **Observability**
-One dashboard for logs, traces, and metrics across ALL services via OpenTelemetry
+One dashboard for logs, traces, and metrics across **all** services via OpenTelemetry.
 
-</div>
-<div>
+<!-- These three promises map onto the rest of the talk. Each one shows up everywhere. -->
+
+---
+
+<!-- _class: compact code-compact -->
+
+# Your Stack in One File
+
+**One C# AppHost wires Python, React, and .NET — auto-discovery, observability, lifecycle:**
 
 ```csharp
 var builder = DistributedApplication.CreateBuilder(args);
@@ -153,10 +158,7 @@ builder.AddProject<Projects.Api>("api")
 builder.Build().Run();
 ```
 
-</div>
-</div>
-
-<!-- This is the Aspire AppHost. It's the central brain that starts everything and wires it together. Python, React, .NET — all visible in one dashboard, auto-wired, observable. No .NET SDK required for non-.NET devs if you use a polyglot AppHost. -->
+<!-- This is the Aspire AppHost — the central brain that starts everything and wires it together. Python, React, .NET, all visible in one dashboard. -->
 
 ---
 
@@ -189,35 +191,37 @@ Aspire sets `OTEL_EXPORTER_OTLP_ENDPOINT` automatically — add OpenTelemetry to
 
 ---
 
-<!-- _class: dense code-compact -->
+<!-- _class: compact -->
 
 # Standalone Dashboard — No AppHost Required
 
 ### Already on OTEL? Get the dashboard with zero rewrites.
 
-<div class="columns">
-<div>
-
 **The Aspire Dashboard ships as a standalone container.** Point any OTLP-emitting app at it and you get logs, traces, and metrics — no AppHost, no .NET, no commitment.
 
-- ✅ **Node.js / Python / Java / Go / Rust** — anything with an OTEL SDK works.
-- ✅ **Same UI** as the AppHost-managed dashboard.
-- ✅ **Local-only by default** — OTLP endpoint and dashboard auth keys printed at startup.
-- ✅ **Use it in CI**, in a Dockerfile, in `docker-compose.yml`, or attached to a Kubernetes pod.
+- ✅ **Node.js / Python / Java / Go / Rust** — anything with an OTEL SDK works
+- ✅ **Same UI** as the AppHost-managed dashboard
+- ✅ **Local-only by default** — OTLP endpoint and dashboard auth keys printed at startup
+- ✅ **Use it in CI**, in a Dockerfile, in `docker-compose.yml`, or attached to a Kubernetes pod
 
-**Migration path:** start with the standalone dashboard for observability today; adopt the AppHost later when you want service discovery, integrations, and `aspire deploy`.
-
-</div>
-<div>
-
-**Run it standalone**
 ```bash
 docker run --rm -it -p 18888:18888 -p 4317:18889 \
   -d --name aspire-dashboard \
   mcr.microsoft.com/dotnet/aspire-dashboard:latest
 ```
 
-**Point your Node.js app at it**
+Open `http://localhost:18888` — done.
+
+<!-- This closes a real adoption gap for polyglot teams: "I'm not on .NET, can I still use any of this?" Yes — start here. -->
+
+---
+
+<!-- _class: dense code-compact -->
+
+# Wire Any OTEL App in 30 Seconds
+
+**Point your Node.js app at the standalone dashboard:**
+
 ```javascript
 // otel.js
 import { NodeSDK } from "@opentelemetry/sdk-node";
@@ -233,25 +237,18 @@ const sdk = new NodeSDK({
 sdk.start();
 ```
 
-Open `http://localhost:18888` — your traces show up live.
+**Migration path:** start with the standalone dashboard for observability today; adopt the AppHost later when you want service discovery, integrations, and `aspire deploy`.
 
-</div>
-</div>
-
-<!-- Per aspire.dev/dashboard/standalone-for-{nodejs,python}/. This slide closes a real adoption gap for polyglot teams: "I'm not on .NET, can I still use any of this?" Yes — start here, no AppHost commitment, just OTEL. Once they like the UI, the AppHost story becomes a much easier sell. -->
+<!-- Once they like the UI, the AppHost story becomes a much easier sell. -->
 
 ---
 
 <!-- _class: compact code-compact -->
 
-# OpenTelemetry Setup by Language
+# OpenTelemetry — Python
 
-**Add OpenTelemetry once per service — Aspire handles the rest:**
+**Wire OTEL once. Aspire injects `OTEL_EXPORTER_OTLP_ENDPOINT` automatically.**
 
-<div class="columns">
-<div>
-
-**Python:**
 ```python
 from opentelemetry import trace
 from opentelemetry.exporter.otlp.proto.grpc \
@@ -270,10 +267,18 @@ provider.add_span_processor(
 trace.set_tracer_provider(provider)
 ```
 
-</div>
-<div>
+**One block of boilerplate** — and your Python service is in the dashboard.
 
-**Node.js:**
+<!-- Add the OTel SDK, point at the env var Aspire injects, and you're done. -->
+
+---
+
+<!-- _class: compact code-compact -->
+
+# OpenTelemetry — Node.js
+
+**Same idea, different runtime — and you get auto-instrumentation for free.**
+
 ```javascript
 const { NodeSDK } =
   require('@opentelemetry/sdk-node');
@@ -291,12 +296,9 @@ const sdk = new NodeSDK({
 sdk.start();
 ```
 
-</div>
-</div>
+**Auto-instrumentations** capture Express, Fastify, fetch, pg, redis — without code changes.
 
-**Aspire sets `OTEL_EXPORTER_OTLP_ENDPOINT` automatically** — add this boilerplate once per service and traces flow to the dashboard.
-
-<!-- This is how you get your service into that dashboard we just saw. Add the OTel SDK, point at the env var Aspire injects, and you're done. -->
+<!-- Node gets even better — auto-instrumentations grab HTTP, DB, redis, etc. for free. -->
 
 ---
 
@@ -322,7 +324,7 @@ The patterns that make polyglot orchestration possible
 
 ---
 
-# Service Discovery
+# Service Discovery — The Pattern
 
 **Aspire injects service endpoints as environment variables:**
 
@@ -332,7 +334,19 @@ services__api__http__0=http://localhost:5000
 services__frontend__http__0=http://localhost:3000
 ```
 
-**Read them in any language — same pattern everywhere:**
+**Why double underscore?** Env vars can't have colons — so `__` stands in for the path separator. Every language can read env vars; that's the universal interface.
+
+**No hardcoded URLs. No `.env` files. Aspire wires it.**
+
+<!-- This is the magic. The double underscore __ is used because environment variables can't have colons. -->
+
+---
+
+<!-- _class: compact code-compact -->
+
+# Service Discovery — Read It Anywhere
+
+**Same env-var pattern, every language:**
 
 <div class="columns">
 <div>
@@ -365,17 +379,15 @@ String apiUrl = System.getenv("services__api__http__0");
 </div>
 </div>
 
-**No hardcoded URLs. No `.env` files. Aspire wires it.**
-
-<!-- This is the magic. The double underscore __ is used because environment variables can't have colons. Every language can read env vars — that's the universal interface. -->
+<!-- Each runtime has its own env-var idiom — but the pattern is identical. -->
 
 ---
 
 <!-- _class: compact code-compact -->
 
-# Connection Strings
+# Connection Strings — The Pattern
 
-**Infrastructure resources get connection strings automatically:**
+**Infrastructure resources get connection strings as environment variables:**
 
 ```bash
 # Pattern: CONNECTIONSTRINGS__<resource>
@@ -384,26 +396,41 @@ CONNECTIONSTRINGS__db=Host=localhost;Port=5432;Username=postgres;Password=...
 CONNECTIONSTRINGS__messaging=localhost:9092
 ```
 
-**Same pattern in every language:**
-
+**Python — Redis:**
 ```python
-# Python — Redis
-client = redis.from_url(f"redis://{os.environ['CONNECTIONSTRINGS__cache']}")
+client = redis.from_url(
+  f"redis://{os.environ['CONNECTIONSTRINGS__cache']}"
+)
 ```
 
+**Aspire injects the env var** — your service reads it using its language's standard mechanism.
+
+<!-- Aspire handles connection-string complexity so you don't manage .env files. -->
+
+---
+
+<!-- _class: compact code-compact -->
+
+# Same Pattern, Every Language
+
+**Node.js — Kafka:**
 ```javascript
-// Node.js — Kafka
-const kafka = new Kafka({ brokers: [process.env.CONNECTIONSTRINGS__messaging] });
+const kafka = new Kafka({
+  brokers: [process.env.CONNECTIONSTRINGS__messaging]
+});
 ```
 
+**Java — PostgreSQL:**
 ```java
-// Java — PostgreSQL via env vars
-String url = "jdbc:postgresql://" + System.getenv("PG_HOST") + ":" + System.getenv("PG_PORT") + "/" + System.getenv("PG_DB");
+String url = "jdbc:postgresql://"
+  + System.getenv("PG_HOST") + ":"
+  + System.getenv("PG_PORT") + "/"
+  + System.getenv("PG_DB");
 ```
 
-**Aspire injects environment variables** — your service reads them using its language's standard env var mechanism.
+**Go, Rust, .NET, PowerShell** — same pattern. Aspire sets the env var; your code reads it.
 
-<!-- Aspire handles the complexity of connection strings so you don't have to manage .env files. For C# AppHosts using AddPostgres, connection strings are auto-generated. For polyglot AppHosts, you wire env vars explicitly — same result, more control. -->
+<!-- For C# AppHosts using AddPostgres, connection strings are auto-generated. For polyglot AppHosts, you wire env vars explicitly — same result, more control. -->
 
 ---
 
@@ -424,14 +451,10 @@ String url = "jdbc:postgresql://" + System.getenv("PG_HOST") + ":" + System.gete
 
 <!-- _class: compact code-compact -->
 
-# The AppHost — Your Stack in Code
+# The AppHost — C#
 
-**Write your AppHost in the language your team knows:**
+**Write your AppHost in the language your team knows. Here's C#:**
 
-<div class="columns">
-<div>
-
-**C# AppHost**
 ```csharp
 var builder = DistributedApplication
     .CreateBuilder(args);
@@ -445,10 +468,18 @@ builder.AddPythonApp("api", "../api", "app.py")
 builder.Build().Run();
 ```
 
-</div>
-<div>
+**40+ integrations** — Redis, Azure, Kafka, MongoDB, PostgreSQL — available out of the box.
 
-**TypeScript AppHost**
+<!-- C# is the original AppHost language. Most existing samples use this. -->
+
+---
+
+<!-- _class: compact code-compact -->
+
+# The AppHost — TypeScript
+
+**Same model, different syntax. Best fit for Node.js / TS workspaces:**
+
 ```typescript
 const builder = await createBuilder();
 
@@ -462,85 +493,60 @@ await builder
 await builder.build().run();
 ```
 
-</div>
-</div>
+**Same 40+ integrations** as C# — auto-generated via `[AspireExport]` attributes. A JS/TS team never needs to touch .NET.
 
-**Same 40+ integrations** — Redis, Azure, Kafka, MongoDB, PostgreSQL — available in both C# and TypeScript.
+<!-- The TypeScript AppHost uses the same integration packages as C#. -->
 
-<!-- The TypeScript AppHost uses the same integration packages as C#, auto-generated via [AspireExport] attributes. A JS/TS team never needs to touch .NET. -->
+---
+
+<!-- _class: compact code-compact -->
+
+# Two AppHost Languages
+
+**Author your AppHost in C# or TypeScript today — both officially supported.**
+
+💜 **C# (.NET)** — `AppHost.cs` — best fit for teams already on .NET tooling.
+
+🟦 **TypeScript** — `apphost.ts` — best fit for Node.js / TypeScript workspaces.
+
+**Same model, different syntax.** Both produce the same dashboard, service discovery, health checks, and deployment artifacts.
+
+**Same integration surface** — the TypeScript SDK is auto-generated from the same .NET hosting integrations via the **Aspire Type System (ATS)**. No separate integration code to maintain.
+
+<!-- Per aspire.dev/languages-and-runtimes: only C# and TypeScript are documented AppHost authoring languages today. -->
+
+---
+
+<!-- _class: compact -->
+
+# Workloads Can Be Anything
+
+**Pick the AppHost language that fits your repo. Your services don't need to match.**
+
+The TypeScript SDK is auto-generated from the same .NET hosting integrations via the **Aspire Type System (ATS)** — there's no separate integration surface to maintain.
+
+**Workloads inside the AppHost** can be written in:
+
+- C#, JavaScript, TypeScript, Python, Go, Java, Rust, PowerShell, and more
+
+via `AddProject`, `AddJavaScriptApp`, `AddPythonApp`, `AddDockerfile`, `AddContainer`, or `AddExecutable`.
+
+<!-- AppHost authoring is C#/TS today; workload language support is separate and much broader. -->
 
 ---
 
 <!-- _class: dense code-compact -->
 
-# AppHost Languages
+# Write Once with ATS
 
-**Author your AppHost in C# or TypeScript today. Orchestrate workloads in any language.**
-
-<div class="columns">
-<div>
-
-💜 **C# (.NET)** — `AppHost.cs` · **Official**
-```csharp
-var builder = DistributedApplication
-    .CreateBuilder(args);
-
-builder.AddProject<Projects.Api>("api")
-       .WithHttpEndpoint(env: "PORT");
-
-builder.Build().Run();
-```
-Best fit: teams already on .NET tooling.
-
-</div>
-<div>
-
-🟦 **TypeScript** — `apphost.ts` · **Official**
-```typescript
-const builder = await createBuilder();
-
-await builder
-  .addJavaScriptApp("api", "./src")
-  .withHttpEndpoint({ env: "PORT" });
-
-await builder.build().run();
-```
-Best fit: Node.js / TypeScript workspaces.
-
-</div>
-</div>
-
-**Same model, different syntax.** Both produce the same dashboard, service discovery, health checks, and deployment artifacts. The TypeScript SDK is auto-generated from the same .NET hosting integrations via the **Aspire Type System (ATS)** — there's no separate integration surface to maintain.
-
-**Workloads inside the AppHost** can be written in C#, JavaScript, Python, Go, Java, Rust, PowerShell, and more — via `AddProject`, `AddJavaScriptApp`, `AddPythonApp`, `AddDockerfile`, `AddContainer`, or `AddExecutable`. Pick the AppHost language that fits your repo; your services don't need to match.
-
-<!-- Per aspire.dev/languages-and-runtimes: only C# and TypeScript are documented AppHost authoring languages today. Earlier drafts of this slide listed Python/Java/Go AppHost stubs as "experimental" — those aren't documented on the live site, so this version sticks to the two officially-supported AppHost languages and is honest about workload language support being separate. -->
-
----
-
-<!-- _class: dense code-compact -->
-
-# Multi-Language Integrations
-
-### Write the integration once. Use it from C# or TypeScript.
-
-<div class="columns">
-<div>
+### Author the integration in C#. Use it from any AppHost.
 
 **Aspire Type System (ATS)** — the contract that bridges .NET and guest languages.
 
-- Author your hosting integration **in C#** as you always have.
-- Annotate exported APIs with ATS attributes — `[AspireExport]`, `[AspireExportType]`, `[AspireExportMethod]`.
-- Aspire's analyzer validates the export shape at build time.
-- The CLI **auto-generates a TypeScript SDK** into `.modules/` when a TS AppHost runs `aspire add <your-package>`.
-- TypeScript callers get fluent, typed methods — same model, different syntax.
+- Author your hosting integration **in C#** as you always have
+- Annotate exported APIs with ATS attributes — `[AspireExport]`, `[AspireExportType]`, `[AspireExportMethod]`
+- Aspire's analyzer validates the export shape at build time
 
-**The trade-off:** the guest process talks to the .NET host over a local JSON-RPC socket (Unix socket / named pipe), authenticated with a per-session token. One IPC hop, no port exposure, no duplicated integration code per language.
-
-</div>
-<div>
-
-**C# author**
 ```csharp
 [AspireExport]
 public static class MyIntegrationExtensions
@@ -553,7 +559,16 @@ public static class MyIntegrationExtensions
 }
 ```
 
-**TypeScript caller — zero hand-written bindings**
+<!-- Integration authors don't write a TS binding by hand — the analyzer + ATS scanner generates it. -->
+
+---
+
+<!-- _class: dense code-compact -->
+
+# Use From TypeScript — Zero Bindings
+
+**The CLI auto-generates a TypeScript SDK** into `.modules/` when a TS AppHost runs `aspire add <your-package>`. TypeScript callers get fluent, typed methods.
+
 ```typescript
 import { createBuilder } from "./.modules/aspire.js";
 import { addMyService } from
@@ -563,76 +578,77 @@ const builder = await createBuilder();
 const svc = await addMyService(builder, "svc");
 ```
 
+**The trade-off:** the guest process talks to the .NET host over a local JSON-RPC socket (Unix socket / named pipe), authenticated with a per-session token. One IPC hop, no port exposure, no duplicated integration code per language.
+
 *Status: preview feature in 13.x.*
 
-</div>
-</div>
+<!-- That's how 100+ .NET integrations show up automatically in TypeScript AppHosts. -->
 
-<!-- Per aspire.dev/extensibility/multi-language-integration-authoring/. The point of this slide: integration authors don't write a TS binding by hand — the analyzer + ATS scanner generates it. That's how 100+ .NET integrations show up automatically in TypeScript AppHosts. Keep this slide BRIEF — it's a teaser for integration authors, not a tutorial. -->
+---
+
+<!-- _class: compact -->
+
+# Cheat Sheet — Runtimes
+
+**Pick the right `Add*` for your service:**
+
+- Python / ASGI → `AddPythonApp()`
+- Python / Uvicorn → `AddUvicornApp()`
+- Node.js → `AddNodeApp()`
+- Vite / React → `AddViteApp()`
+- JavaScript → `AddJavaScriptApp()`
+- .NET project → `AddProject<T>()`
+- Go → `AddGolangApp()` *(Community Toolkit)*
+- Java / Spring Boot → `AddSpringApp()` *(Community Toolkit)*
+- Any Dockerfile → `AddDockerfile()`
+- Any executable → `AddExecutable()`
+
+**Infrastructure:** `AddRedis("name")` · `AddPostgres("name").AddDatabase("db")` · `AddKafka("name")` · `AddAzureCosmosDB("name").RunAsEmulator()`
+
+<!-- Quick reference for the runtime side. -->
 
 ---
 
 <!-- _class: compact code-compact -->
 
-# Aspire Polyglot Cheat Sheet
+# Cheat Sheet — Common Patterns
 
-<div class="columns">
-<div>
+**Chainable methods you'll use everywhere:**
 
-**Runtime → Method (C# SDK)**
-- Python / ASGI → `AddPythonApp()`
-- Python / Uvicorn → `AddUvicornApp()`
-- Node.js → `AddNodeApp()`
-- Vite / React → `AddViteApp()`
-- .NET project → `AddProject<T>()`
-- JavaScript → `AddJavaScriptApp()`
-- Any Dockerfile → `AddDockerfile()`
-- Go → `AddGolangApp()` (Community Toolkit)
-- Java / Spring Boot → `AddSpringApp()` (Community Toolkit)
-- Any executable → `AddExecutable()`
-
-</div>
-<div>
-
-**Common Patterns**
 ```csharp
-.WithReference(redis)
-.WaitFor(postgres)
-.WithHttpEndpoint(env: "PORT")
-.WithExternalHttpEndpoints()
-.WithUv()
-.WithNpm()
-.WithBun()
-.WithBuildSecret("key", secret)
-.WithRunScript("dev")
-.WithHttpHealthCheck("/health")
-.WithMcpServer("mcp")
+.WithReference(redis)              // wire endpoints
+.WaitFor(postgres)                 // start ordering
+.WithHttpEndpoint(env: "PORT")     // expose http
+.WithExternalHttpEndpoints()       // public ingress
+.WithUv()                          // python: uv
+.WithNpm() / .WithBun()            // js: package mgr
+.WithBuildSecret("key", secret)    // build-time secret
+.WithRunScript("dev")              // npm script
+.WithHttpHealthCheck("/health")    // probe
+.WithMcpServer("mcp")              // expose MCP
 ```
 
-</div>
-</div>
-
-**Infrastructure:** `AddRedis("name")` · `AddPostgres("name").AddDatabase("db")` · `AddKafka("name")` · `AddAzureCosmosDB("name").RunAsEmulator()`
-
-<!-- Keep this slide handy as a quick reference for everything we just covered! -->
+<!-- Keep this slide handy — these are the building blocks for everything we covered. -->
 
 ---
 
-<!-- _class: dense code-compact -->
+<!-- _class: compact code-compact -->
 
-# `aspire.config.json` — One Config for Every Language
+# `aspire.config.json` — The File
 
-<div class="columns">
-<div>
-
-**This file tells the CLI which language your AppHost uses:**
+**This file tells the CLI which language your AppHost uses.**
 
 ```json
 {
-  "appHost": { "path": "apphost.py", "language": "python" },
+  "appHost": {
+    "path": "apphost.py",
+    "language": "python"
+  },
   "sdk": { "version": "13.2.0" },
   "channel": "stable",
-  "features": { "polyglotSupportEnabled": true },
+  "features": {
+    "polyglotSupportEnabled": true
+  },
   "profiles": {
     "default": {
       "applicationUrl": "https://localhost:17000"
@@ -641,30 +657,50 @@ const svc = await addMyService(builder, "svc");
 }
 ```
 
-</div>
-<div>
+<!-- Drop aspire.config.json at the project root — the CLI reads it on every command. -->
 
-**What it does:**
-- `appHost.path` + `appHost.language` — declares your stack
-- `sdk.version` — pins the Aspire SDK version
-- `channel` — release channel (`stable`, `preview`)
-- `profiles` — dashboard URLs (replaces `apphost.run.json`)
-- Feature flags use **boolean `true`** (not string `"true"`)
+---
 
-</div>
-<div>
+<!-- _class: compact -->
 
-**Manage from CLI:**
-- `aspire config list` / `get` / `set`
-- `aspire secret set/list/get/delete`
-- `aspire certs clean/trust`
+# `aspire.config.json` — What Each Field Does
 
-**Every sample in this talk** has one at its root.
+- **`appHost.path`** + **`appHost.language`** — declares your stack (`csharp`, `typescript`, `python`...)
+- **`sdk.version`** — pins the Aspire SDK version
+- **`channel`** — release channel (`stable`, `preview`)
+- **`profiles`** — dashboard URLs (replaces `apphost.run.json`)
+- **Feature flags** use **boolean `true`** — not string `"true"`
 
-</div>
-</div>
+**Every sample in this talk** has one at its root — peek inside.
 
-<!-- This is the key file. Drop aspire.config.json in your project root, point it at your AppHost file, set the language, and aspire run just works. The CLI reads this to know how to build and launch your app. -->
+<!-- Common gotcha: feature flags are JSON booleans, not strings. -->
+
+---
+
+<!-- _class: compact code-compact -->
+
+# Manage Config From the CLI
+
+**No manual JSON editing required:**
+
+```bash
+# Read & write config values
+aspire config list
+aspire config get <key>
+aspire config set <key> <value>
+
+# Manage secrets (encrypted at rest)
+aspire secret set <key> <value>
+aspire secret list / get / delete
+
+# Local dev certs
+aspire certs clean
+aspire certs trust
+```
+
+**Every sample in this talk** has an `aspire.config.json` at its root — peek inside.
+
+<!-- The CLI is the friendlier surface — most teams never edit aspire.config.json directly. -->
 
 ---
 
@@ -706,14 +742,11 @@ aspire export                # Capture to zip
 
 ---
 
-<!-- _class: dense code-compact -->
+<!-- _class: compact -->
 
 # Agent-Ready CLI
 
 ### Two MCP servers. One model. Any agent.
-
-<div class="columns">
-<div>
 
 **MCP support out of the box — no plugins, no glue.**
 
@@ -724,8 +757,15 @@ aspire export                # Capture to zip
 
 **Polyglot bonus:** the agent sees Python tracebacks, Go panics, Java stack traces, and Node errors through the same OTEL pipeline.
 
-</div>
-<div>
+<!-- Per aspire.dev/get-started/aspire-mcp-server/. CLI MCP = stdio + `aspire agent init`. Dashboard MCP = streamable HTTP + API key from the dashboard UI. -->
+
+---
+
+<!-- _class: dense code-compact -->
+
+# Wire It Up in 30 Seconds
+
+**One-time setup, then any MCP-aware agent works:**
 
 ```bash
 # 1. One-time setup in your AppHost dir
@@ -749,10 +789,7 @@ $ code .    # reads .vscode/mcp.json
 } } }
 ```
 
-</div>
-</div>
-
-<!-- Per aspire.dev/get-started/aspire-mcp-server/ and /get-started/ai-coding-agents/. CLI MCP = stdio + `aspire agent init`. Dashboard MCP = streamable HTTP + API key from the dashboard UI. Earlier drafts invented an `http://localhost:15889/mcp` URL — doesn't exist for the CLI server. -->
+<!-- Earlier drafts invented an `http://localhost:15889/mcp` URL — doesn't exist for the CLI server. -->
 
 ---
 
@@ -893,9 +930,33 @@ $ code .    # reads .vscode/mcp.json
 
 <!-- _class: compact code-compact -->
 
-# From Dev to Production
+# Same Model, Two Commands
 
-**Same AppHost model** for local, staging, and production — one arc, two commands.
+**One AppHost. Local, staging, production.**
+
+```bash
+aspire run       # Local development
+aspire deploy    # Deploy to target  (Preview)
+aspire publish   # Generate artifacts (Preview)
+aspire do        # Pipeline step      (Preview)
+```
+
+**What Aspire generates from your AppHost:**
+
+- 🐳 Container images for **all languages**
+- ☸️ Azure Container Apps / Kubernetes manifests
+- 🔌 Infrastructure wiring (Redis, Postgres, Kafka…)
+- 🔗 Service connections + environment variables
+
+**No separate deploy config.** The AppHost is the contract.
+
+<!-- This works whether your services are Python, Go, Java, TypeScript, .NET — you don't need per-language deploy plumbing. -->
+
+---
+
+<!-- _class: compact code-compact -->
+
+# What That Looks Like
 
 <div class="columns">
 <div>
@@ -911,6 +972,9 @@ $ code .    # reads .vscode/mcp.json
 Dashboard: http://localhost:15888
 ```
 
+</div>
+<div>
+
 **`aspire deploy` (target)**
 ```text
 → Building images for python, node, .net
@@ -921,28 +985,11 @@ Dashboard: http://localhost:15888
 ```
 
 </div>
-<div>
-
-**Same model, two commands:**
-```bash
-aspire run       # Local development
-aspire deploy    # Deploy to target (Preview)
-aspire publish   # Generate artifacts (Preview)
-aspire do        # Pipeline step (Preview)
-```
-
-**What Aspire generates from your AppHost:**
-- Container images for all languages
-- Azure Container Apps / Kubernetes manifests
-- Infrastructure wiring (Redis, Postgres, Kafka…)
-- Service connections + environment variables
-
-**No separate deploy config.** The AppHost is the contract.
-
-</div>
 </div>
 
-<!-- The pivot here is `aspire run → aspire deploy`: same code-first AppHost drives both. The polyglot point: this works whether your services are Python, Go, Java, TypeScript, .NET — you don't need per-language deploy plumbing. -->
+**Same code-first AppHost drives both.**
+
+<!-- The pivot: aspire run → aspire deploy. Same model, no extra plumbing. -->
 
 ---
 
