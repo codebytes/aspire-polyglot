@@ -56,20 +56,16 @@ func main() {
 		log.Fatalf("Failed to get api endpoint: %v", err)
 	}
 	frontend.WithEnvironmentEndpoint("services__api__http__0", apiEndpoint)
-	// Browsers can't speak gRPC OTLP, so emit HTTP/protobuf and let
-	// vite.config.js re-export OTEL_* as VITE_OTEL_* for the SPA.
-	if _, err := frontend.WithOtlpExporter(); err != nil {
-		log.Fatalf("Failed to configure OTLP exporter for frontend: %v", err)
-	}
-	if _, err := frontend.WithOtlpExporterProtocol(aspire.OtlpProtocolHttpProtobuf); err != nil {
-		log.Fatalf("Failed to set OTLP protocol for frontend: %v", err)
-	}
-	// name="http", env="PORT": Aspire allocates a port and injects it into PORT
-	// so vite.config.js can bind to it. (Previous arg order put "PORT" in the
-	// endpoint name slot, leaving Vite on its default port and the dashboard
-	// URL unreachable.)
-	frontend.WithHttpEndpoint(nil, nil, stringPtr("http"), stringPtr("PORT"), nil)
+	// Vite dev server defaults to 5173. We bind targetPort=5173 explicitly so
+	// Aspire knows where to proxy traffic, and inject env="PORT" so vite.config.js
+	// can also pull it from process.env.PORT (matching vite-react-api's pattern).
+	// (Previous arg order put "PORT" in the endpoint NAME slot, leaving the
+	// dashboard URL pointing at an unbound port and Vite stuck on its default.)
+	frontend.WithHttpEndpoint(nil, float64Ptr(5173), stringPtr("http"), stringPtr("PORT"), nil)
 	frontend.WithExternalHttpEndpoints()
+	// WaitFor establishes both startup ordering and a Reference relationship
+	// visible on the dashboard. (Plain ContainerResources like api can't be
+	// used with WithReference — they don't expose a connection string.)
 	if _, err := frontend.WaitFor(aspire.NewIResource(api.Handle(), api.Client())); err != nil {
 		log.Fatalf("Failed to wait for api: %v", err)
 	}

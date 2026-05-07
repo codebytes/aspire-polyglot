@@ -25,9 +25,9 @@ const api = builder.addDockerfile("api", "./src/api")
 // the running SPA can POST traces to the dashboard from the user's machine.
 //
 // The dashboard's HTTP/protobuf listener must be enabled before this works.
-// When launching aspire, set:
-//   ASPIRE_DASHBOARD_OTLP_HTTP_ENDPOINT_URL=https://localhost:21081
-// (or any free port) — see README + .squad/decisions/inbox/parker-vite-react-otel.md.
+// `apphost.run.json` sets ASPIRE_DASHBOARD_OTLP_HTTP_ENDPOINT_URL on both
+// launch profiles so plain `aspire run` works out of the box. See
+// .squad/decisions/inbox/parker-vite-react-otel.md for the full design.
 const web = builder.addDockerfile("web", "./src/web")
   .withOtlpExporter()
   .withOtlpExporterProtocol(OtlpProtocol.HttpProtobuf)
