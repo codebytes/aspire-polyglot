@@ -56,8 +56,23 @@ func main() {
 		log.Fatalf("Failed to get api endpoint: %v", err)
 	}
 	frontend.WithEnvironmentEndpoint("services__api__http__0", apiEndpoint)
-	frontend.WithHttpEndpoint(nil, nil, stringPtr("PORT"), nil, nil)
+	// Browsers can't speak gRPC OTLP, so emit HTTP/protobuf and let
+	// vite.config.js re-export OTEL_* as VITE_OTEL_* for the SPA.
+	if _, err := frontend.WithOtlpExporter(); err != nil {
+		log.Fatalf("Failed to configure OTLP exporter for frontend: %v", err)
+	}
+	if _, err := frontend.WithOtlpExporterProtocol(aspire.OtlpProtocolHttpProtobuf); err != nil {
+		log.Fatalf("Failed to set OTLP protocol for frontend: %v", err)
+	}
+	// name="http", env="PORT": Aspire allocates a port and injects it into PORT
+	// so vite.config.js can bind to it. (Previous arg order put "PORT" in the
+	// endpoint name slot, leaving Vite on its default port and the dashboard
+	// URL unreachable.)
+	frontend.WithHttpEndpoint(nil, nil, stringPtr("http"), stringPtr("PORT"), nil)
 	frontend.WithExternalHttpEndpoints()
+	if _, err := frontend.WaitFor(aspire.NewIResource(api.Handle(), api.Client())); err != nil {
+		log.Fatalf("Failed to wait for api: %v", err)
+	}
 
 	app, err := builder.Build()
 	if err != nil {

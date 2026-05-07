@@ -90,9 +90,12 @@
     }
   }
 
-  $: if (searchQuery !== undefined) {
-    const timer = setTimeout(() => searchBookmarks(), 300);
-    return () => clearTimeout(timer);
+  let searchTimer;
+  $: {
+    clearTimeout(searchTimer);
+    if (searchQuery !== undefined) {
+      searchTimer = setTimeout(() => searchBookmarks(), 300);
+    }
   }
 </script>
 
