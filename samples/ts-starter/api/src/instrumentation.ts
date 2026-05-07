@@ -13,6 +13,7 @@
 import { env } from 'node:process';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
+import { RuntimeNodeInstrumentation } from '@opentelemetry/instrumentation-runtime-node';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-grpc';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-grpc';
 import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-grpc';
@@ -29,13 +30,21 @@ if (env.OTEL_EXPORTER_OTLP_ENDPOINT) {
     logRecordProcessor: new BatchLogRecordProcessor(
       new OTLPLogExporter(),
     ),
-    instrumentations: [getNodeAutoInstrumentations()],
+    instrumentations: [
+      getNodeAutoInstrumentations(),
+      // Process / runtime metrics (event loop, GC, heap) — fills the
+      // dashboard's Metrics tab beyond just HTTP counters.
+      new RuntimeNodeInstrumentation(),
+    ],
   });
 
   sdk.start();
 
   // Bridge console output to OTel structured logs so they appear in the
-  // Aspire dashboard's Structured Logs view.
+  // Aspire dashboard's Structured Logs view. The OTel logs SDK captures
+  // context.active() at emit time, so every console.log made inside an
+  // HTTP request automatically inherits the request's trace_id/span_id —
+  // logs and traces correlate without any manual plumbing.
   const otelLogger = logs.getLogger('ts-starter-api');
 
   const originalLog = console.log;

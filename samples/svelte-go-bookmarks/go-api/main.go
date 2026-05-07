@@ -4,19 +4,24 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"log"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/XSAM/otelsql"
 	_ "github.com/lib/pq"
 	"go.opentelemetry.io/contrib/bridges/otelslog"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"go.opentelemetry.io/contrib/instrumentation/runtime"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
@@ -24,7 +29,9 @@ import (
 	"go.opentelemetry.io/otel/propagation"
 	sdklog "go.opentelemetry.io/otel/sdk/log"
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
+	sdkresource "go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+	semconv "go.opentelemetry.io/otel/semconv/v1.40.0"
 )
 
 type Bookmark struct {
@@ -35,12 +42,14 @@ type Bookmark struct {
 	CreatedAt string `json:"createdAt"`
 }
 
-// Storage interface — implemented by both postgres and in-memory backends
+// Storage interface — implemented by both postgres and in-memory backends.
+// All methods take a context.Context so otelsql can attach DB spans to the
+// caller's request span (and so slog log records correlate with the trace).
 type Storage interface {
-	GetAll() ([]Bookmark, error)
-	Create(b Bookmark) (Bookmark, error)
-	Delete(id int) error
-	Search(query string) ([]Bookmark, error)
+	GetAll(ctx context.Context) ([]Bookmark, error)
+	Create(ctx context.Context, b Bookmark) (Bookmark, error)
+	Delete(ctx context.Context, id int) error
+	Search(ctx context.Context, query string) ([]Bookmark, error)
 }
 
 // --- PostgreSQL backend ---
@@ -50,15 +59,24 @@ type pgStore struct {
 }
 
 func newPgStore(connStr string) (*pgStore, error) {
-	db, err := sql.Open("postgres", connStr)
+	// otelsql.Open wraps lib/pq so every query emits a child span (with statement,
+	// db.system, etc.) and feeds db.client.* metrics. Falls back transparently
+	// when no tracer/meter is set, so the same path works in standalone mode.
+	db, err := otelsql.Open("postgres", connStr,
+		otelsql.WithAttributes(semconv.DBSystemNamePostgreSQL),
+		otelsql.WithSpanOptions(otelsql.SpanOptions{OmitConnResetSession: true}),
+	)
 	if err != nil {
 		return nil, err
+	}
+	if _, err := otelsql.RegisterDBStatsMetrics(db, otelsql.WithAttributes(semconv.DBSystemNamePostgreSQL)); err != nil {
+		slog.Warn("failed to register otelsql db stats metrics", "error", err)
 	}
 	if err := db.Ping(); err != nil {
 		return nil, err
 	}
 
-	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS bookmarks (
+	_, err = db.ExecContext(context.Background(), `CREATE TABLE IF NOT EXISTS bookmarks (
 		id SERIAL PRIMARY KEY,
 		url TEXT NOT NULL,
 		title TEXT NOT NULL,
@@ -71,7 +89,7 @@ func newPgStore(connStr string) (*pgStore, error) {
 
 	// Seed if table is empty
 	var count int
-	db.QueryRow("SELECT COUNT(*) FROM bookmarks").Scan(&count)
+	db.QueryRowContext(context.Background(), "SELECT COUNT(*) FROM bookmarks").Scan(&count)
 	if count == 0 {
 		seeds := []Bookmark{
 			{URL: "https://dotnet.microsoft.com/apps/aspire", Title: "Aspire", Tags: "dotnet,aspire,cloud"},
@@ -79,7 +97,7 @@ func newPgStore(connStr string) (*pgStore, error) {
 			{URL: "https://go.dev", Title: "The Go Programming Language", Tags: "go,golang,backend"},
 		}
 		for _, s := range seeds {
-			db.Exec("INSERT INTO bookmarks (url, title, tags) VALUES ($1, $2, $3)", s.URL, s.Title, s.Tags)
+			db.ExecContext(context.Background(), "INSERT INTO bookmarks (url, title, tags) VALUES ($1, $2, $3)", s.URL, s.Title, s.Tags)
 		}
 	}
 
@@ -87,8 +105,8 @@ func newPgStore(connStr string) (*pgStore, error) {
 	return &pgStore{db: db}, nil
 }
 
-func (s *pgStore) GetAll() ([]Bookmark, error) {
-	rows, err := s.db.Query("SELECT id, url, title, tags, created_at FROM bookmarks ORDER BY id")
+func (s *pgStore) GetAll(ctx context.Context) ([]Bookmark, error) {
+	rows, err := s.db.QueryContext(ctx, "SELECT id, url, title, tags, created_at FROM bookmarks ORDER BY id")
 	if err != nil {
 		return nil, err
 	}
@@ -96,16 +114,16 @@ func (s *pgStore) GetAll() ([]Bookmark, error) {
 	return scanBookmarks(rows)
 }
 
-func (s *pgStore) Create(b Bookmark) (Bookmark, error) {
-	err := s.db.QueryRow(
+func (s *pgStore) Create(ctx context.Context, b Bookmark) (Bookmark, error) {
+	err := s.db.QueryRowContext(ctx,
 		"INSERT INTO bookmarks (url, title, tags) VALUES ($1, $2, $3) RETURNING id, created_at",
 		b.URL, b.Title, b.Tags,
 	).Scan(&b.ID, &b.CreatedAt)
 	return b, err
 }
 
-func (s *pgStore) Delete(id int) error {
-	res, err := s.db.Exec("DELETE FROM bookmarks WHERE id = $1", id)
+func (s *pgStore) Delete(ctx context.Context, id int) error {
+	res, err := s.db.ExecContext(ctx, "DELETE FROM bookmarks WHERE id = $1", id)
 	if err != nil {
 		return err
 	}
@@ -116,9 +134,9 @@ func (s *pgStore) Delete(id int) error {
 	return nil
 }
 
-func (s *pgStore) Search(query string) ([]Bookmark, error) {
+func (s *pgStore) Search(ctx context.Context, query string) ([]Bookmark, error) {
 	q := "%" + strings.ToLower(query) + "%"
-	rows, err := s.db.Query(
+	rows, err := s.db.QueryContext(ctx,
 		"SELECT id, url, title, tags, created_at FROM bookmarks WHERE LOWER(title) LIKE $1 OR LOWER(tags) LIKE $1 OR LOWER(url) LIKE $1 ORDER BY id",
 		q,
 	)
@@ -171,7 +189,7 @@ func newMemStore() *memStore {
 	return s
 }
 
-func (s *memStore) GetAll() ([]Bookmark, error) {
+func (s *memStore) GetAll(_ context.Context) ([]Bookmark, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	result := make([]Bookmark, len(s.bookmarks))
@@ -179,7 +197,7 @@ func (s *memStore) GetAll() ([]Bookmark, error) {
 	return result, nil
 }
 
-func (s *memStore) Create(b Bookmark) (Bookmark, error) {
+func (s *memStore) Create(_ context.Context, b Bookmark) (Bookmark, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	b.ID = s.nextID
@@ -189,7 +207,7 @@ func (s *memStore) Create(b Bookmark) (Bookmark, error) {
 	return b, nil
 }
 
-func (s *memStore) Delete(id int) error {
+func (s *memStore) Delete(_ context.Context, id int) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	for i, bm := range s.bookmarks {
@@ -201,7 +219,7 @@ func (s *memStore) Delete(id int) error {
 	return sql.ErrNoRows
 }
 
-func (s *memStore) Search(query string) ([]Bookmark, error) {
+func (s *memStore) Search(_ context.Context, query string) ([]Bookmark, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	q := strings.ToLower(query)
@@ -226,7 +244,7 @@ var storage Storage
 func enableCORS(w http.ResponseWriter) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, traceparent, tracestate, baggage")
 }
 
 func handleBookmarks(w http.ResponseWriter, r *http.Request) {
@@ -236,13 +254,16 @@ func handleBookmarks(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ctx := r.Context()
 	switch r.Method {
 	case "GET":
-		bookmarks, err := storage.GetAll()
+		bookmarks, err := storage.GetAll(ctx)
 		if err != nil {
+			slog.ErrorContext(ctx, "list bookmarks failed", "error", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		slog.InfoContext(ctx, "listed bookmarks", "count", len(bookmarks))
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(bookmarks)
 
@@ -252,11 +273,13 @@ func handleBookmarks(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		created, err := storage.Create(b)
+		created, err := storage.Create(ctx, b)
 		if err != nil {
+			slog.ErrorContext(ctx, "create bookmark failed", "error", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		slog.InfoContext(ctx, "created bookmark", "id", created.ID, "url", created.URL)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
 		json.NewEncoder(w).Encode(created)
@@ -283,6 +306,7 @@ func handleBookmarkByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ctx := r.Context()
 	path := strings.TrimPrefix(r.URL.Path, "/api/bookmarks/")
 	id, err := strconv.Atoi(path)
 	if err != nil {
@@ -290,14 +314,17 @@ func handleBookmarkByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := storage.Delete(id); err != nil {
+	if err := storage.Delete(ctx, id); err != nil {
 		if err == sql.ErrNoRows {
+			slog.WarnContext(ctx, "bookmark not found", "id", id)
 			http.Error(w, "Bookmark not found", http.StatusNotFound)
 		} else {
+			slog.ErrorContext(ctx, "delete bookmark failed", "id", id, "error", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 		return
 	}
+	slog.InfoContext(ctx, "deleted bookmark", "id", id)
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -308,9 +335,10 @@ func handleSearch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ctx := r.Context()
 	query := r.URL.Query().Get("q")
 	if query == "" {
-		bookmarks, err := storage.GetAll()
+		bookmarks, err := storage.GetAll(ctx)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -320,11 +348,13 @@ func handleSearch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	results, err := storage.Search(query)
+	results, err := storage.Search(ctx, query)
 	if err != nil {
+		slog.ErrorContext(ctx, "search failed", "q", query, "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	slog.InfoContext(ctx, "searched bookmarks", "q", query, "results", len(results))
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(results)
 }
@@ -340,6 +370,24 @@ func initOtel(ctx context.Context) (func(), error) {
 		return func() {}, nil
 	}
 
+	// Build a Resource shared by all three signals so the dashboard groups
+	// traces, metrics, and logs under the same service. resource.Default()
+	// already merges OTEL_SERVICE_NAME and OTEL_RESOURCE_ATTRIBUTES from env;
+	// we overlay an explicit service.namespace and use the SAME schema URL
+	// the SDK uses internally (semconv v1.40.0) to avoid "conflicting Schema URL"
+	// merge errors at startup.
+	res, err := sdkresource.Merge(
+		sdkresource.Default(),
+		sdkresource.NewWithAttributes(
+			semconv.SchemaURL,
+			semconv.ServiceName(getServiceName()),
+			attribute.String("service.namespace", "svelte-go-bookmarks"),
+		),
+	)
+	if err != nil {
+		return nil, err
+	}
+
 	// Trace exporter
 	traceExporter, err := otlptracegrpc.New(ctx)
 	if err != nil {
@@ -348,6 +396,7 @@ func initOtel(ctx context.Context) (func(), error) {
 
 	tracerProvider := sdktrace.NewTracerProvider(
 		sdktrace.WithBatcher(traceExporter),
+		sdktrace.WithResource(res),
 	)
 	otel.SetTracerProvider(tracerProvider)
 
@@ -359,6 +408,7 @@ func initOtel(ctx context.Context) (func(), error) {
 
 	meterProvider := sdkmetric.NewMeterProvider(
 		sdkmetric.WithReader(sdkmetric.NewPeriodicReader(metricExporter)),
+		sdkmetric.WithResource(res),
 	)
 	otel.SetMeterProvider(meterProvider)
 
@@ -370,28 +420,78 @@ func initOtel(ctx context.Context) (func(), error) {
 
 	loggerProvider := sdklog.NewLoggerProvider(
 		sdklog.WithProcessor(sdklog.NewBatchProcessor(logExporter)),
+		sdklog.WithResource(res),
 	)
 	global.SetLoggerProvider(loggerProvider)
 
-	// Propagator
+	// Propagator — required for traceparent/tracestate over HTTP so the Svelte
+	// browser SDK can stitch its spans onto the Go server spans (and vice-versa).
 	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(
 		propagation.TraceContext{},
 		propagation.Baggage{},
 	))
 
-	// Bridge slog → OTel so structured logs appear in the Aspire dashboard
-	slogHandler := otelslog.NewHandler("go-bookmarks", otelslog.WithLoggerProvider(loggerProvider))
+	// Bridge slog → OTel so structured logs appear in the Aspire dashboard.
+	// The bridge reads span context from slog Records emitted via *Context()
+	// methods, which is why every handler uses slog.InfoContext(r.Context(), ...).
+	slogHandler := otelslog.NewHandler(getServiceName(), otelslog.WithLoggerProvider(loggerProvider))
 	slog.SetDefault(slog.New(slogHandler))
 
-	shutdown := func() {
-		ctx := context.Background()
-		tracerProvider.Shutdown(ctx)
-		meterProvider.Shutdown(ctx)
-		loggerProvider.Shutdown(ctx)
+	// Go runtime metrics: GC count, goroutines, heap allocations, etc.
+	if err := runtime.Start(runtime.WithMinimumReadMemStatsInterval(time.Second)); err != nil {
+		slog.Warn("failed to start runtime metrics", "error", err)
 	}
 
-	slog.Info("OpenTelemetry initialized", "endpoint", endpoint)
+	shutdown := func() {
+		// Use a fresh context so a cancelled root ctx does not abort flush.
+		// 5s is enough for the BSP/BLRP schedule delay (Aspire sets to 1s).
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		_ = tracerProvider.Shutdown(shutdownCtx)
+		_ = meterProvider.Shutdown(shutdownCtx)
+		_ = loggerProvider.Shutdown(shutdownCtx)
+	}
+
+	slog.Info("OpenTelemetry initialized", "endpoint", endpoint, "service", getServiceName())
 	return shutdown, nil
+}
+
+func getServiceName() string {
+	if name := os.Getenv("OTEL_SERVICE_NAME"); name != "" {
+		return name
+	}
+	return "go-bookmarks-api"
+}
+
+// buildPgConnString assembles a lib/pq DSN from the PG_* env vars Aspire
+// injects (since plain AddContainer for Postgres doesn't auto-wire a
+// CONNECTIONSTRINGS__ value). Aspire's WithEnvironmentEndpoint emits a URL
+// like "http://pg.dev.internal:5432" — we strip the scheme back out.
+func buildPgConnString() string {
+	if cs := os.Getenv("CONNECTIONSTRINGS__bookmarksdb"); cs != "" {
+		return cs
+	}
+	host := os.Getenv("PG_HOST")
+	user := os.Getenv("PG_USER")
+	pass := os.Getenv("PG_PASSWORD")
+	dbname := os.Getenv("PG_DB")
+	if host == "" || user == "" || dbname == "" {
+		return ""
+	}
+	if u, err := url.Parse(host); err == nil && u.Host != "" {
+		host = u.Host
+	}
+	return fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=disable",
+		strings.SplitN(host, ":", 2)[0],
+		user, pass, dbname,
+	) + " port=" + portFromHost(host)
+}
+
+func portFromHost(host string) string {
+	if i := strings.LastIndex(host, ":"); i >= 0 && i < len(host)-1 {
+		return host[i+1:]
+	}
+	return "5432"
 }
 
 func main() {
@@ -403,8 +503,8 @@ func main() {
 		defer shutdown()
 	}
 
-	// Try PostgreSQL first, fall back to in-memory
-	connStr := os.Getenv("CONNECTIONSTRINGS__bookmarksdb")
+	// Try PostgreSQL first, fall back to in-memory.
+	connStr := buildPgConnString()
 	if connStr != "" {
 		pg, err := newPgStore(connStr)
 		if err != nil {
@@ -417,13 +517,23 @@ func main() {
 		storage = newMemStore()
 	}
 
-	http.Handle("/api/bookmarks", otelhttp.NewHandler(http.HandlerFunc(handleBookmarks), "handleBookmarks"))
-	http.Handle("/api/bookmarks/", otelhttp.NewHandler(http.HandlerFunc(handleBookmarkByID), "handleBookmarkByID"))
-	http.Handle("/api/bookmarks/search", otelhttp.NewHandler(http.HandlerFunc(handleSearch), "handleSearch"))
-	http.Handle("/health", otelhttp.NewHandler(http.HandlerFunc(health), "health"))
+	mux := http.NewServeMux()
+	mux.HandleFunc("/api/bookmarks", handleBookmarks)
+	mux.HandleFunc("/api/bookmarks/", handleBookmarkByID)
+	mux.HandleFunc("/api/bookmarks/search", handleSearch)
+	mux.HandleFunc("/health", health)
+
+	// Wrap the whole mux once. otelhttp.WithSpanNameFormatter gives each span
+	// a stable name like "GET /api/bookmarks" instead of the full URL, so the
+	// Aspire dashboard "Routes" view groups requests properly.
+	handler := otelhttp.NewHandler(mux, "http.server",
+		otelhttp.WithSpanNameFormatter(func(_ string, r *http.Request) string {
+			return r.Method + " " + r.URL.Path
+		}),
+	)
 
 	slog.Info("Go Bookmarks API listening", "port", 8080)
-	if err := http.ListenAndServe(":8080", nil); err != nil {
+	if err := http.ListenAndServe(":8080", handler); err != nil {
 		log.Fatal(err)
 	}
 }

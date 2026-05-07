@@ -1,4 +1,4 @@
-import { createBuilder } from './.modules/aspire.js';
+import { createBuilder, OtlpProtocol } from './.modules/aspire.js';
 
 const builder = await createBuilder();
 
@@ -9,8 +9,20 @@ const app = await builder
     .withExternalHttpEndpoints();
 
 // Run the Vite frontend after the API and inject the API URL for local proxying.
+//
+// `addViteApp` automatically injects OTEL_EXPORTER_OTLP_ENDPOINT and friends
+// pointing at the dashboard's gRPC listener. Browsers can't speak gRPC, so we
+// flip the protocol to HTTP/protobuf via `withOtlpExporterProtocol`. The vite
+// dev server then sees `OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf` and an
+// HTTP/protobuf endpoint URL, which `vite.config.ts` re-exports as VITE_OTEL_*
+// so `import.meta.env` exposes the values to the browser SDK.
+//
+// IMPORTANT: do NOT also call `.withOtlpExporter()` here — that adds a SECOND
+// OTLP wiring on top of the default one and prevents the resource from
+// starting (FailedToStart with no console output).
 const frontend = await builder
     .addViteApp("frontend", "./frontend")
+    .withOtlpExporterProtocol(OtlpProtocol.HttpProtobuf)
     .withReference(app)
     .waitFor(app);
 

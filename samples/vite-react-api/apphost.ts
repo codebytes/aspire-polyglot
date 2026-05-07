@@ -1,14 +1,14 @@
 // Aspire TypeScript AppHost for Vite + React + FastAPI + Redis
 // For more information, see: https://aspire.dev
 
-import { createBuilder } from './.modules/aspire.js';
+import { createBuilder, OtlpProtocol } from './.modules/aspire.js';
 
 const builder = await createBuilder();
 
 // Redis cache
 const cache = builder.addContainer("cache", "redis:latest");
 
-// FastAPI backend (./src/api has a Dockerfile)
+// FastAPI backend (./src/api has a Dockerfile) — OTel via gRPC (default).
 const api = builder.addDockerfile("api", "./src/api")
   .withOtlpExporter()
   .withEnvironment("REDIS_HOST", "cache")
@@ -16,8 +16,21 @@ const api = builder.addDockerfile("api", "./src/api")
   .withHttpEndpoint({ targetPort: 8080, env: "PORT" })
   .withExternalHttpEndpoints();
 
-// Vite React frontend (./src/web has a Dockerfile)
+// Vite React frontend (./src/web has a Dockerfile).
+//
+// We OPT INTO HTTP/protobuf for OTel here so that the SAME endpoint URL the
+// container uses for server-side telemetry can also be re-exposed to client
+// code (the browser cannot speak gRPC). vite.config.ts re-exports the OTEL_*
+// env vars as VITE_OTEL_* and rewrites host.docker.internal -> localhost so
+// the running SPA can POST traces to the dashboard from the user's machine.
+//
+// The dashboard's HTTP/protobuf listener must be enabled before this works.
+// When launching aspire, set:
+//   ASPIRE_DASHBOARD_OTLP_HTTP_ENDPOINT_URL=https://localhost:21081
+// (or any free port) — see README + .squad/decisions/inbox/parker-vite-react-otel.md.
 const web = builder.addDockerfile("web", "./src/web")
+  .withOtlpExporter()
+  .withOtlpExporterProtocol(OtlpProtocol.HttpProtobuf)
   .withHttpEndpoint({ targetPort: 5173, env: "PORT" })
   .withExternalHttpEndpoints();
 

@@ -14,4 +14,4 @@ if [ -n "$SSL_CERT_DIR" ]; then
   done
 fi
 
-exec java -javaagent:/app/opentelemetry-javaagent.jar -jar /app/app.jar "$@"
+exec java -jar /app/app.jar "$@"

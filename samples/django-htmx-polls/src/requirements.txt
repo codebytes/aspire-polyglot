@@ -2,7 +2,14 @@ django>=5.0,<6.0
 waitress>=3.0.0
 whitenoise>=6.7.0
 psycopg2-binary
+requests
 opentelemetry-api
 opentelemetry-sdk
 opentelemetry-exporter-otlp-proto-grpc
 opentelemetry-instrumentation-django
+opentelemetry-instrumentation-logging
+opentelemetry-instrumentation-psycopg2
+opentelemetry-instrumentation-sqlite3
+opentelemetry-instrumentation-system-metrics
+opentelemetry-instrumentation-requests
+opentelemetry-instrumentation-urllib3
