@@ -414,3 +414,4 @@ Thumbs.db
 
 # VSCode workspace files (keep .vscode/ for shared launch configs if any)
 .vscode/*.local.json
+.playwright-mcp/
