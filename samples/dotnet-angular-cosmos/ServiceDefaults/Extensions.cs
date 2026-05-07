@@ -41,12 +41,19 @@ public static class Extensions
             {
                 metrics.AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
-                    .AddRuntimeInstrumentation();
+                    .AddRuntimeInstrumentation()
+                    .AddProcessInstrumentation();
             })
             .WithTracing(tracing =>
             {
                 tracing.AddAspNetCoreInstrumentation()
-                    .AddHttpClientInstrumentation();
+                    .AddHttpClientInstrumentation()
+                    // Cosmos SDK 3.36+ emits to Azure.Cosmos.Operation when distributed
+                    // tracing is enabled (AppContext switch Azure.Experimental.EnableActivitySource).
+                    // Even without the switch, having AddSource here is the correct wiring; it
+                    // becomes a no-op rather than orphaning future spans.
+                    .AddSource("Azure.Cosmos.Operation")
+                    .AddSource("Microsoft.Azure.Cosmos");
             });
 
         builder.AddOpenTelemetryExporters();

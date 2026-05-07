@@ -9,5 +9,8 @@
   "features": {
     "polyglotSupportEnabled": true,
     "experimentalPolyglot:python": true
+  },
+  "packages": {
+    "Aspire.Hosting.PostgreSQL": "13.2.4"
   }
 }

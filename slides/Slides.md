@@ -7,7 +7,7 @@ footer: '@Chris_L_Ayers - https://chris-ayers.com'
 <!-- _footer: 'https://github.com/codebytes/aspire-polyglot' -->
 <!-- _class: lead -->
 
-# <!--fit--> Polyglot Aspire
+# Polyglot Aspire
 
 ## Orchestrating Any Language with Aspire
 ## Chris Ayers
@@ -77,9 +77,10 @@ Your team doesn't use one language — it uses **five**.
 
 <!-- _class: compact -->
 
-# The Four Pillars (1/2)
+# The Four Pillars
 
-**Two of the four parts of Aspire — your control plane and your stack model.**
+<div class="columns">
+<div>
 
 ## 🛠 Aspire CLI
 **Your control plane**
@@ -89,15 +90,8 @@ Your team doesn't use one language — it uses **five**.
 **Your stack in code**
 One file declares every service and how they connect — C#, TypeScript, Python, or `aspire.config.json`.
 
-<!-- The official Spring '26 deck names four pillars. Two here, two on the next slide. -->
-
----
-
-<!-- _class: compact -->
-
-# The Four Pillars (2/2)
-
-**The other two — your live runtime view and your building blocks.**
+</div>
+<div>
 
 ## 📊 Aspire Dashboard
 **Your app at a glance**
@@ -107,7 +101,8 @@ Logs, traces, metrics, and health for every resource — powered by OpenTelemetr
 **Building blocks, not black boxes**
 **100+** prebuilt packages for databases, caches, queues, AI, and clouds — or bring your own container, CLI, or agent.
 
-<!-- Every slide in the rest of the talk maps back to one of these four pillars — call that out. -->
+</div>
+</div>
 
 ---
 
