@@ -77,12 +77,9 @@ Your team doesn't use one language — it uses **five**.
 
 <!-- _class: compact -->
 
-# The Four Pillars
+# The Four Pillars (1/2)
 
-**These are the four parts of Aspire you'll see today — across every language.**
-
-<div class="columns">
-<div>
+**Two of the four parts of Aspire — your control plane and your stack model.**
 
 ## 🛠 Aspire CLI
 **Your control plane**
@@ -92,8 +89,15 @@ Your team doesn't use one language — it uses **five**.
 **Your stack in code**
 One file declares every service and how they connect — C#, TypeScript, Python, or `aspire.config.json`.
 
-</div>
-<div>
+<!-- The official Spring '26 deck names four pillars. Two here, two on the next slide. -->
+
+---
+
+<!-- _class: compact -->
+
+# The Four Pillars (2/2)
+
+**The other two — your live runtime view and your building blocks.**
 
 ## 📊 Aspire Dashboard
 **Your app at a glance**
@@ -103,10 +107,7 @@ Logs, traces, metrics, and health for every resource — powered by OpenTelemetr
 **Building blocks, not black boxes**
 **100+** prebuilt packages for databases, caches, queues, AI, and clouds — or bring your own container, CLI, or agent.
 
-</div>
-</div>
-
-<!-- The official Spring '26 deck names exactly these four pillars. Every slide in the rest of the talk maps back to one of them — call that out. -->
+<!-- Every slide in the rest of the talk maps back to one of these four pillars — call that out. -->
 
 ---
 
@@ -323,7 +324,7 @@ The patterns that make polyglot orchestration possible
 
 ---
 
-# Service Discovery
+# Service Discovery — The Pattern
 
 **Aspire injects service endpoints as environment variables:**
 
@@ -333,7 +334,19 @@ services__api__http__0=http://localhost:5000
 services__frontend__http__0=http://localhost:3000
 ```
 
-**Read them in any language — same pattern everywhere:**
+**Why double underscore?** Env vars can't have colons — so `__` stands in for the path separator. Every language can read env vars; that's the universal interface.
+
+**No hardcoded URLs. No `.env` files. Aspire wires it.**
+
+<!-- This is the magic. The double underscore __ is used because environment variables can't have colons. -->
+
+---
+
+<!-- _class: compact code-compact -->
+
+# Service Discovery — Read It Anywhere
+
+**Same env-var pattern, every language:**
 
 <div class="columns">
 <div>
@@ -366,9 +379,7 @@ String apiUrl = System.getenv("services__api__http__0");
 </div>
 </div>
 
-**No hardcoded URLs. No `.env` files. Aspire wires it.**
-
-<!-- This is the magic. The double underscore __ is used because environment variables can't have colons. Every language can read env vars — that's the universal interface. -->
+<!-- Each runtime has its own env-var idiom — but the pattern is identical. -->
 
 ---
 
@@ -440,14 +451,10 @@ String url = "jdbc:postgresql://"
 
 <!-- _class: compact code-compact -->
 
-# The AppHost — Your Stack in Code
+# The AppHost — C#
 
-**Write your AppHost in the language your team knows:**
+**Write your AppHost in the language your team knows. Here's C#:**
 
-<div class="columns">
-<div>
-
-**C# AppHost**
 ```csharp
 var builder = DistributedApplication
     .CreateBuilder(args);
@@ -461,10 +468,18 @@ builder.AddPythonApp("api", "../api", "app.py")
 builder.Build().Run();
 ```
 
-</div>
-<div>
+**40+ integrations** — Redis, Azure, Kafka, MongoDB, PostgreSQL — available out of the box.
 
-**TypeScript AppHost**
+<!-- C# is the original AppHost language. Most existing samples use this. -->
+
+---
+
+<!-- _class: compact code-compact -->
+
+# The AppHost — TypeScript
+
+**Same model, different syntax. Best fit for Node.js / TS workspaces:**
+
 ```typescript
 const builder = await createBuilder();
 
@@ -478,55 +493,25 @@ await builder
 await builder.build().run();
 ```
 
-</div>
-</div>
+**Same 40+ integrations** as C# — auto-generated via `[AspireExport]` attributes. A JS/TS team never needs to touch .NET.
 
-**Same 40+ integrations** — Redis, Azure, Kafka, MongoDB, PostgreSQL — available in both C# and TypeScript.
-
-<!-- The TypeScript AppHost uses the same integration packages as C#, auto-generated via [AspireExport] attributes. A JS/TS team never needs to touch .NET. -->
+<!-- The TypeScript AppHost uses the same integration packages as C#. -->
 
 ---
 
-<!-- _class: dense code-compact -->
+<!-- _class: compact code-compact -->
 
 # Two AppHost Languages
 
 **Author your AppHost in C# or TypeScript today — both officially supported.**
 
-<div class="columns">
-<div>
+💜 **C# (.NET)** — `AppHost.cs` — best fit for teams already on .NET tooling.
 
-💜 **C# (.NET)** — `AppHost.cs`
-```csharp
-var builder = DistributedApplication
-    .CreateBuilder(args);
-
-builder.AddProject<Projects.Api>("api")
-       .WithHttpEndpoint(env: "PORT");
-
-builder.Build().Run();
-```
-Best fit: teams already on .NET tooling.
-
-</div>
-<div>
-
-🟦 **TypeScript** — `apphost.ts`
-```typescript
-const builder = await createBuilder();
-
-await builder
-  .addJavaScriptApp("api", "./src")
-  .withHttpEndpoint({ env: "PORT" });
-
-await builder.build().run();
-```
-Best fit: Node.js / TypeScript workspaces.
-
-</div>
-</div>
+🟦 **TypeScript** — `apphost.ts` — best fit for Node.js / TypeScript workspaces.
 
 **Same model, different syntax.** Both produce the same dashboard, service discovery, health checks, and deployment artifacts.
+
+**Same integration surface** — the TypeScript SDK is auto-generated from the same .NET hosting integrations via the **Aspire Type System (ATS)**. No separate integration code to maintain.
 
 <!-- Per aspire.dev/languages-and-runtimes: only C# and TypeScript are documented AppHost authoring languages today. -->
 
@@ -601,60 +586,57 @@ const svc = await addMyService(builder, "svc");
 
 ---
 
-<!-- _class: compact code-compact -->
+<!-- _class: compact -->
 
-# Aspire Polyglot Cheat Sheet
+# Cheat Sheet — Runtimes
 
-<div class="columns">
-<div>
+**Pick the right `Add*` for your service:**
 
-**Runtime → Method (C# SDK)**
 - Python / ASGI → `AddPythonApp()`
 - Python / Uvicorn → `AddUvicornApp()`
 - Node.js → `AddNodeApp()`
 - Vite / React → `AddViteApp()`
-- .NET project → `AddProject<T>()`
 - JavaScript → `AddJavaScriptApp()`
+- .NET project → `AddProject<T>()`
+- Go → `AddGolangApp()` *(Community Toolkit)*
+- Java / Spring Boot → `AddSpringApp()` *(Community Toolkit)*
 - Any Dockerfile → `AddDockerfile()`
-- Go → `AddGolangApp()` (Community Toolkit)
-- Java / Spring Boot → `AddSpringApp()` (Community Toolkit)
 - Any executable → `AddExecutable()`
-
-</div>
-<div>
-
-**Common Patterns**
-```csharp
-.WithReference(redis)
-.WaitFor(postgres)
-.WithHttpEndpoint(env: "PORT")
-.WithExternalHttpEndpoints()
-.WithUv()
-.WithNpm()
-.WithBun()
-.WithBuildSecret("key", secret)
-.WithRunScript("dev")
-.WithHttpHealthCheck("/health")
-.WithMcpServer("mcp")
-```
-
-</div>
-</div>
 
 **Infrastructure:** `AddRedis("name")` · `AddPostgres("name").AddDatabase("db")` · `AddKafka("name")` · `AddAzureCosmosDB("name").RunAsEmulator()`
 
-<!-- Keep this slide handy as a quick reference for everything we just covered! -->
+<!-- Quick reference for the runtime side. -->
 
 ---
 
-<!-- _class: dense code-compact -->
+<!-- _class: compact code-compact -->
 
-# `aspire.config.json` — One Config for Every Language
+# Cheat Sheet — Common Patterns
+
+**Chainable methods you'll use everywhere:**
+
+```csharp
+.WithReference(redis)              // wire endpoints
+.WaitFor(postgres)                 // start ordering
+.WithHttpEndpoint(env: "PORT")     // expose http
+.WithExternalHttpEndpoints()       // public ingress
+.WithUv()                          // python: uv
+.WithNpm() / .WithBun()            // js: package mgr
+.WithBuildSecret("key", secret)    // build-time secret
+.WithRunScript("dev")              // npm script
+.WithHttpHealthCheck("/health")    // probe
+.WithMcpServer("mcp")              // expose MCP
+```
+
+<!-- Keep this slide handy — these are the building blocks for everything we covered. -->
+
+---
+
+<!-- _class: compact code-compact -->
+
+# `aspire.config.json` — The File
 
 **This file tells the CLI which language your AppHost uses.**
-
-<div class="columns">
-<div>
 
 ```json
 {
@@ -675,20 +657,23 @@ const svc = await addMyService(builder, "svc");
 }
 ```
 
-</div>
-<div>
+<!-- Drop aspire.config.json at the project root — the CLI reads it on every command. -->
 
-**What it does:**
-- `appHost.path` + `appHost.language` — declares your stack
-- `sdk.version` — pins the Aspire SDK version
-- `channel` — release channel (`stable`, `preview`)
-- `profiles` — dashboard URLs (replaces `apphost.run.json`)
-- Feature flags use **boolean `true`** (not string `"true"`)
+---
 
-</div>
-</div>
+<!-- _class: compact -->
 
-<!-- Drop aspire.config.json in your project root, point it at your AppHost file, set the language, and aspire run just works. -->
+# `aspire.config.json` — What Each Field Does
+
+- **`appHost.path`** + **`appHost.language`** — declares your stack (`csharp`, `typescript`, `python`...)
+- **`sdk.version`** — pins the Aspire SDK version
+- **`channel`** — release channel (`stable`, `preview`)
+- **`profiles`** — dashboard URLs (replaces `apphost.run.json`)
+- **Feature flags** use **boolean `true`** — not string `"true"`
+
+**Every sample in this talk** has one at its root — peek inside.
+
+<!-- Common gotcha: feature flags are JSON booleans, not strings. -->
 
 ---
 
