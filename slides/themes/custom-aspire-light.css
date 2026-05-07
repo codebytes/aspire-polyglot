@@ -62,6 +62,23 @@ section h1 {
   margin-bottom: 0.4em;
 }
 
+/* ── <!--fit--> title sizing ──
+   Marp wraps fit titles in an SVG that scales to the H1's width. By default
+   the H1 spans the entire content area, which makes fit titles run literally
+   edge-to-edge. Reserve a small side margin so the text breathes. */
+section h1:has(svg[data-marp-fitting="svg"]) {
+  margin-inline: 4%;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+section.cover h1:has(svg[data-marp-fitting="svg"]),
+section.lead h1:has(svg[data-marp-fitting="svg"]),
+section.purple h1:has(svg[data-marp-fitting="svg"]),
+section.gradient h1:has(svg[data-marp-fitting="svg"]),
+section.invert h1:has(svg[data-marp-fitting="svg"]) {
+  margin-inline: 6%;
+}
+
 section h2 {
   color: var(--aspire-purple);
   font-weight: 600;

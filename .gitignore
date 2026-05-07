@@ -355,3 +355,9 @@ MigrationBackup/
 .squad/sessions/
 # Squad: SubSquad activation file (local to this machine)
 .squad-workstream
+
+# Marp build & audit artifacts
+slides/out/
+slides/audit-slides.cjs
+slides/package.json
+slides/package-lock.json
