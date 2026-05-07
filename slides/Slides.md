@@ -189,6 +189,59 @@ Aspire sets `OTEL_EXPORTER_OTLP_ENDPOINT` automatically — add OpenTelemetry to
 
 ---
 
+<!-- _class: dense code-compact -->
+
+# Standalone Dashboard — No AppHost Required
+
+### Already on OTEL? Get the dashboard with zero rewrites.
+
+<div class="columns">
+<div>
+
+**The Aspire Dashboard ships as a standalone container.** Point any OTLP-emitting app at it and you get logs, traces, and metrics — no AppHost, no .NET, no commitment.
+
+- ✅ **Node.js / Python / Java / Go / Rust** — anything with an OTEL SDK works.
+- ✅ **Same UI** as the AppHost-managed dashboard.
+- ✅ **Local-only by default** — OTLP endpoint and dashboard auth keys printed at startup.
+- ✅ **Use it in CI**, in a Dockerfile, in `docker-compose.yml`, or attached to a Kubernetes pod.
+
+**Migration path:** start with the standalone dashboard for observability today; adopt the AppHost later when you want service discovery, integrations, and `aspire deploy`.
+
+</div>
+<div>
+
+**Run it standalone**
+```bash
+docker run --rm -it -p 18888:18888 -p 4317:18889 \
+  -d --name aspire-dashboard \
+  mcr.microsoft.com/dotnet/aspire-dashboard:latest
+```
+
+**Point your Node.js app at it**
+```javascript
+// otel.js
+import { NodeSDK } from "@opentelemetry/sdk-node";
+import {
+  OTLPTraceExporter
+} from "@opentelemetry/exporter-trace-otlp-grpc";
+
+const sdk = new NodeSDK({
+  traceExporter: new OTLPTraceExporter({
+    url: "http://localhost:4317"
+  })
+});
+sdk.start();
+```
+
+Open `http://localhost:18888` — your traces show up live.
+
+</div>
+</div>
+
+<!-- Per aspire.dev/dashboard/standalone-for-{nodejs,python}/. This slide closes a real adoption gap for polyglot teams: "I'm not on .NET, can I still use any of this?" Yes — start here, no AppHost commitment, just OTEL. Once they like the UI, the AppHost story becomes a much easier sell. -->
+
+---
+
 <!-- _class: compact code-compact -->
 
 # OpenTelemetry Setup by Language
@@ -422,52 +475,100 @@ await builder.build().run();
 
 # AppHost Languages
 
-**Pick the language your team already knows:**
+**Author your AppHost in C# or TypeScript today. Orchestrate workloads in any language.**
 
 <div class="columns">
 <div>
 
-🟦 **TypeScript** — `apphost.ts` **PREVIEW**
-```typescript
-await builder.addNodeApp("api", "./src", "server.js")
-  .withHttpEndpoint({ env: "PORT" });
-```
-
-💜 **C# (.NET)** — `AppHost.cs`
+💜 **C# (.NET)** — `AppHost.cs` · **Official**
 ```csharp
+var builder = DistributedApplication
+    .CreateBuilder(args);
+
 builder.AddProject<Projects.Api>("api")
        .WithHttpEndpoint(env: "PORT");
-```
 
-**All produce the same result:**
-Dashboard, service discovery, and telemetry work **identically**. C# has the richest typed integrations; other SDKs use `addDockerfile`/`addContainer` as universal building blocks.
+builder.Build().Run();
+```
+Best fit: teams already on .NET tooling.
 
 </div>
 <div>
 
-🐍 **Python** — `apphost.py` **EXPERIMENTAL**
-```python
-api = builder.add_dockerfile("api", "./src")
-api.with_http_endpoint(target_port=8080, env="PORT")
-```
+🟦 **TypeScript** — `apphost.ts` · **Official**
+```typescript
+const builder = await createBuilder();
 
-☕ **Java** — `AppHost.java` **EXPERIMENTAL**
-```java
-builder.addDockerfile("api", "./src", null, null)
-  .withExternalHttpEndpoints();
-```
+await builder
+  .addJavaScriptApp("api", "./src")
+  .withHttpEndpoint({ env: "PORT" });
 
-
-🟢 **Go** — `apphost.go` **EXPERIMENTAL**
-```go
-api, _ := builder.AddDockerfile("api", "./src", nil, nil)
-api.WithHttpEndpoint(nil, float64Ptr(8080), stringPtr("http"), nil, nil)
+await builder.build().run();
 ```
+Best fit: Node.js / TypeScript workspaces.
 
 </div>
 </div>
 
-<!-- Each language has its own idioms — Python uses snake_case, TypeScript uses camelCase, Go returns errors — but the Aspire model is the same everywhere. The C# SDK has the most typed integrations, but all five languages can orchestrate any service via Dockerfile or container. -->
+**Same model, different syntax.** Both produce the same dashboard, service discovery, health checks, and deployment artifacts. The TypeScript SDK is auto-generated from the same .NET hosting integrations via the **Aspire Type System (ATS)** — there's no separate integration surface to maintain.
+
+**Workloads inside the AppHost** can be written in C#, JavaScript, Python, Go, Java, Rust, PowerShell, and more — via `AddProject`, `AddJavaScriptApp`, `AddPythonApp`, `AddDockerfile`, `AddContainer`, or `AddExecutable`. Pick the AppHost language that fits your repo; your services don't need to match.
+
+<!-- Per aspire.dev/languages-and-runtimes: only C# and TypeScript are documented AppHost authoring languages today. Earlier drafts of this slide listed Python/Java/Go AppHost stubs as "experimental" — those aren't documented on the live site, so this version sticks to the two officially-supported AppHost languages and is honest about workload language support being separate. -->
+
+---
+
+<!-- _class: dense code-compact -->
+
+# Multi-Language Integrations
+
+### Write the integration once. Use it from C# or TypeScript.
+
+<div class="columns">
+<div>
+
+**Aspire Type System (ATS)** — the contract that bridges .NET and guest languages.
+
+- Author your hosting integration **in C#** as you always have.
+- Annotate exported APIs with ATS attributes — `[AspireExport]`, `[AspireExportType]`, `[AspireExportMethod]`.
+- Aspire's analyzer validates the export shape at build time.
+- The CLI **auto-generates a TypeScript SDK** into `.modules/` when a TS AppHost runs `aspire add <your-package>`.
+- TypeScript callers get fluent, typed methods — same model, different syntax.
+
+**The trade-off:** the guest process talks to the .NET host over a local JSON-RPC socket (Unix socket / named pipe), authenticated with a per-session token. One IPC hop, no port exposure, no duplicated integration code per language.
+
+</div>
+<div>
+
+**C# author**
+```csharp
+[AspireExport]
+public static class MyIntegrationExtensions
+{
+    [AspireExportMethod]
+    public static IResourceBuilder<MyResource>
+        AddMyService(
+            this IDistributedApplicationBuilder builder,
+            string name) { ... }
+}
+```
+
+**TypeScript caller — zero hand-written bindings**
+```typescript
+import { createBuilder } from "./.modules/aspire.js";
+import { addMyService } from
+    "./.modules/my-integration.js";
+
+const builder = await createBuilder();
+const svc = await addMyService(builder, "svc");
+```
+
+*Status: preview feature in 13.x.*
+
+</div>
+</div>
+
+<!-- Per aspire.dev/extensibility/multi-language-integration-authoring/. The point of this slide: integration authors don't write a TS binding by hand — the analyzer + ATS scanner generates it. That's how 100+ .NET integrations show up automatically in TypeScript AppHosts. Keep this slide BRIEF — it's a teaser for integration authors, not a tutorial. -->
 
 ---
 
@@ -605,47 +706,53 @@ aspire export                # Capture to zip
 
 ---
 
-<!-- _class: compact -->
+<!-- _class: dense code-compact -->
 
 # Agent-Ready CLI
 
-### Ready for any coding agent.
+### Two MCP servers. One model. Any agent.
 
 <div class="columns">
 <div>
 
-**The Aspire CLI hands every coding agent a live map of your system.**
+**MCP support out of the box — no plugins, no glue.**
 
-- 🧠 **MCP server** — agents query the running AppHost: services, endpoints, env vars, recent logs, traces
-- 📝 **Project context** — the AppHost is the source of truth: agents see what you actually built, not just what you wrote
-- 🔄 **Closed loop** — agent edits code → `aspire run` → dashboard tells the agent if the change worked
-- 🔌 **Bring your own** — Copilot, Claude, Codex, Cursor: any MCP-aware client just works
+- 🛠 **CLI MCP** — stdio. Agent spawns `aspire agent mcp` as a subprocess. Set up by `aspire agent init`.
+- 📊 **Dashboard MCP** — streamable HTTP + API key. Click the **MCP** button in the dashboard top-right.
+- 🧠 **Tools agents get**: `list_resources`, `list_console_logs`, `list_traces`, `execute_resource_command`, `search_docs`, `doctor`.
+- 🔌 **Clients**: VS Code, Claude Code, Copilot CLI, OpenCode — any MCP-aware client works.
+
+**Polyglot bonus:** the agent sees Python tracebacks, Go panics, Java stack traces, and Node errors through the same OTEL pipeline.
 
 </div>
 <div>
 
 ```bash
-# Start your stack and the MCP endpoint
+# 1. One-time setup in your AppHost dir
+$ aspire agent init
+  ◻ Aspire skill file       (recommended)
+  ◻ Aspire MCP server
+  ◻ Playwright CLI
+
+# 2. Start your stack, open your agent
 $ aspire run
-
-  Dashboard: http://localhost:15888
-  MCP:       http://localhost:15889/mcp
-
-# Point your coding agent at it
-$ claude --mcp http://localhost:15889/mcp
-$ code . # GitHub Copilot picks it up
-          # via .vscode/mcp.json
+$ claude    # reads .mcp.json
+$ code .    # reads .vscode/mcp.json
 ```
 
-**Polyglot bonus:** the agent sees Python tracebacks,
-Go panics, Java stack traces, and Node errors
-through the same OTEL pipeline —
-one mental model across every language.
+```jsonc
+// .vscode/mcp.json (auto-generated)
+{ "servers": { "aspire": {
+    "type": "stdio",
+    "command": "aspire",
+    "args": ["agent", "mcp"]
+} } }
+```
 
 </div>
 </div>
 
-<!-- This is the 2026 Aspire pitch and it lands hard for polyglot stacks: in a multi-language repo the agent has the worst time finding context, and Aspire's MCP server is exactly that context. -->
+<!-- Per aspire.dev/get-started/aspire-mcp-server/ and /get-started/ai-coding-agents/. CLI MCP = stdio + `aspire agent init`. Dashboard MCP = streamable HTTP + API key from the dashboard UI. Earlier drafts invented an `http://localhost:15889/mcp` URL — doesn't exist for the CLI server. -->
 
 ---
 
