@@ -11,14 +11,14 @@
   },
   "private": true,
   "dependencies": {
-    "@angular/animations": "^19.0.0",
-    "@angular/common": "^19.0.0",
-    "@angular/compiler": "^19.0.0",
-    "@angular/core": "^19.0.0",
-    "@angular/forms": "^19.0.0",
-    "@angular/platform-browser": "^19.0.0",
-    "@angular/platform-browser-dynamic": "^19.0.0",
-    "@angular/router": "^19.0.0",
+    "@angular/animations": "20.3.25",
+    "@angular/common": "20.3.25",
+    "@angular/compiler": "20.3.25",
+    "@angular/core": "20.3.25",
+    "@angular/forms": "20.3.25",
+    "@angular/platform-browser": "20.3.25",
+    "@angular/platform-browser-dynamic": "20.3.25",
+    "@angular/router": "20.3.25",
     "@opentelemetry/api": "^1.9.0",
     "@opentelemetry/api-logs": "^0.205.0",
     "@opentelemetry/context-zone-peer-dep": "^2.1.0",
@@ -41,9 +41,9 @@
     "zone.js": "^0.15.0"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "^21.2.15",
-    "@angular/cli": "^19.0.0",
-    "@angular/compiler-cli": "^19.0.0",
-    "typescript": "~5.6.2"
+    "@angular-devkit/build-angular": "20.3.25",
+    "@angular/cli": "20.3.25",
+    "@angular/compiler-cli": "20.3.25",
+    "typescript": "~5.9.2"
   }
 }
