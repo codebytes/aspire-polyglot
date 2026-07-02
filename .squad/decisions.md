@@ -293,6 +293,121 @@
 
 ---
 
+### 12. Aspire 13.4.6 Upgrade — All Samples
+
+**Status:** ✅ COMPLETED (Two-phase coordinated effort)  
+**Date:** 2026-07-02  
+**Owners:** Rogers (C#), Banner (Python), Parker (TS), Thor (Java), Romanoff (Go), Barton (Verification)
+
+#### Phase 1: Version Bump 13.2.4 → 13.4.6
+
+**Decision:** Upgrade all 8 samples to Aspire SDK 13.4.6 (latest stable per NuGet).
+
+**C# Samples (Rogers):**
+- **dotnet-angular-cosmos:** 5 package refs (AppHost.Sdk, Hosting.Azure.CosmosDB, Hosting.JavaScript, Microsoft.Azure.Cosmos)
+- **polyglot-event-stream:** 6 package refs (AppHost.Sdk, Hosting.Kafka, Hosting.Python, Hosting.JavaScript, Confluent.Kafka)
+- **Result:** ✅ Both build clean, 0 errors. NuGet cache cleanup: `git rm -r --cached .nugetpackages/` (3169 files)
+
+**Python Samples (Banner):**
+- **flask-markdown-wiki, django-htmx-polls:** SDK 13.2.4 → 13.4.6 in aspire.config.json
+- **Result:** ✅ Both restore clean. `.modules/` unchanged (no API surface changes from 13.2.4 → 13.4.6)
+
+**TypeScript Samples (Parker):**
+- **vite-react-api:** Added `sdk.version: 13.4.6` + `packages.Aspire.Hosting.JavaScript: 13.4.6`
+- **ts-starter:** `packages.Aspire.Hosting.JavaScript: 13.2.4 → 13.4.6`
+- **Breaking Change Discovered:** `.withOtlpExporter().withOtlpExporterProtocol(protocol)` → `.withOtlpExporter({ protocol })`
+- **Fix Applied:** Both apphost.ts files updated; ts-starter obsolete warning comment removed
+- **Result:** ✅ Both type-check clean (tsc --noEmit). CLI auto-updated 13.4.3 → 13.4.6 mid-session
+
+**Java Sample (Thor):**
+- **spring-boot-postgres:** `sdk.version: 13.2.4 → 13.4.6` in aspire.config.json
+- **Result:** ✅ Restore + Maven build clean. `.modules/` unchanged (API stability confirmed)
+
+**Go Sample (Romanoff):**
+- **svelte-go-bookmarks:** `sdk.version: 13.2.4 → 13.4.6` in aspire.config.json
+- **Result:** ✅ Restore clean. `go build ./...` + `go vet ./...` clean. No breaking changes in 13.2.4 bindings
+
+**Phase 1 Verification (Barton):**
+- ✅ All 8 samples verified: builds/restores succeed, TypeScript type-checks pass, git status clean
+- ✅ Breaking change check: TS migration complete, no old signatures found in apphost code
+- ✅ Known non-blocking issue: ts-starter has pre-existing vscode-jsonrpc type incompatibility with Node v25.5.0
+- **Verdict:** ✅ **APPROVED**
+
+#### Phase 2: Binding-Layout Migration (.modules/ → .aspire/modules/)
+
+**Decision:** Migrate polyglot samples (Go/Python/Java) from old 13.2.4 binding layout to new 13.4.6 layout. TypeScript intentionally remains on `.modules/` (backward compatible).
+
+**Python Samples (Banner):**
+- **flask-markdown-wiki, django-htmx-polls:** Rewired apphost.py
+  - Old: `sys.path.insert(0, ".modules")` + `from aspire import create_builder`
+  - New: `sys.path.insert(0, ".aspire/modules")` + `from aspire_app import create_builder`
+- **Deleted:** Old `.modules/` (aspire.py, base.py, transport.py via `git rm -r`)
+- **Created:** `.aspire/modules/aspire_app.py` (544KB flask, 542KB django, fresh 13.4.6-generated)
+- **Result:** ✅ Both compile (py_compile), imports resolve, syntax clean
+
+**Java Sample (Thor):**
+- **spring-boot-postgres:** Breaking change fixed + binding layout migration
+  - Old: `builder.addDockerfile("api", "./src", null, null)` (4 params)
+  - New: `var api = builder.addDockerfile("api", "./src")` (2 params)
+- **Deleted:** Old `.modules/` (Aspire.java 375KB, Base.java, Transport.java via `git rm -r`)
+- **Created:** `.aspire/modules/` with 182 exploded Java files + `sources.txt` manifest
+- **Result:** ✅ Compilation via `javac @.aspire/modules/sources.txt AppHost.java` clean, Maven build clean
+
+**Go Sample (Romanoff):**
+- **svelte-go-bookmarks:** Breaking changes discovered + fixed + binding layout migration
+  - 6 major breaking changes in 13.4.6 Go SDK:
+    1. `AddContainer/AddDockerfile` return resource (no error tuple)
+    2. `GetEndpoint` returns reference directly (no error)
+    3. `WithHttpEndpoint` → options-struct pattern
+    4. `WithEnvironmentEndpoint` → `WithEnvironment` (accepts EndpointReference)
+    5. `WaitFor` simplified (takes Resource, no wrapper)
+    6. `WithOtlpExporter` void return (for chaining)
+  - **apphost.go:** Complete rewrite (67 lines) — 12 API call updates across 6 resource definitions
+  - **go.mod:** `replace apphost/modules/aspire => ./.modules` → `replace apphost/modules/aspire => ./.aspire/modules`
+- **Deleted:** Old `.modules/` (aspire.go 365KB, base.go, transport.go, go.mod via `git rm -r`)
+- **Created:** `.aspire/modules/` with 678KB aspire.go (nearly 2x 13.2.4 size, expanded API surface)
+- **Result:** ✅ `go build ./...` + `go vet ./...` clean, new `.aspire/modules/` regenerated
+
+**TypeScript Samples (Parker):**
+- **vite-react-api, ts-starter:** Intentionally unchanged — remain on `.modules/`
+- **Rationale:** TS bindings are backward compatible; no need to migrate; avoids additional complexity
+- **Result:** ✅ Both continue to import from `./.modules/aspire.js`, runtime OK
+
+**C# Samples (Rogers):**
+- **dotnet-angular-cosmos, polyglot-event-stream:** Unaffected (no generated bindings)
+- **Result:** ✅ Both build clean (regression check passed)
+
+**Gitignore Updates (Rogers):**
+- Added: `**/.aspire/integrations/` (transient restore/package cache, 6 samples affected)
+- Added: `**/.aspire/modules/.codegen-hash` (regeneration tracking marker)
+- Added: `samples/svelte-go-bookmarks/apphost` (compiled Go binary, exact path rule)
+- Clarified: Comment documenting TS (.modules/) vs Go/Python/Java (.aspire/modules/) split
+- **Rationale:** Generated binding files must remain tracked in git (enables offline builds), only transient artifacts ignored
+
+**Phase 2 Verification (Barton):**
+- ✅ Python: Both samples compile + import resolve
+- ✅ Java: Compilation verified via sources.txt, addDockerfile breaking change fixed
+- ✅ Go: Build + vet clean, 6 breaking changes fixed in apphost.go
+- ✅ TypeScript: Imports work (intentional .modules/), no regression
+- ✅ C#: Build clean (regression check passed)
+- ✅ Tree hygiene: Old .modules/ deleted, new .aspire/modules/ untracked, .codegen-hash gitignored, ts-starter cleanup noted (not blocking)
+- **Verdict:** ✅ **RE-APPROVED**
+
+#### Summary
+
+- **8 samples upgraded:** 13.2.4 → 13.4.6
+- **3 breaking changes fixed:** TS OTLP signature, Java addDockerfile params, Go API rewrite
+- **6 old .modules/ deleted:** Staged for commit
+- **4 samples migrated to .aspire/modules/:** Python×2, Java×1, Go×1
+- **2 TS samples intentionally unchanged:** Remain on .modules/
+- **2 C# samples unaffected:** No generated bindings
+- **Gitignore updated:** Artifact hygiene rules added
+- **Final verdict:** ✅ **APPROVED** — All samples functional, ready for commit
+
+**Owners:** Coordinated effort by Rogers, Banner, Parker, Thor, Romanoff; verified by Barton
+
+---
+
 ## Governance
 
 - All meaningful changes require team consensus

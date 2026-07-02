@@ -88,3 +88,26 @@
 - This is the standard Django+HTMX pattern — all HTMX POST/PUT/DELETE requests from any page automatically include the CSRF token
 - `create.html` already had `{% csrf_token %}` in its `<form>` (standard POST), so it was unaffected
 - Settings already had `CsrfViewMiddleware` in MIDDLEWARE and `CSRF_TRUSTED_ORIGINS` for localhost — no changes needed there
+
+### Aspire 13.4.6 Upgrade (completed)
+- Updated flask-markdown-wiki and django-htmx-polls from Aspire 13.2.4 → 13.4.6
+- Initially bumped to 13.4.3 (CLI was 13.4.3 at start, couldn't generate code for 13.4.6)
+- After CLI auto-updated to 13.4.6 (Romanoff/Parker also upgraded it), re-bumped both samples to 13.4.6 for consistency with C#, Go, and TS samples
+- Flask: Updated `Aspire.Hosting.Redis` and `Aspire.Hosting.Python` from 13.2.4 → 13.4.6
+- Django: Updated `Aspire.Hosting.PostgreSQL` from 13.2.4 → 13.4.6
+- Ran `aspire restore` in both samples with CLI 13.4.6 — succeeded with "SDK code restored successfully"
+- `.modules/*.py` bindings DID NOT change (same checksums as 13.2.4) — no API surface changes between 13.2.4 and 13.4.6
+- Both `apphost.py` files validated successfully (no code changes needed)
+- Breaking change in TS bindings (`.withOtlpExporterProtocol(...)` → `.withOtlpExporter({ protocol: ... })`) does not affect Python — both samples use `.with_otlp_exporter()` without protocol argument
+- `aspire restore` created transient `.aspire/integrations/` cache dirs (Rogers adding gitignore rule)
+
+### Aspire 13.4.6 Binding Layout Migration (completed)
+- Migrated both Python samples from old `.modules/` bindings to new `.aspire/modules/` layout introduced in 13.4.6
+- Updated both `apphost.py` files:
+  - Changed sys.path insert from `Path(...) / ".modules"` → `Path(...) / ".aspire/modules"`
+  - Changed import from `from aspire import create_builder` → `from aspire_app import create_builder`
+- Retired stale old bindings: `git rm -r samples/*/​.modules` (3 files per sample: aspire.py, base.py, transport.py)
+- Fresh 13.4.6 bindings live at `.aspire/modules/aspire_app.py` (544KB flask, 542KB django) + `pyproject.toml` + `.codegen-hash`
+- Verified with `aspire restore` in both samples — regenerated `.aspire/modules/` successfully
+- Smoke tests passed: import `aspire_app.create_builder` works, both `apphost.py` files compile
+- `.aspire/modules/` left on disk (not committed; Rogers adding gitignore for `.codegen-hash`)

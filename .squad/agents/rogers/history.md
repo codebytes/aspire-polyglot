@@ -106,3 +106,43 @@
 **Decision #1 (Config Migration):** ✅ RESOLVED — All polyglot samples now use Aspire 13.2 format
 **Decision #3 (13.2 Slides):** ✅ RESOLVED — Expanded from 2 slides to 4 slides covering all major 13.2 features
 **Decision #7 (NuGet Upgrades):** ⏳ DEFERRED — Waiting for Aspire 13.2.0 on NuGet; scope ready
+
+### 2026-07-02 — Aspire 13.4.6 Upgrade Complete
+
+- **Framework**: Projects remain on net10.0 (no change needed)
+- **Aspire SDK**: Upgraded `Aspire.AppHost.Sdk` from 13.2.4 → 13.4.6 (both AppHosts)
+- **Aspire packages**: All 11 Aspire.* package references upgraded 13.2.4 → 13.4.6 across 4 .csproj files
+- **Breaking changes**: NONE — pure version bump, no API changes required
+- **Files updated**:
+  - `samples/dotnet-angular-cosmos/AppHost/AppHost.csproj` (SDK + 2 packages)
+  - `samples/dotnet-angular-cosmos/Api/Api.csproj` (1 package)
+  - `samples/polyglot-event-stream/AppHost/AppHost.csproj` (SDK + 3 packages)
+  - `samples/polyglot-event-stream/EventProducer/EventProducer.csproj` (1 package)
+- **NuGet cache cleanup**: Untracked `samples/polyglot-event-stream/.nugetpackages/` (stale 13.2.0 cache, ~3169 files) via `git rm -r --cached`; kept on disk per .gitignore rule
+- **Build verification**: Both samples build clean (0 warnings, 0 errors)
+  - dotnet-angular-cosmos: Build succeeded (7.67s)
+  - polyglot-event-stream: Build succeeded (4.10s)
+- **Key learnings**:
+  - Aspire 13.4.6 is a drop-in replacement for 13.2.4 (no code changes required)
+  - All Aspire.Hosting.* packages exist at exactly 13.4.6 on NuGet
+  - ServiceDefaults projects untouched (no Aspire packages)
+  - .NET 10 SDK 10.0.301 handles 13.4.6 without issues
+
+### 2026-07-02 — Aspire 13.4.6 .gitignore Hygiene
+
+- **New Aspire CLI artifacts** requiring .gitignore rules:
+  - `**/.aspire/integrations/` — Transient per-sample restore/package caches (6 samples: vite-react-api, ts-starter, django-htmx-polls, flask-markdown-wiki, spring-boot-postgres, svelte-go-bookmarks)
+  - `samples/svelte-go-bookmarks/apphost` — Compiled Go binary (4MB Mach-O, built output of apphost.go)
+- **Rules added to .gitignore**: Both rules placed in Aspire section
+- **Important**: Repo-root `.aspire/settings.json` remains tracked (not a build artifact)
+- **Verification**: `git status --short` clean for all new artifacts; apphost.go source still tracked
+- **Key learning**: Aspire 13.4+ CLI now generates per-sample integration caches during restore operations
+
+### 2026-07-02 — Aspire 13.4.6 Binding Location Migration (.gitignore)
+
+- **Context**: Go/Python/Java samples migrating generated Aspire bindings from `.modules/` → `.aspire/modules/` (Aspire 13.4.6+ pattern)
+- **Rule added**: `**/.aspire/modules/.codegen-hash` — mirrors existing `**/.modules/.codegen-hash` rule
+- **Important**: `.aspire/modules/` directory itself MUST remain tracked (same as `.modules/`) — only .codegen-hash is transient
+- **Comment updated**: Clarified split between TypeScript samples (keep `.modules/`) and Go/Python/Java samples (new `.aspire/modules/`)
+- **Philosophy preserved**: Generated bindings tracked in git so `aspire run` works out of the box without rebuild
+- **Key learning**: Aspire 13.4.6 introduces new binding layout while maintaining backward compatibility for TypeScript samples

@@ -10,7 +10,7 @@ public class AppHost {
             pg.withEnvironment("POSTGRES_PASSWORD", "postgres");
             pg.withEnvironment("POSTGRES_DB", "notesdb");
 
-            var api = builder.addDockerfile("api", "./src", null, null);
+            var api = builder.addDockerfile("api", "./src");
             api.withOtlpExporter();
             api.withEnvironment("NOTESDB_JDBCCONNECTIONSTRING", "jdbc:postgresql://pg:5432/notesdb");
             api.withEnvironment("NOTESDB_USERNAME", "postgres");

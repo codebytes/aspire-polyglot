@@ -1,8 +1,8 @@
 import sys
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).parent / ".modules"))
+sys.path.insert(0, str(Path(__file__).parent / ".aspire/modules"))
 
-from aspire import create_builder
+from aspire_app import create_builder
 
 builder = create_builder()
 
