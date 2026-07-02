@@ -1,4 +1,4 @@
-package aspire;
+import aspire.*;
 
 public class AppHost {
     public static void main(String[] args) {
@@ -16,6 +16,11 @@ public class AppHost {
             api.withEnvironment("NOTESDB_USERNAME", "postgres");
             api.withEnvironment("NOTESDB_PASSWORD", "postgres");
             api.withExternalHttpEndpoints();
+            // Enforce startup ordering: api waits for pg to be healthy before starting.
+            // This prevents Spring Boot/Hibernate from attempting to connect to Postgres
+            // before the database is ready, which would cause HikariCP to fail and crash the app.
+            // Environment variable wiring alone does not order startup in Aspire 13.4.6 polyglot.
+            api.waitFor(pg);
 
             DistributedApplication app = builder.build();
             app.run(null);

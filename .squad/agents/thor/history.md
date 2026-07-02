@@ -134,3 +134,26 @@
 - **Spring Boot app:** Builds successfully (no regression to service code)
 - **Migration complete:** Old `.modules/` removed via `git rm -r`; new `.aspire/modules/` remains on disk (gitignore rule pending from Rogers)
 - **Key insight:** Aspire 13.4.6 uses exploded per-class layout with `sources.txt` manifest for cleaner codegen and better IDE support
+
+### 2026-07-02 — Aspire 13.4.6 Java AppHost Default-Package Migration
+
+- **Context:** Aspire 13.4.6 Java launcher runs `java -cp .java-build AppHost` (expects main class in default package)
+- **Issue:** AppHost.java declared `package aspire;` (line 1) → compiled to `.java-build/aspire/AppHost.class` → ClassNotFoundException
+- **Root cause:** 13.4.6 launcher derives main class name from FILENAME (`AppHost.java` → `AppHost`) and expects it in default package
+- **Fix 1 (BLOCKER):** Migrated AppHost.java to default-package convention
+  - Removed `package aspire;` declaration
+  - Added `import aspire.*;` to access generated bindings (IDistributedApplicationBuilder, Aspire, DistributedApplication)
+  - No logic changes — builder pattern, env vars, and `addDockerfile("api", "./src")` unchanged
+- **Fix 2:** Added explicit startup ordering: `api.waitFor(pg);`
+  - Spring Boot uses `spring.jpa.hibernate.ddl-auto=update` → connects to Postgres at startup to create schema
+  - Without `waitFor`, cold starts race: if `pg` isn't Healthy yet, HikariCP fails fast and Spring Boot crashes
+  - Placement: after env-wiring block (after `api.withExternalHttpEndpoints();`) and before `builder.build();`
+  - Comment added explaining env wiring alone does NOT order startup in 13.4.6 polyglot
+- **Verification:** Compiled with launcher's exact command: `javac --enable-preview --source 25 -d .java-build @.aspire/modules/sources.txt AppHost.java`
+  - ✅ Compilation succeeded (warnings about unchecked operations are normal)
+  - ✅ Class file landed at `.java-build/AppHost.class` (default package, NOT under `aspire/`)
+  - ✅ Confirms `java -cp .java-build AppHost` will now find the class
+- **Key learning:** Java apphost convention in 13.4.6: main class in DEFAULT package + `import aspire.*;` for bindings + filename = class name
+- **Failure mode:** `package aspire;` in user apphost → bindings compile to correct location but main class in wrong package → ClassNotFoundException at launch
+- **Ordering rule:** `waitFor(resource)` is mandatory for containers with startup dependencies — env/`withReference` wiring is config-only, not ordering
+- **Java version used:** OpenJDK 25.0.3 (supports `--enable-preview --source 25`)

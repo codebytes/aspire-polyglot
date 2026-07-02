@@ -38,6 +38,11 @@ func main() {
 		Name:       aspire.StringPtr("http"),
 	})
 	api.WithExternalHttpEndpoints()
+	// Ensure API waits for Postgres to be healthy before starting — env var wiring
+	// alone does NOT order startup in Aspire 13.4.6 polyglot. Without this WaitFor,
+	// on a cold start (uncached postgres:16 image), the API can start first, fail
+	// its Postgres Ping, and silently fall back to the in-memory store.
+	api.WaitFor(pg)
 
 	// Svelte frontend via npm
 	frontend := builder.AddExecutable("frontend", "npm", "./frontend", []string{"run", "dev"})

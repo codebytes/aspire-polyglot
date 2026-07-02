@@ -111,3 +111,26 @@
 - Verified with `aspire restore` in both samples — regenerated `.aspire/modules/` successfully
 - Smoke tests passed: import `aspire_app.create_builder` works, both `apphost.py` files compile
 - `.aspire/modules/` left on disk (not committed; Rogers adding gitignore for `.codegen-hash`)
+
+### Aspire 13.4.6 Python AppHost Context Manager Fix (completed)
+- Root cause: Aspire 13.4.6 changed `create_builder()` from returning a plain builder to returning a context manager (`DistributedApplicationBuilder` with `__enter__`/`__exit__`)
+- The builder's internal `_handle` starts as `None` and is ONLY populated inside `__enter__` (which invokes the `Aspire.Hosting/createBuilder` RPC to the .NET host)
+- Old pattern `builder = create_builder()` left `_handle` as `None`, so every capability call (`add_redis`, `add_postgres`, `add_dockerfile`, `build`) shipped a null builder to the .NET host
+- .NET host rejected it with: `TypeError: Type mismatch in 'addRedis' for parameter 'builder': expected unknown, got unknown`
+- Fix: Wrap the builder body in `with create_builder() as builder:` so `__enter__` runs and populates `_handle`
+- Applied to both flask-markdown-wiki and django-htmx-polls `apphost.py` files — all builder calls (from `add_*` through `app.run()`) now live inside the `with` block
+- **Critical for future Python apphosts:** ALWAYS use `with create_builder() as builder:` in 13.4.6+
+- Related fix: `pylock.apphost.toml` is required for Python guest runtime bootstraps its venv via `uv pip sync pylock.apphost.toml`
+- Flask sample had one but with `requires-python = ">=3.13.3"` (pinned to local interpreter); changed to `">=3.11"` to match `.aspire/modules/pyproject.toml`
+- Django sample was missing it entirely; created empty PEP 751 lock with `requires-python = ">=3.11"` (valid because root `requirements.txt` is just a comment and `aspire_app.py` is pure stdlib)
+- Both `pylock.apphost.toml` files are committable (not gitignored)
+
+### Cold-Start Race Fix: wait_for() for Datastore Dependencies (completed)
+- **Root Cause:** Runtime QA discovered django-htmx-polls failed on cold launch — the polls container ran `python manage.py migrate` at startup while Postgres was still pulling/initializing (~60s to Healthy). DNS for `pg.dev.internal` was not yet resolvable, causing `django.db.utils.OperationalError: could not translate host name "pg.dev.internal"`.
+- **Key Learning:** `.with_reference(db_resource)` only injects the connection string env var — it does NOT establish a startup ordering dependency. On a cold run, containers can start BEFORE their datastores are reachable.
+- **Fix:** Added `.wait_for(db_resource)` to BOTH Python samples (django-htmx-polls and flask-markdown-wiki) right after their `.with_reference()` calls.
+- **Pattern:** `app.with_reference(db); app.wait_for(db)` — the app now waits for the datastore to reach Healthy before starting.
+- **Rationale:** Prevents app containers from racing their datastores on cold launches (when images must pull or containers must initialize).
+- **Django Sample:** Added `polls.wait_for(pollsdb)` to prevent migrate from running before Postgres is reachable.
+- **Flask Sample:** Added `wiki.wait_for(cache)` for the same robustness (Redis was already cached in QA, but the race can occur on truly cold launches).
+- **General Rule for Aspire 13.4.6 Polyglot Python:** App containers that depend on a datastore (postgres/redis/mysql/sql-server) MUST call `.wait_for(<db_resource>)` to avoid cold-start DNS/connection races. This applies to all app languages, but Python samples were the first to hit it in runtime QA.

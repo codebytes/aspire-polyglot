@@ -117,3 +117,19 @@
 - **Build verification post-migration**: `go build ./...` ✅, `go vet ./...` ✅, `aspire restore` ✅ (regenerates `.aspire/modules/` in place), `go-api` backend ✅ (unaffected by apphost changes)
 - **Key insight**: Aspire 13.2.x → 13.4.6 was NOT a minor bump for Go — major API redesign hidden behind minor version number; always test bindings after SDK upgrade
 
+
+### 2026-07-02 — WaitFor Startup Ordering Fix for Cold-Start Race Condition
+
+**Problem:** On cold starts (when the `postgres:16` image isn't cached), the Go API in `samples/svelte-go-bookmarks/` can start before Postgres is healthy. When its initial Postgres connection Ping fails, `main.go` (lines 466-518) silently falls back to an in-memory store (logs a warning but continues serving). The API still reports `/health` as healthy, creating a silent data-integrity trap — writes appear to succeed but aren't persisted to Postgres.
+
+**Root Cause:** In Aspire 13.4.6 polyglot, `WithReference` and manual env var wiring (`PG_HOST`, `PG_USER`, `PG_PASSWORD`, `PG_DB`) only inject connection strings — they do NOT order startup. Startup ordering requires an explicit `WaitFor` call. The sample had `frontend.WaitFor(api)` (line 59) but was missing `api.WaitFor(pg)`.
+
+**Fix Applied:** Added `api.WaitFor(pg)` to `samples/svelte-go-bookmarks/apphost.go` immediately after `api.WithExternalHttpEndpoints()` (after line 40) and before the frontend block. This ensures the API never starts until Postgres is Healthy, preventing the silent in-memory fallback.
+
+**Comment Added:** Explains the 13.4.6 WaitFor-vs-WithReference rule: env wiring alone does not order startup in polyglot; on a cold start the API can race Postgres, fail Ping, and silently fall back to in-memory.
+
+**Verification:** `go vet .` ✅ clean, `gofmt -l apphost.go` ✅ reports nothing (file is gofmt-clean), `api.WaitFor(pg)` confirmed present in output.
+
+**Key Insight:** This is the exact analogue of the fix already applied to Python samples (`polls.WaitFor(pollsdb)`, `wiki.WaitFor(cache)`). The WaitFor pattern is mandatory in 13.4.6 polyglot for any resource that depends on a datastore or cache — manual env wiring is insufficient for startup ordering.
+
+**Related File:** `samples/svelte-go-bookmarks/go-api/main.go` (lines 466-518 contain the silent in-memory fallback logic that triggers when Postgres is unreachable).
