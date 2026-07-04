@@ -408,6 +408,26 @@
 
 ---
 
+## Runtime QA — All 8 Samples Verified at Aspire 13.4.6 (2026-07-04T03:11:23Z)
+
+**Context:** After the 13.4.6 version bump, every sample was launched, run, and functionally exercised (REST CRUD + datastore write-through / cache wiring / frontend proxy), one container set at a time. **Result: all 8 PASS.**
+
+### Cross-cutting findings (13.4.6 polyglot)
+
+1. **Env/`withReference` wiring does NOT order startup.** Injecting connection env vars (or `with_reference`) only supplies config — it does not make an app wait for its datastore. Every app-depends-on-datastore sample needed an explicit `wait_for` / `WaitFor` / `waitFor`, or it raced the datastore on cold start (silent in-memory fallback in Go; fail-fast crash in Spring/HikariCP; flaky Django/Flask).
+2. **Java apphosts must live in the default (unnamed) package.** The 13.4.6 Java launcher compiles with `javac -d .java-build @.aspire/modules/sources.txt AppHost.java` then runs bare `java -cp .java-build AppHost` — deriving the main class from the filename in the default package. An apphost declaring `package aspire;` compiles to `aspire.AppHost` → `ClassNotFoundException: AppHost`.
+
+### Fixes applied (all committed)
+
+- **flask-markdown-wiki** (Banner): context-manager apphost (`with create_builder() as builder:`) + `wiki.wait_for(cache)`.
+- **django-htmx-polls** (Banner): context-manager apphost + `polls.wait_for(pollsdb)`.
+- **svelte-go-bookmarks** (Romanoff): `api.WaitFor(pg)` — prevents the Go API's silent in-memory fallback when Postgres isn't ready.
+- **spring-boot-postgres** (Thor): removed `package aspire;`, added `import aspire.*;` (launch blocker), plus `api.waitFor(pg)` for HikariCP cold-start ordering. Committed as `0265e02`.
+
+**Owners:** Banner (Python), Romanoff (Go), Thor (Java); runtime verification by Coordinator. Full per-decision detail was captured in the (gitignored) decisions inbox and consolidated here.
+
+---
+
 ## Governance
 
 - All meaningful changes require team consensus
