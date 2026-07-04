@@ -468,6 +468,55 @@ lsof -nP -iTCP -sTCP:LISTEN | grep 5000
 
 ---
 
+### 9. Complete Revalidation of All 8 Aspire Samples on Aspire 13.4.6
+
+**Status:** ✅ COMPLETE — All 8 samples runtime-verified, 8/8 pass  
+**Date:** 2026-07-04T05:51:25Z  
+**Branch:** `codebytes-update-aspire-samples` (PR #84)  
+**Scope:** Deep runtime revalidation of ts-starter, vite-react-api, flask-markdown-wiki, django-htmx-polls, svelte-go-bookmarks, spring-boot-postgres, dotnet-angular-cosmos, polyglot-event-stream
+
+**Revalidation Approach:**
+- From-scratch launch of each sample (`aspire run`)
+- Verify all resources reach Healthy state
+- Exercise real functionality (API round-trips, browser navigation, form submissions, persistence checks)
+- Clean teardown (no orphaned resources)
+- Serial execution (required due to port/Docker contention on single machine)
+
+**Results:**
+1. **ts-starter** ✅ PASS — Resources Healthy, React forecasts API verified, clean teardown
+2. **vite-react-api** ✅ PASS — Browser 502 regression found & fixed (commit 2ac9d93), re-verified
+3. **flask-markdown-wiki** ✅ PASS — 3 resources Healthy, curl CRUD verified, clean teardown
+4. **django-htmx-polls** ✅ PASS — 4 resources Healthy, poll CSRF POST + HTMX verified, clean teardown
+5. **svelte-go-bookmarks** ✅ PASS — Browser add/search/delete, Postgres persistence verified via docker exec psql, clean teardown
+6. **spring-boot-postgres** ✅ PASS — 3 resources Healthy, full CRUD REST, Postgres persistence confirmed, clean teardown
+7. **dotnet-angular-cosmos** ✅ PASS — All resources Healthy, recipe+ingredient add flow verified, Cosmos persistence confirmed, clean teardown
+8. **polyglot-event-stream** ✅ PASS — All resources Healthy (Kafka, kafka-ui, .NET producer, Python consumer, Node dashboard), 3-language pipeline verified end-to-end, alert pipeline verified, clean teardown
+
+**Regression Found & Fixed:**
+- **vite-react-api browser 502:** Missing service discovery wiring in apphost.ts
+- **Root cause:** web service did not reference api endpoint
+- **Fix:** Added `.withReference(api.getEndpoint("http")).waitFor(api)` to web service
+- **Commit:** 2ac9d93 "Fix vite-react-api browser 502 by wiring web->api service discovery"
+- **Verification:** Browser tested immediately after fix — all working
+
+**Known Non-Blocking Issue:**
+- Aspire 13.4.6 SPA/dev-server limitation: browser OTLP console errors for `aspire.dev.internal` (unresolvable from host)
+- **Status:** Cosmetic across all samples; filtered out; zero real errors
+
+**Code Changes:**
+- Only change: vite-react-api browser 502 fix (commit 2ac9d93) — already committed
+- Branch state: Clean after commit
+
+**Outcome:** All 8 Aspire samples runtime-validated on Aspire 13.4.6. One regression found during revalidation (vite-react-api) has been fixed and verified. All samples now pass comprehensive functional testing. **Ready for release/demo.**
+
+**Logs:**
+- Session log: `.squad/log/2026-07-04T05-51-25Z-revalidation-all-8-pass.md`
+- Orchestration log: `.squad/orchestration-log/2026-07-04T05-51-25Z-coordinator-revalidation.md`
+
+**Owner:** Coordinator (direct execution) — ✅ COMPLETE
+
+---
+
 ## Governance
 
 - All meaningful changes require team consensus
