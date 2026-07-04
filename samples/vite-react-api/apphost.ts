@@ -30,6 +30,8 @@ const api = builder.addDockerfile("api", "./src/api")
 // .squad/decisions/inbox/parker-vite-react-otel.md for the full design.
 const web = builder.addDockerfile("web", "./src/web")
   .withOtlpExporter({ protocol: OtlpProtocol.HttpProtobuf })
+  .withReference(api.getEndpoint("http"))
+  .waitFor(api)
   .withHttpEndpoint({ targetPort: 5173, env: "PORT" })
   .withExternalHttpEndpoints();
 
