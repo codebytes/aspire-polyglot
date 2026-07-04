@@ -487,6 +487,8 @@ builder.Build().Run();
 **Same model, different syntax. Best fit for Node.js / TS workspaces:**
 
 ```typescript
+import { createBuilder } from "./.aspire/modules/aspire.mjs";
+
 const builder = await createBuilder();
 
 const redis = await builder.addRedis("cache");
@@ -511,7 +513,7 @@ await builder.build().run();
 
 💜 **C# (.NET)** — `AppHost.cs` — best fit for teams already on .NET tooling.
 
-🟦 **TypeScript** — `apphost.ts` — best fit for Node.js / TypeScript workspaces.
+🟦 **TypeScript** — `apphost.mts` — best fit for Node.js / TypeScript workspaces.
 
 **Same model, different syntax.** Both produce the same dashboard, service discovery, health checks, and deployment artifacts.
 
@@ -568,12 +570,12 @@ public static class MyIntegrationExtensions
 
 # Use From TypeScript — Zero Bindings
 
-**The CLI auto-generates a TypeScript SDK** into `.modules/` when a TS AppHost runs `aspire add <your-package>`. TypeScript callers get fluent, typed methods.
+**The CLI auto-generates a TypeScript SDK** into `.aspire/modules/` when a TS AppHost runs `aspire add <your-package>`. TypeScript callers get fluent, typed methods.
 
 ```typescript
-import { createBuilder } from "./.modules/aspire.js";
+import { createBuilder } from "./.aspire/modules/aspire.mjs";
 import { addMyService } from
-    "./.modules/my-integration.js";
+    "./.aspire/modules/my-integration.mjs";
 
 const builder = await createBuilder();
 const svc = await addMyService(builder, "svc");
@@ -581,7 +583,7 @@ const svc = await addMyService(builder, "svc");
 
 **The trade-off:** the guest process talks to the .NET host over a local JSON-RPC socket (Unix socket / named pipe), authenticated with a per-session token. One IPC hop, no port exposure, no duplicated integration code per language.
 
-*Status: preview feature in 13.x.*
+*Status: generally available in Aspire 13.4 — TypeScript AppHosts are first-class alongside C#.*
 
 <!-- That's how 100+ .NET integrations show up automatically in TypeScript AppHosts. -->
 
@@ -598,8 +600,9 @@ const svc = await addMyService(builder, "svc");
 - Node.js → `AddNodeApp()`
 - Vite / React → `AddViteApp()`
 - JavaScript → `AddJavaScriptApp()`
+- Bun → `AddBunApp()`
 - .NET project → `AddProject<T>()`
-- Go → `AddGolangApp()` *(Community Toolkit)*
+- Go → `AddGoApp()`
 - Java / Spring Boot → `AddSpringApp()` *(Community Toolkit)*
 - Any Dockerfile → `AddDockerfile()`
 - Any executable → `AddExecutable()`
@@ -803,16 +806,16 @@ $ code .    # reads .vscode/mcp.json
 
 **Simple → Full-stack**
 1. **ts-starter** — Express + React (TS AppHost)
-2. **flask-markdown-wiki** — Flask + Redis (Python AppHost)
+2. **flask-markdown-wiki** — Flask + Redis (Python AppHost — preview)
 3. **vite-react-api** — FastAPI + React + Redis (TS AppHost)
-4. **django-htmx-polls** — Django + HTMX + PostgreSQL (Python AppHost)
+4. **django-htmx-polls** — Django + HTMX + PostgreSQL (Python AppHost — preview)
 
 </div>
 <div>
 
 **Multi-runtime → Polyglot**
-5. **spring-boot-postgres** — Spring Boot + PostgreSQL (Java AppHost)
-6. **svelte-go-bookmarks** — Go API + Svelte + PostgreSQL (Go AppHost)
+5. **spring-boot-postgres** — Spring Boot + PostgreSQL (Java AppHost — preview)
+6. **svelte-go-bookmarks** — Go API + Svelte + PostgreSQL (Go AppHost — preview)
 7. **dotnet-angular-cosmos** — Angular + .NET + CosmosDB (C# AppHost)
 8. **polyglot-event-stream** — .NET + Python + Node.js + Kafka (C# AppHost)
 
@@ -860,7 +863,7 @@ $ code .    # reads .vscode/mcp.json
 
 # Demo: Flask Markdown Wiki
 
-<div class="chips"><span class="host">Python AppHost</span><span>Flask</span><span>Redis</span></div>
+<div class="chips"><span class="host">Python AppHost (preview)</span><span>Flask</span><span>Redis</span></div>
 
 ![w:1120px center](./img/flask-markdown-wiki.drawio.svg)
 
@@ -884,7 +887,7 @@ $ code .    # reads .vscode/mcp.json
 
 # Demo: Django HTMX Polls
 
-<div class="chips"><span class="host">Python AppHost</span><span>Django</span><span>HTMX</span><span>PostgreSQL</span></div>
+<div class="chips"><span class="host">Python AppHost (preview)</span><span>Django</span><span>HTMX</span><span>PostgreSQL</span></div>
 
 ![w:1120px center](./img/django-htmx-voting-polls.drawio.svg)
 
@@ -896,7 +899,7 @@ $ code .    # reads .vscode/mcp.json
 
 # Demo: Spring Boot Notes
 
-<div class="chips"><span class="host">Java AppHost</span><span>Spring Boot</span><span>PostgreSQL</span></div>
+<div class="chips"><span class="host">Java AppHost (preview)</span><span>Spring Boot</span><span>PostgreSQL</span></div>
 
 ![w:1120px center](./img/spring-boot-postgres.drawio.svg)
 
@@ -908,7 +911,7 @@ $ code .    # reads .vscode/mcp.json
 
 # Demo: Svelte + Go Bookmarks
 
-<div class="chips"><span class="host">Go AppHost</span><span>Go API</span><span>Svelte</span><span>PostgreSQL</span></div>
+<div class="chips"><span class="host">Go AppHost (preview)</span><span>Go API</span><span>Svelte</span><span>PostgreSQL</span></div>
 
 ![w:1120px center](./img/go-svelte-bookmarks.drawio.svg)
 
@@ -941,21 +944,24 @@ $ code .    # reads .vscode/mcp.json
 ---
 
 
+<!-- _class: compact -->
+
 # Same Model, Two Commands
 
 **One AppHost. Local, staging, production.**
 
 ```bash
 aspire run       # Local development
-aspire deploy    # Deploy to target  (Preview)
-aspire publish   # Generate artifacts (Preview)
+aspire deploy    # Deploy to target
+aspire publish   # Generate artifacts
 aspire do        # Pipeline step      (Preview)
 ```
 
 **What Aspire generates from your AppHost:**
 
 - 🐳 Container images for **all languages**
-- ☸️ Azure Container Apps / Kubernetes manifests
+- ☸️ Azure Container Apps, Kubernetes & **AKS** Helm charts
+- 🔒 **AKS ingress** — cert-manager HTTPS, Gateway API + App Gateway for Containers (AGC), external Helm charts via `AddHelmChart`
 - 🔌 Infrastructure wiring (Redis, Postgres, Kafka…)
 - 🔗 Service connections + environment variables
 
