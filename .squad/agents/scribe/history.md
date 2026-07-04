@@ -144,3 +144,42 @@ Initial setup complete.
 5. **Index (staged deletions) behavior:** Deleted files show as `D` in `git status -s` after deletion from disk. This is normal and expected. Stage them with `git add` after confirming they're build artifacts, NOT source code.
 
 **Trap: `find -delete` without `git add -u`:** Using `find` to delete files from disk bypasses git's index. Files deleted this way remain *tracked* until staged with `git add -u -- <pattern>`. After physical deletion, use `git add -u` (not bare `git add`) to stage the removal — common pattern when batch-deleting build artifacts.
+
+### 2026-07-04 — Aspire 13.4 Slide Validation + Visual QA
+
+**Task:** Validate and update `slides/Slides.md` against the official Aspire 13.4 release notes (aspire.dev/whats-new/aspire-13-4) and current guidance. Scope: TypeScript AppHost, polyglot/multi-language support, cloud/hosting/deployment. All corrections folded into EXISTING slides (no "What's New in 13.4" slide added). Followed by an additive style/visual overflow QA pass. Delegated task from coordinator session "Aspire 13.4 slide review".
+
+**Branch:** `codebytes-aspire-slide-refresh` (worktree folder: `codebytes-symmetrical-happiness`)
+
+**Content corrections applied (commit 7b4839e):**
+1. TypeScript AppHost import path → `import { createBuilder } from "./.aspire/modules/aspire.mjs";` (2 slides: The AppHost — TypeScript; Use From TypeScript — Zero Bindings)
+2. Entry point `apphost.ts` → `apphost.mts` (Two AppHost Languages)
+3. Generated SDK location `./.modules/` → `./.aspire/modules/`; `my-integration.js` → `my-integration.mjs`
+4. TypeScript AppHost status: "preview feature" → "generally available in Aspire 13.4 — TypeScript AppHosts are first-class alongside C#"
+5. Cheat Sheet — Runtimes: added Bun → `AddBunApp()`; Go → `AddGoApp()` (now core; dropped Community Toolkit tag); Java/Spring `AddSpringApp()` left as Community Toolkit (unchanged in 13.4)
+6. `aspire.config.json`: sdk version `13.2.0` → `13.4.0`
+7. "Same Model, Two Commands": removed `(Preview)` from `aspire deploy` and `aspire publish` (both GA in 13.4); KEPT `(Preview)` on `aspire do`
+8. Deployment slide: enhanced AKS ingress guidance — cert-manager HTTPS, Gateway API + Azure Application Gateway for Containers (AGC), external Helm charts via `AddHelmChart`
+9. Demo cleanup: marked Go/Java/Python "AppHost" labels *(preview)* to reconcile with the C#/TypeScript-only GA AppHost framing stated elsewhere (Go/Python/Java are hosted workloads; polyglot AppHost authoring is still preview). C#/TypeScript demo labels untouched.
+
+**Verification:**
+- Marp CLI build: exit 0. 50 source slides → 56 rendered `<section>` elements (6 extra from advanced-background `![bg]` layers — expected). Theme `custom-aspire-light` + all `_class`/columns/HTML-comment speaker-note structure preserved.
+- Grep sweep confirmed no stale references remained (`AddGolangApp`, `.modules/aspire.js`, `apphost.ts`, `13.2.0`, "preview feature").
+
+**Visual / overflow QA (additive pass, no content change):**
+- Rendered all slides to PNG (`--images png --allow-local-files`) → exit 0, 50 images.
+- Playwright per-`<section>` overflow measurement: neutralized `overflow:hidden` clipping per section (height:auto, overflow:visible), forced reflow, measured natural content height + widest child right-edge vs. 1280×720 bounds (4px tolerance) → **0 offenders** across all 56 sections.
+- Visual spot-check of every high-density / edited slide (code blocks, 2×2 language grids, both cheat sheets, config field reference, Agent-Ready CLI, 8 Live Demos, demo diagrams, Key Takeaways, Resources/QR): no clipping, no truncated code, no column collisions.
+- Result: **NO style fixes required** → no separate style commit was made.
+
+**Decisions inbox:** empty (0 entries; no `.squad/decisions/inbox/` dir) — nothing to merge.
+
+**Commits:**
+- `7b4839e` — content corrections (`slides/Slides.md`), with Co-authored-by: Copilot App trailer
+- (this) — `docs(.squad)`: session log entry
+
+**Learnings:**
+1. **Marp section count ≠ slide count:** advanced-background slides (`![bg ...]`) each emit an extra background `<section>`. 50 slides rendered as 56 sections — expected, not new slides. Always reconcile before flagging a count mismatch.
+2. **`scrollHeight` lies under `overflow:hidden` + fixed-height sections:** Marp sections are fixed 1280×720 with `overflow:hidden`, so `scrollHeight === clientHeight` (720) always and hides real overflow. To detect true overflow, neutralize clipping per section and measure natural content extent + widest child right-edge.
+3. **PNG export drops local images by default:** portrait/logo/architecture assets need `--allow-local-files` to render in exported PNGs; otherwise they silently drop with a security warning (making a "clipped" slide look like missing art).
+4. **Branch vs. worktree-folder divergence:** this worktree folder is `codebytes-symmetrical-happiness` (original generated name shown in the session-context header) but the checked-out branch was renamed to `codebytes-aspire-slide-refresh`. Always confirm the real branch with `git branch --show-current` before committing/reporting — the header name can be stale.
