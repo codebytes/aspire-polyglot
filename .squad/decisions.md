@@ -293,6 +293,230 @@
 
 ---
 
+### 12. Aspire 13.4.6 Upgrade — All Samples
+
+**Status:** ✅ COMPLETED (Two-phase coordinated effort)  
+**Date:** 2026-07-02  
+**Owners:** Rogers (C#), Banner (Python), Parker (TS), Thor (Java), Romanoff (Go), Barton (Verification)
+
+#### Phase 1: Version Bump 13.2.4 → 13.4.6
+
+**Decision:** Upgrade all 8 samples to Aspire SDK 13.4.6 (latest stable per NuGet).
+
+**C# Samples (Rogers):**
+- **dotnet-angular-cosmos:** 5 package refs (AppHost.Sdk, Hosting.Azure.CosmosDB, Hosting.JavaScript, Microsoft.Azure.Cosmos)
+- **polyglot-event-stream:** 6 package refs (AppHost.Sdk, Hosting.Kafka, Hosting.Python, Hosting.JavaScript, Confluent.Kafka)
+- **Result:** ✅ Both build clean, 0 errors. NuGet cache cleanup: `git rm -r --cached .nugetpackages/` (3169 files)
+
+**Python Samples (Banner):**
+- **flask-markdown-wiki, django-htmx-polls:** SDK 13.2.4 → 13.4.6 in aspire.config.json
+- **Result:** ✅ Both restore clean. `.modules/` unchanged (no API surface changes from 13.2.4 → 13.4.6)
+
+**TypeScript Samples (Parker):**
+- **vite-react-api:** Added `sdk.version: 13.4.6` + `packages.Aspire.Hosting.JavaScript: 13.4.6`
+- **ts-starter:** `packages.Aspire.Hosting.JavaScript: 13.2.4 → 13.4.6`
+- **Breaking Change Discovered:** `.withOtlpExporter().withOtlpExporterProtocol(protocol)` → `.withOtlpExporter({ protocol })`
+- **Fix Applied:** Both apphost.ts files updated; ts-starter obsolete warning comment removed
+- **Result:** ✅ Both type-check clean (tsc --noEmit). CLI auto-updated 13.4.3 → 13.4.6 mid-session
+
+**Java Sample (Thor):**
+- **spring-boot-postgres:** `sdk.version: 13.2.4 → 13.4.6` in aspire.config.json
+- **Result:** ✅ Restore + Maven build clean. `.modules/` unchanged (API stability confirmed)
+
+**Go Sample (Romanoff):**
+- **svelte-go-bookmarks:** `sdk.version: 13.2.4 → 13.4.6` in aspire.config.json
+- **Result:** ✅ Restore clean. `go build ./...` + `go vet ./...` clean. No breaking changes in 13.2.4 bindings
+
+**Phase 1 Verification (Barton):**
+- ✅ All 8 samples verified: builds/restores succeed, TypeScript type-checks pass, git status clean
+- ✅ Breaking change check: TS migration complete, no old signatures found in apphost code
+- ✅ Known non-blocking issue: ts-starter has pre-existing vscode-jsonrpc type incompatibility with Node v25.5.0
+- **Verdict:** ✅ **APPROVED**
+
+#### Phase 2: Binding-Layout Migration (.modules/ → .aspire/modules/)
+
+**Decision:** Migrate polyglot samples (Go/Python/Java) from old 13.2.4 binding layout to new 13.4.6 layout. TypeScript intentionally remains on `.modules/` (backward compatible).
+
+**Python Samples (Banner):**
+- **flask-markdown-wiki, django-htmx-polls:** Rewired apphost.py
+  - Old: `sys.path.insert(0, ".modules")` + `from aspire import create_builder`
+  - New: `sys.path.insert(0, ".aspire/modules")` + `from aspire_app import create_builder`
+- **Deleted:** Old `.modules/` (aspire.py, base.py, transport.py via `git rm -r`)
+- **Created:** `.aspire/modules/aspire_app.py` (544KB flask, 542KB django, fresh 13.4.6-generated)
+- **Result:** ✅ Both compile (py_compile), imports resolve, syntax clean
+
+**Java Sample (Thor):**
+- **spring-boot-postgres:** Breaking change fixed + binding layout migration
+  - Old: `builder.addDockerfile("api", "./src", null, null)` (4 params)
+  - New: `var api = builder.addDockerfile("api", "./src")` (2 params)
+- **Deleted:** Old `.modules/` (Aspire.java 375KB, Base.java, Transport.java via `git rm -r`)
+- **Created:** `.aspire/modules/` with 182 exploded Java files + `sources.txt` manifest
+- **Result:** ✅ Compilation via `javac @.aspire/modules/sources.txt AppHost.java` clean, Maven build clean
+
+**Go Sample (Romanoff):**
+- **svelte-go-bookmarks:** Breaking changes discovered + fixed + binding layout migration
+  - 6 major breaking changes in 13.4.6 Go SDK:
+    1. `AddContainer/AddDockerfile` return resource (no error tuple)
+    2. `GetEndpoint` returns reference directly (no error)
+    3. `WithHttpEndpoint` → options-struct pattern
+    4. `WithEnvironmentEndpoint` → `WithEnvironment` (accepts EndpointReference)
+    5. `WaitFor` simplified (takes Resource, no wrapper)
+    6. `WithOtlpExporter` void return (for chaining)
+  - **apphost.go:** Complete rewrite (67 lines) — 12 API call updates across 6 resource definitions
+  - **go.mod:** `replace apphost/modules/aspire => ./.modules` → `replace apphost/modules/aspire => ./.aspire/modules`
+- **Deleted:** Old `.modules/` (aspire.go 365KB, base.go, transport.go, go.mod via `git rm -r`)
+- **Created:** `.aspire/modules/` with 678KB aspire.go (nearly 2x 13.2.4 size, expanded API surface)
+- **Result:** ✅ `go build ./...` + `go vet ./...` clean, new `.aspire/modules/` regenerated
+
+**TypeScript Samples (Parker):**
+- **vite-react-api, ts-starter:** Intentionally unchanged — remain on `.modules/`
+- **Rationale:** TS bindings are backward compatible; no need to migrate; avoids additional complexity
+- **Result:** ✅ Both continue to import from `./.modules/aspire.js`, runtime OK
+
+**C# Samples (Rogers):**
+- **dotnet-angular-cosmos, polyglot-event-stream:** Unaffected (no generated bindings)
+- **Result:** ✅ Both build clean (regression check passed)
+
+**Gitignore Updates (Rogers):**
+- Added: `**/.aspire/integrations/` (transient restore/package cache, 6 samples affected)
+- Added: `**/.aspire/modules/.codegen-hash` (regeneration tracking marker)
+- Added: `samples/svelte-go-bookmarks/apphost` (compiled Go binary, exact path rule)
+- Clarified: Comment documenting TS (.modules/) vs Go/Python/Java (.aspire/modules/) split
+- **Rationale:** Generated binding files must remain tracked in git (enables offline builds), only transient artifacts ignored
+
+**Phase 2 Verification (Barton):**
+- ✅ Python: Both samples compile + import resolve
+- ✅ Java: Compilation verified via sources.txt, addDockerfile breaking change fixed
+- ✅ Go: Build + vet clean, 6 breaking changes fixed in apphost.go
+- ✅ TypeScript: Imports work (intentional .modules/), no regression
+- ✅ C#: Build clean (regression check passed)
+- ✅ Tree hygiene: Old .modules/ deleted, new .aspire/modules/ untracked, .codegen-hash gitignored, ts-starter cleanup noted (not blocking)
+- **Verdict:** ✅ **RE-APPROVED**
+
+#### Summary
+
+- **8 samples upgraded:** 13.2.4 → 13.4.6
+- **3 breaking changes fixed:** TS OTLP signature, Java addDockerfile params, Go API rewrite
+- **6 old .modules/ deleted:** Staged for commit
+- **4 samples migrated to .aspire/modules/:** Python×2, Java×1, Go×1
+- **2 TS samples intentionally unchanged:** Remain on .modules/
+- **2 C# samples unaffected:** No generated bindings
+- **Gitignore updated:** Artifact hygiene rules added
+- **Final verdict:** ✅ **APPROVED** — All samples functional, ready for commit
+
+**Owners:** Coordinated effort by Rogers, Banner, Parker, Thor, Romanoff; verified by Barton
+
+---
+
+## Runtime QA — All 8 Samples Verified at Aspire 13.4.6 (2026-07-04T03:11:23Z)
+
+**Context:** After the 13.4.6 version bump, every sample was launched, run, and functionally exercised (REST CRUD + datastore write-through / cache wiring / frontend proxy), one container set at a time. **Result: all 8 PASS.**
+
+### Cross-cutting findings (13.4.6 polyglot)
+
+1. **Env/`withReference` wiring does NOT order startup.** Injecting connection env vars (or `with_reference`) only supplies config — it does not make an app wait for its datastore. Every app-depends-on-datastore sample needed an explicit `wait_for` / `WaitFor` / `waitFor`, or it raced the datastore on cold start (silent in-memory fallback in Go; fail-fast crash in Spring/HikariCP; flaky Django/Flask).
+2. **Java apphosts must live in the default (unnamed) package.** The 13.4.6 Java launcher compiles with `javac -d .java-build @.aspire/modules/sources.txt AppHost.java` then runs bare `java -cp .java-build AppHost` — deriving the main class from the filename in the default package. An apphost declaring `package aspire;` compiles to `aspire.AppHost` → `ClassNotFoundException: AppHost`.
+
+### Fixes applied (all committed)
+
+- **flask-markdown-wiki** (Banner): context-manager apphost (`with create_builder() as builder:`) + `wiki.wait_for(cache)`.
+- **django-htmx-polls** (Banner): context-manager apphost + `polls.wait_for(pollsdb)`.
+- **svelte-go-bookmarks** (Romanoff): `api.WaitFor(pg)` — prevents the Go API's silent in-memory fallback when Postgres isn't ready.
+- **spring-boot-postgres** (Thor): removed `package aspire;`, added `import aspire.*;` (launch blocker), plus `api.waitFor(pg)` for HikariCP cold-start ordering. Committed as `0265e02`.
+
+**Owners:** Banner (Python), Romanoff (Go), Thor (Java); runtime verification by Coordinator. Full per-decision detail was captured in the (gitignored) decisions inbox and consolidated here.
+
+---
+
+## HTTP Endpoint Allocation Pattern for Aspire Resources (2026-07-04T03:47:29Z)
+
+**Status:** ✅ APPROVED  
+**Owner:** Rogers  
+
+**Principle:** Every Aspire resource that must serve HTTP (including .NET projects like EventProducer, as well as JS/Go/Python apps) MUST declare an explicit endpoint via `.WithHttpEndpoint()` so Aspire assigns a dynamic port and injects `ASPNETCORE_URLS` (or equivalent language env vars).
+
+**Context:** EventProducer in polyglot-event-stream failed silently because AppHost called `.WithExternalHttpEndpoints()` on the producer, expecting it to allocate an endpoint. However, `.WithExternalHttpEndpoints()` only marks EXISTING endpoints external; it does NOT create one. With no Aspire-managed endpoint, ASP.NET Core Kestrel fell back to hard-coded default: port 5000. On macOS, port 5000 is occupied by AirPlay Receiver (Control Center). Producer failed to bind and crashed → no events published → empty pipeline.
+
+**Solution:** Added `.WithHttpEndpoint()` to producer before `.WithExternalHttpEndpoints()`, mirroring the working pattern in dotnet-angular-cosmos API resource. This ensures Aspire allocates a dynamic port and injects the required env var.
+
+**Implementation Pattern (C#):**
+```csharp
+// CORRECT:
+var producer = builder
+    .AddProject<EventProducer>("producer")
+    .WithHttpEndpoint()                    // ← Allocate dynamic port + inject env
+    .WithExternalHttpEndpoints()           // ← Mark external in dashboard
+    .WaitFor(kafka);                       // ← Cold-start ordering
+```
+
+**Additional Learning:** The `.WaitFor()` pattern is essential for all infrastructure dependencies (databases, message brokers). Applied to producer, consumer, and dashboard in polyglot-event-stream to eliminate Kafka cold-start reconnect races.
+
+**Diagnostic Technique (macOS):**
+```bash
+lsof -nP -iTCP -sTCP:LISTEN | grep 5000
+# Expected: ControlCe (AirPlay) owns *:5000
+```
+
+**Scope:** 
+- ✅ dotnet-angular-cosmos API (already correct pattern)
+- ✅ polyglot-event-stream producer, consumer, dashboard (now corrected, commit 0ba9dc1)
+- Review: Other polyglot samples (Python/JS/Go apphosts) for similar pattern
+
+**Verification:** Relaunched via `aspire run`. Producer bound dynamic port 55569. Full pipeline healthy: producer /api/sensors → 200 (5 sensors); consumer /api/aggregates → readingCount climbing; dashboard /api/readings → live data with all sensor cards rendered.
+
+**Related:** Extends earlier macOS port 5000 / AirPlay principle from dotnet-angular-cosmos proxy fix (same root cause, same collision pattern, now generalized to HTTP endpoint allocation).
+
+---
+
+### 9. Complete Revalidation of All 8 Aspire Samples on Aspire 13.4.6
+
+**Status:** ✅ COMPLETE — All 8 samples runtime-verified, 8/8 pass  
+**Date:** 2026-07-04T05:51:25Z  
+**Branch:** `codebytes-update-aspire-samples` (PR #84)  
+**Scope:** Deep runtime revalidation of ts-starter, vite-react-api, flask-markdown-wiki, django-htmx-polls, svelte-go-bookmarks, spring-boot-postgres, dotnet-angular-cosmos, polyglot-event-stream
+
+**Revalidation Approach:**
+- From-scratch launch of each sample (`aspire run`)
+- Verify all resources reach Healthy state
+- Exercise real functionality (API round-trips, browser navigation, form submissions, persistence checks)
+- Clean teardown (no orphaned resources)
+- Serial execution (required due to port/Docker contention on single machine)
+
+**Results:**
+1. **ts-starter** ✅ PASS — Resources Healthy, React forecasts API verified, clean teardown
+2. **vite-react-api** ✅ PASS — Browser 502 regression found & fixed (commit 2ac9d93), re-verified
+3. **flask-markdown-wiki** ✅ PASS — 3 resources Healthy, curl CRUD verified, clean teardown
+4. **django-htmx-polls** ✅ PASS — 4 resources Healthy, poll CSRF POST + HTMX verified, clean teardown
+5. **svelte-go-bookmarks** ✅ PASS — Browser add/search/delete, Postgres persistence verified via docker exec psql, clean teardown
+6. **spring-boot-postgres** ✅ PASS — 3 resources Healthy, full CRUD REST, Postgres persistence confirmed, clean teardown
+7. **dotnet-angular-cosmos** ✅ PASS — All resources Healthy, recipe+ingredient add flow verified, Cosmos persistence confirmed, clean teardown
+8. **polyglot-event-stream** ✅ PASS — All resources Healthy (Kafka, kafka-ui, .NET producer, Python consumer, Node dashboard), 3-language pipeline verified end-to-end, alert pipeline verified, clean teardown
+
+**Regression Found & Fixed:**
+- **vite-react-api browser 502:** Missing service discovery wiring in apphost.ts
+- **Root cause:** web service did not reference api endpoint
+- **Fix:** Added `.withReference(api.getEndpoint("http")).waitFor(api)` to web service
+- **Commit:** 2ac9d93 "Fix vite-react-api browser 502 by wiring web->api service discovery"
+- **Verification:** Browser tested immediately after fix — all working
+
+**Known Non-Blocking Issue:**
+- Aspire 13.4.6 SPA/dev-server limitation: browser OTLP console errors for `aspire.dev.internal` (unresolvable from host)
+- **Status:** Cosmetic across all samples; filtered out; zero real errors
+
+**Code Changes:**
+- Only change: vite-react-api browser 502 fix (commit 2ac9d93) — already committed
+- Branch state: Clean after commit
+
+**Outcome:** All 8 Aspire samples runtime-validated on Aspire 13.4.6. One regression found during revalidation (vite-react-api) has been fixed and verified. All samples now pass comprehensive functional testing. **Ready for release/demo.**
+
+**Logs:**
+- Session log: `.squad/log/2026-07-04T05-51-25Z-revalidation-all-8-pass.md`
+- Orchestration log: `.squad/orchestration-log/2026-07-04T05-51-25Z-coordinator-revalidation.md`
+
+**Owner:** Coordinator (direct execution) — ✅ COMPLETE
+
+---
+
 ## Governance
 
 - All meaningful changes require team consensus

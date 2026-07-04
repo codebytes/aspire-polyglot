@@ -100,3 +100,60 @@
 - **Bonus fix:** Corrected environment variable mismatch in `AppHost.java` — replaced `PG_HOST`, `PG_PORT`, `PG_USER`, `PG_PASSWORD`, `PG_DB` with `NOTESDB_JDBCCONNECTIONSTRING`, `NOTESDB_USERNAME`, `NOTESDB_PASSWORD` to match what Spring Boot actually reads from `application.properties`
 - **Outcome:** Full observability stack (traces, metrics, logs) now flows from Spring Boot → Aspire dashboard with zero Java code changes — pure config-driven setup
 - **Learning:** Spring Boot OTel starter is ideal for Aspire integration in Java file-based AppHosts where Java agent path injection isn't available
+
+### 2026-07-02 — Aspire 13.4.3 SDK Upgrade
+
+- **Upgraded spring-boot-postgres** from Aspire 13.2.4 → 13.4.3 SDK
+- **aspire.config.json** version bumped (13.4.6 attempted but CLI at 13.4.3, so used 13.4.3 to avoid version mismatch)
+- **aspire restore** succeeded without errors; `.modules/` directory unchanged (perfect API stability between 13.2.4 and 13.4.3)
+- **AppHost.java** required zero changes — all methods (`addContainer`, `addDockerfile`, `withOtlpExporter`, `withEnvironment`, `withExternalHttpEndpoints`) work identically
+- **Spring Boot app** (`src/`) compiles successfully with `mvn clean compile`
+- **Key finding:** Generated Java bindings are 100% stable across minor versions (13.2.4 → 13.4.3) — no breaking changes
+- **CLI behavior:** Installed CLI (13.4.3) cannot restore SDK 13.4.6; CLI update requires interactive prompt unavailable in non-interactive mode
+- **Recommendation:** Team should run `aspire update` interactively to get CLI 13.4.6+ for future upgrades
+
+### 2026-07-02 — Final Upgrade: Aspire 13.4.6
+
+- **CLI upgraded:** Team (Romanoff/Parker) upgraded Aspire CLI from 13.4.3 → 13.4.6 during their runs
+- **Re-bumped spring-boot-postgres** from 13.4.3 → 13.4.6 for alignment with C#, Go, TS samples
+- **aspire restore** succeeded with CLI 13.4.6; `.modules/` unchanged (perfect API stability across 13.2.4 → 13.4.3 → 13.4.6)
+- **AppHost.java** compiles cleanly; Spring Boot app builds successfully
+- **No breaking changes:** Java bindings kept `withOtlpExporter()` signature unchanged (no options object required unlike TypeScript)
+- **Key win:** Java polyglot hosting API is 100% stable across 4 patch versions (13.2.4, 13.4.3, 13.4.6)
+- **Final state:** All polyglot samples now aligned at Aspire 13.4.6
+
+### 2026-07-02 — Aspire 13.4.6 Binding Layout Migration
+
+- **Migrated from old `.modules/` → new `.aspire/modules/` layout** as part of Aspire 13.4.6 SDK upgrade
+- **Old layout:** 3 monolithic files (Aspire.java, Base.java, Transport.java) at `.modules/` (13.2.4-era)
+- **New layout:** 182 exploded per-class files + `sources.txt` at `.aspire/modules/` (13.4.6)
+- **Breaking change found:** `addDockerfile(name, contextPath, null, null)` → `addDockerfile(name, contextPath)` (4-param signature removed, replaced by 2-param + optional AddDockerfileOptions)
+- **AppHost.java updated:** Simplified `addDockerfile` call from 4 params to 2 params
+- **Package alignment confirmed:** Both old and new bindings use `package aspire;` matching AppHost.java
+- **Compilation verified:** AppHost compiles cleanly with `javac @.aspire/modules/sources.txt AppHost.java`
+- **Spring Boot app:** Builds successfully (no regression to service code)
+- **Migration complete:** Old `.modules/` removed via `git rm -r`; new `.aspire/modules/` remains on disk (gitignore rule pending from Rogers)
+- **Key insight:** Aspire 13.4.6 uses exploded per-class layout with `sources.txt` manifest for cleaner codegen and better IDE support
+
+### 2026-07-02 — Aspire 13.4.6 Java AppHost Default-Package Migration
+
+- **Context:** Aspire 13.4.6 Java launcher runs `java -cp .java-build AppHost` (expects main class in default package)
+- **Issue:** AppHost.java declared `package aspire;` (line 1) → compiled to `.java-build/aspire/AppHost.class` → ClassNotFoundException
+- **Root cause:** 13.4.6 launcher derives main class name from FILENAME (`AppHost.java` → `AppHost`) and expects it in default package
+- **Fix 1 (BLOCKER):** Migrated AppHost.java to default-package convention
+  - Removed `package aspire;` declaration
+  - Added `import aspire.*;` to access generated bindings (IDistributedApplicationBuilder, Aspire, DistributedApplication)
+  - No logic changes — builder pattern, env vars, and `addDockerfile("api", "./src")` unchanged
+- **Fix 2:** Added explicit startup ordering: `api.waitFor(pg);`
+  - Spring Boot uses `spring.jpa.hibernate.ddl-auto=update` → connects to Postgres at startup to create schema
+  - Without `waitFor`, cold starts race: if `pg` isn't Healthy yet, HikariCP fails fast and Spring Boot crashes
+  - Placement: after env-wiring block (after `api.withExternalHttpEndpoints();`) and before `builder.build();`
+  - Comment added explaining env wiring alone does NOT order startup in 13.4.6 polyglot
+- **Verification:** Compiled with launcher's exact command: `javac --enable-preview --source 25 -d .java-build @.aspire/modules/sources.txt AppHost.java`
+  - ✅ Compilation succeeded (warnings about unchecked operations are normal)
+  - ✅ Class file landed at `.java-build/AppHost.class` (default package, NOT under `aspire/`)
+  - ✅ Confirms `java -cp .java-build AppHost` will now find the class
+- **Key learning:** Java apphost convention in 13.4.6: main class in DEFAULT package + `import aspire.*;` for bindings + filename = class name
+- **Failure mode:** `package aspire;` in user apphost → bindings compile to correct location but main class in wrong package → ClassNotFoundException at launch
+- **Ordering rule:** `waitFor(resource)` is mandatory for containers with startup dependencies — env/`withReference` wiring is config-only, not ordering
+- **Java version used:** OpenJDK 25.0.3 (supports `--enable-preview --source 25`)

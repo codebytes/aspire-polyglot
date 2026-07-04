@@ -4,13 +4,13 @@
     "language": "python"
   },
   "sdk": {
-    "version": "13.2.4"
+    "version": "13.4.6"
   },
   "features": {
     "polyglotSupportEnabled": true,
     "experimentalPolyglot:python": true
   },
   "packages": {
-    "Aspire.Hosting.PostgreSQL": "13.2.4"
+    "Aspire.Hosting.PostgreSQL": "13.4.6"
   }
 }

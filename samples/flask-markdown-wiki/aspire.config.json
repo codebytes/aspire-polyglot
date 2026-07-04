@@ -4,14 +4,14 @@
     "language": "python"
   },
   "sdk": {
-    "version": "13.2.4"
+    "version": "13.4.6"
   },
   "features": {
     "polyglotSupportEnabled": true,
     "experimentalPolyglot:python": true
   },
   "packages": {
-    "Aspire.Hosting.Redis": "13.2.4",
-    "Aspire.Hosting.Python": "13.2.4"
+    "Aspire.Hosting.Redis": "13.4.6",
+    "Aspire.Hosting.Python": "13.4.6"
   }
 }

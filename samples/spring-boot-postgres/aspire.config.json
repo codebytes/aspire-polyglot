@@ -4,7 +4,7 @@
     "language": "java"
   },
   "sdk": {
-    "version": "13.2.4"
+    "version": "13.4.6"
   },
   "features": {
     "polyglotSupportEnabled": true,

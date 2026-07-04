@@ -8,6 +8,18 @@
 
 ## Learnings
 
+### 2026-07-02 — Aspire 13.4.6 TypeScript SDK Upgrade
+- **Bumped both TS samples from 13.2.4 → 13.4.6** (vite-react-api, ts-starter)
+- **Key config decision for vite-react-api**: Must include BOTH `sdk.version` AND `packages.Aspire.Hosting.JavaScript` at 13.4.6 — SDK alone fails restore with "No code generator found for language: TypeScript" (13.2.4 only had `sdk`, no `packages`)
+- **ts-starter config unchanged**: Still uses `packages` only, no `sdk.version` key (older format still works)
+- **CLI auto-updated to 13.4.6 mid-session** — initial restore failed with 13.4.3 CLI vs 13.4.6 SDK mismatch, then CLI updated itself
+- **.modules regenerated successfully**: aspire.ts +52k LOC (ts-starter), +54k LOC (vite-react-api) — major codegen changes
+- **Breaking API change: `.withOtlpExporterProtocol(protocol)` removed** — replaced with `.withOtlpExporter({ protocol })` (options object pattern)
+- **AppHost fixes**: Removed deprecated `.withOtlpExporter().withOtlpExporterProtocol(...)` chains; now single `.withOtlpExporter({ protocol: OtlpProtocol.HttpProtobuf })` call
+- **Type-checking passed** on both samples after API migration
+- **Verified**: Both apphost.ts files compile cleanly with regenerated 13.4.6 bindings
+- **Binding-layout decision:** TypeScript samples intentionally remain on `.modules/` (backward compatible with 13.4.6). Polyglot samples (Go/Python/Java) migrated to `.aspire/modules/` per 13.4.6 layout. No migration needed for TS as bindings are stable across 13.2.4/13.4.6.
+
 ### 2025-07-18 — Full JS/TS Code Review
 - **All 4 samples have current deps**: React 19, Vite 5-6, Svelte 4, Angular 19, TypeScript 5.6-5.7, KafkaJS 2.2.4 — nothing outdated
 - **Aspire service discovery is consistent**: Every sample correctly reads `services__*` or `ConnectionStrings__*` env vars with localhost fallbacks

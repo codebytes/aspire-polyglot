@@ -29,8 +29,9 @@ const api = builder.addDockerfile("api", "./src/api")
 // launch profiles so plain `aspire run` works out of the box. See
 // .squad/decisions/inbox/parker-vite-react-otel.md for the full design.
 const web = builder.addDockerfile("web", "./src/web")
-  .withOtlpExporter()
-  .withOtlpExporterProtocol(OtlpProtocol.HttpProtobuf)
+  .withOtlpExporter({ protocol: OtlpProtocol.HttpProtobuf })
+  .withReference(api.getEndpoint("http"))
+  .waitFor(api)
   .withHttpEndpoint({ targetPort: 5173, env: "PORT" })
   .withExternalHttpEndpoints();
 
