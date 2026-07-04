@@ -14,8 +14,8 @@
 // a child of the browser span.
 
 import { WebTracerProvider, BatchSpanProcessor } from '@opentelemetry/sdk-trace-web';
-import { Resource } from '@opentelemetry/resources';
-import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
+import { resourceFromAttributes } from '@opentelemetry/resources';
+import { ATTR_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import { ZoneContextManager } from '@opentelemetry/context-zone';
 import { registerInstrumentations } from '@opentelemetry/instrumentation';
@@ -55,8 +55,8 @@ if (tracesEndpoint) {
     }, {});
 
   const provider = new WebTracerProvider({
-    resource: new Resource({
-      [SemanticResourceAttributes.SERVICE_NAME]: serviceName,
+    resource: resourceFromAttributes({
+      [ATTR_SERVICE_NAME]: serviceName,
       'service.namespace': 'svelte-go-bookmarks',
     }),
     spanProcessors: [
