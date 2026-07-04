@@ -299,3 +299,51 @@ Complete review and polish of `slides/Slides.md` for conference talk delivery. F
 ## Architecture Note
 
 The key insight: **polyglot SDK maturity varies significantly.** C# SDK is rich and typed; Python/Go/Java SDKs use `add_container` + `add_dockerfile` for everything. TypeScript SDK is in between. Slides now honestly reflect this, showing what works TODAY rather than aspirational APIs that don't exist yet.
+
+---
+
+# Decision: Angular Proxy Target Resolution from Aspire Service Discovery
+
+**Author:** Coordinator  
+**Date:** 2026-07-04  
+**Status:** RESOLVED  
+
+## Summary
+
+Angular samples must resolve the API proxy target from Aspire service-discovery environment variables at serve time via a `.cjs` proxy config. Never hard-code `localhost:5000`—that port collides with macOS AirPlay Receiver.
+
+## Problem Statement
+
+The dotnet-angular-cosmos sample frontend had a hard-coded proxy target of `http://localhost:5000` in `proxy.conf.json`. On macOS, port 5000 is occupied by AirPlay Receiver (Control Center, server AirTunes/950.7.1). When ng-serve proxied requests through that target, every `/api` request returned 403 Forbidden. The Aspire AppHost assigns dynamic ports; the API never listens on 5000.
+
+## Solution
+
+**Proxy Configuration Pattern:**
+
+Replace static `proxy.conf.json` with dynamic `proxy.conf.cjs` that:
+1. Reads Aspire service-discovery env vars at serve time: `services__api__https__0` / `services__api__http__0`
+2. Falls back to regex pattern matching if env vars absent
+3. Defaults to `localhost:5000` only for standalone ng serve (without Aspire)
+
+**Update angular.json:**
+```json
+"proxyConfig": "src/proxy.conf.cjs"
+```
+
+**Error Handling:**  
+Add error handlers to components that make proxied requests so failed POST/PUT surface alerts instead of failing silently.
+
+## Verification
+
+- GET `/api/recipes` through proxy → 200 (was 403)
+- POST `/api/recipes` through proxy → 201, persisted
+- Field names validated against API model
+
+## Applies To
+
+- dotnet-angular-cosmos sample (implemented)
+- Any future Angular samples in Aspire demos
+
+## Architecture Note
+
+This pattern ensures Angular frontends automatically discover Aspire-assigned API ports at serve time, making samples portable across macOS, Linux, and Windows without manual proxy configuration.

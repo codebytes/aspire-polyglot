@@ -146,3 +146,23 @@
 - **Comment updated**: Clarified split between TypeScript samples (keep `.modules/`) and Go/Python/Java samples (new `.aspire/modules/`)
 - **Philosophy preserved**: Generated bindings tracked in git so `aspire run` works out of the box without rebuild
 - **Key learning**: Aspire 13.4.6 introduces new binding layout while maintaining backward compatibility for TypeScript samples
+
+### 2026-07-04 — Angular Proxy Pattern & macOS Port 5000 Gotcha
+
+**Context**: Coordinator diagnosed and fixed "can't add ingredients/recipes" in dotnet-angular-cosmos sample.
+
+**Root Cause**: Hard-coded proxy target `http://localhost:5000` in `proxy.conf.json`. On macOS, port 5000 is occupied by AirPlay Receiver (Control Center, server AirTunes/950.7.1). The Aspire AppHost assigns dynamic ports; the API never listens on 5000. Proxied requests through ng-serve all returned 403.
+
+**Solution**: Replaced `proxy.conf.json` with `proxy.conf.cjs` that resolves the API URL from Aspire service-discovery env vars (`services__api__https__0` / `services__api__http__0`) at serve time, with fallback patterns and localhost:5000 default for standalone ng serve.
+
+**Key Learning for Angular Samples**: Always resolve API proxy targets dynamically from Aspire env vars, never hard-code. This pattern works cross-platform (macOS, Linux, Windows) without manual proxy config.
+
+**Files Changed**:
+- Deleted: `samples/dotnet-angular-cosmos/frontend/proxy.conf.json`
+- Created: `samples/dotnet-angular-cosmos/frontend/proxy.conf.cjs` (Aspire-aware)
+- Modified: `samples/dotnet-angular-cosmos/frontend/angular.json` (proxyConfig reference)
+- Modified: `samples/dotnet-angular-cosmos/frontend/src/app/app.component.ts` (error handling in saveRecipe())
+
+**Commit**: a931e4a "fix(dotnet-angular-cosmos): resolve API proxy target from Aspire env"
+
+**Apply to Future Angular Samples**: This pattern should be the standard for any Angular samples in Aspire demos.
