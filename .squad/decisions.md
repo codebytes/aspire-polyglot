@@ -428,6 +428,46 @@
 
 ---
 
+## HTTP Endpoint Allocation Pattern for Aspire Resources (2026-07-04T03:47:29Z)
+
+**Status:** ✅ APPROVED  
+**Owner:** Rogers  
+
+**Principle:** Every Aspire resource that must serve HTTP (including .NET projects like EventProducer, as well as JS/Go/Python apps) MUST declare an explicit endpoint via `.WithHttpEndpoint()` so Aspire assigns a dynamic port and injects `ASPNETCORE_URLS` (or equivalent language env vars).
+
+**Context:** EventProducer in polyglot-event-stream failed silently because AppHost called `.WithExternalHttpEndpoints()` on the producer, expecting it to allocate an endpoint. However, `.WithExternalHttpEndpoints()` only marks EXISTING endpoints external; it does NOT create one. With no Aspire-managed endpoint, ASP.NET Core Kestrel fell back to hard-coded default: port 5000. On macOS, port 5000 is occupied by AirPlay Receiver (Control Center). Producer failed to bind and crashed → no events published → empty pipeline.
+
+**Solution:** Added `.WithHttpEndpoint()` to producer before `.WithExternalHttpEndpoints()`, mirroring the working pattern in dotnet-angular-cosmos API resource. This ensures Aspire allocates a dynamic port and injects the required env var.
+
+**Implementation Pattern (C#):**
+```csharp
+// CORRECT:
+var producer = builder
+    .AddProject<EventProducer>("producer")
+    .WithHttpEndpoint()                    // ← Allocate dynamic port + inject env
+    .WithExternalHttpEndpoints()           // ← Mark external in dashboard
+    .WaitFor(kafka);                       // ← Cold-start ordering
+```
+
+**Additional Learning:** The `.WaitFor()` pattern is essential for all infrastructure dependencies (databases, message brokers). Applied to producer, consumer, and dashboard in polyglot-event-stream to eliminate Kafka cold-start reconnect races.
+
+**Diagnostic Technique (macOS):**
+```bash
+lsof -nP -iTCP -sTCP:LISTEN | grep 5000
+# Expected: ControlCe (AirPlay) owns *:5000
+```
+
+**Scope:** 
+- ✅ dotnet-angular-cosmos API (already correct pattern)
+- ✅ polyglot-event-stream producer, consumer, dashboard (now corrected, commit 0ba9dc1)
+- Review: Other polyglot samples (Python/JS/Go apphosts) for similar pattern
+
+**Verification:** Relaunched via `aspire run`. Producer bound dynamic port 55569. Full pipeline healthy: producer /api/sensors → 200 (5 sensors); consumer /api/aggregates → readingCount climbing; dashboard /api/readings → live data with all sensor cards rendered.
+
+**Related:** Extends earlier macOS port 5000 / AirPlay principle from dotnet-angular-cosmos proxy fix (same root cause, same collision pattern, now generalized to HTTP endpoint allocation).
+
+---
+
 ## Governance
 
 - All meaningful changes require team consensus

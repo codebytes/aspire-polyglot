@@ -166,3 +166,24 @@
 **Commit**: a931e4a "fix(dotnet-angular-cosmos): resolve API proxy target from Aspire env"
 
 **Apply to Future Angular Samples**: This pattern should be the standard for any Angular samples in Aspire demos.
+
+### 2026-07-04 — Polyglot Event Stream Producer HTTP Endpoint Fix
+
+**Context**: Runtime QA revealed polyglot-event-stream failed in some environments: producer crashed, consumer/dashboard saw no data.
+
+**Diagnosis Technique**: Used `lsof -nP -iTCP -sTCP:LISTEN | grep 5000` to identify AirPlay Receiver (ControlCe pid 778) holding port 5000 on macOS. Producer's AppHost called `.WithExternalHttpEndpoints()` only, which marks existing endpoints external but does NOT create one. Kestrel fell back to hard-coded default port 5000 → bind failure → crash.
+
+**Root Cause**: Same class of bug as earlier dotnet-angular-cosmos proxy fix — misunderstanding that Aspire port allocation is opt-in. `.WithExternalHttpEndpoints()` is a marker, not an allocator. Required `.WithHttpEndpoint()` to come first.
+
+**Solution**: 
+- Added `.WithHttpEndpoint()` to producer before `.WithExternalHttpEndpoints()` (mirrors dotnet-angular-cosmos API pattern)
+- Added `.WaitFor(kafka)` to producer, consumer, and dashboard to eliminate cold-start Kafka reconnect races
+
+**Files Changed**:
+- Modified: `samples/polyglot-event-stream/AppHost/Program.cs` (producer, consumer, dashboard resources)
+
+**Verification**: Relaunched via `aspire run`. Producer bound dynamic port 55569. Full pipeline healthy: producer /api/sensors → 200; consumer /api/aggregates → readingCount climbing (55→59); dashboard /api/readings → live data; browser rendered all 5 sensor cards with sparklines + live timestamps.
+
+**Commit**: 0ba9dc1 "fix(polyglot-event-stream): add WithHttpEndpoint() to producer, WaitFor(kafka) to all resources"
+
+**Key Learning**: The pattern `.WithHttpEndpoint().WithExternalHttpEndpoints()` is the standard for any Aspire resource serving HTTP. First call allocates (Aspire picks a dynamic port + injects env), second call marks it external in the dashboard. Never assume framework defaults — on macOS, port 5000 is taken by AirPlay. This principle applies equally to .NET, Node, Python, Go apps in polyglot Aspire setups.
