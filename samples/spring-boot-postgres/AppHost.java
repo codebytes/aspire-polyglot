@@ -15,6 +15,12 @@ public class AppHost {
             api.withEnvironment("NOTESDB_JDBCCONNECTIONSTRING", "jdbc:postgresql://pg:5432/notesdb");
             api.withEnvironment("NOTESDB_USERNAME", "postgres");
             api.withEnvironment("NOTESDB_PASSWORD", "postgres");
+            // Declare the HTTP endpoint on the container's target port (8080, where
+            // Spring Boot's embedded Tomcat listens). withExternalHttpEndpoints() only
+            // marks EXISTING endpoints as external — without an explicit withHttpEndpoint
+            // the api container has no endpoint at all, so Aspire exposes no host URL and
+            // the API is unreachable from the browser/host.
+            api.withHttpEndpoint(new WithHttpEndpointOptions().targetPort(8080.0).name("http"));
             api.withExternalHttpEndpoints();
             // Enforce startup ordering: api waits for pg to be healthy before starting.
             // This prevents Spring Boot/Hibernate from attempting to connect to Postgres
