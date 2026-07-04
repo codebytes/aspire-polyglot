@@ -429,16 +429,27 @@ export class AppComponent implements OnInit {
 
   saveRecipe() {
     if (this.editingRecipe && this.currentRecipe.id) {
-      this.recipeService.updateRecipe(this.currentRecipe.id, this.currentRecipe).subscribe(() => {
-        this.loadRecipes();
-        this.cancelEdit();
+      this.recipeService.updateRecipe(this.currentRecipe.id, this.currentRecipe).subscribe({
+        next: () => {
+          this.loadRecipes();
+          this.cancelEdit();
+        },
+        error: (err) => this.handleSaveError(err)
       });
     } else {
-      this.recipeService.createRecipe(this.currentRecipe).subscribe(() => {
-        this.loadRecipes();
-        this.cancelEdit();
+      this.recipeService.createRecipe(this.currentRecipe).subscribe({
+        next: () => {
+          this.loadRecipes();
+          this.cancelEdit();
+        },
+        error: (err) => this.handleSaveError(err)
       });
     }
+  }
+
+  private handleSaveError(err: unknown) {
+    console.error('Failed to save recipe', err);
+    alert('Failed to save recipe. Please check that the API is running and try again.');
   }
 
   editRecipe(recipe: Recipe) {
