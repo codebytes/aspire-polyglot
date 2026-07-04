@@ -347,3 +347,120 @@ Add error handlers to components that make proxied requests so failed POST/PUT s
 ## Architecture Note
 
 This pattern ensures Angular frontends automatically discover Aspire-assigned API ports at serve time, making samples portable across macOS, Linux, and Windows without manual proxy configuration.
+
+---
+
+# Decision: svelte-go-bookmarks OpenTelemetry Major Version Breaking Changes
+
+**Author:** Chris Ayers (Coordinator, live repro)  
+**Date:** 2026-07-04  
+**Status:** RESOLVED
+
+## Summary
+
+Dependabot bumped @opentelemetry/resources, @opentelemetry/semantic-conventions, and svelte to new major versions with breaking API changes. Fixed module-load failures in otel.js and main.js.
+
+## Problem Statement
+
+Sample displayed blank white page. Root cause: otel.js threw at module-load before Svelte could mount.
+
+Breaking changes:
+- `Resource` constructor removed → replaced with `resourceFromAttributes()`
+- `SemanticResourceAttributes.SERVICE_NAME` removed → replaced with `ATTR_SERVICE_NAME`
+- Svelte 5: `new App({target})` → `mount(App,{target})`
+
+## Solution
+
+**otel.js:**
+```javascript
+// Before:
+const resource = new Resource({
+  attributes: {
+    [SemanticResourceAttributes.SERVICE_NAME]: "svelte-go-bookmarks",
+  },
+});
+
+// After:
+import { resourceFromAttributes } from "@opentelemetry/resources";
+import { ATTR_SERVICE_NAME } from "@opentelemetry/semantic-conventions";
+
+const resource = resourceFromAttributes({
+  [ATTR_SERVICE_NAME]: "svelte-go-bookmarks",
+});
+```
+
+**main.js:**
+```javascript
+// Before:
+const app = new App({ target: document.getElementById("app") });
+
+// After:
+import { mount } from "svelte";
+mount(App, { target: document.getElementById("app") });
+```
+
+## Verification
+
+- Page renders without white screen
+- 0 console errors
+- Add-bookmark persists to Postgres
+- Go API endpoints responsive
+
+## Guidance
+
+When samples break after dependabot bumps:
+1. Verify installed package exports: `node -e "console.log(Object.keys(require('./node_modules/<pkg>')))"`
+2. Compare against actual imports in source
+3. Do NOT assume config or runtime issues before checking API changes
+
+Commit: e96c4c5
+
+---
+
+# Decision: spring-boot-postgres Missing HTTP Endpoint
+
+**Author:** Chris Ayers (Coordinator, live repro)  
+**Date:** 2026-07-04  
+**Status:** RESOLVED
+
+## Summary
+
+Spring Boot API container was unreachable from host despite booting fine and connecting to Postgres. Root cause: `withExternalHttpEndpoints()` does NOT create an endpoint; only marks existing ones external.
+
+## Problem Statement
+
+AppHost.java called `withExternalHttpEndpoints()` but never called `withHttpEndpoint()`. Result: no endpoint declared (urls: [], container.ports: []).
+
+Key misconception: `withExternalHttpEndpoints()` is NOT an endpoint creation method.
+- Does NOT create an endpoint from Dockerfile EXPOSE
+- Only marks already-declared endpoints as external
+- addDockerfile() / addContainer() do NOT auto-create endpoints
+
+## Solution
+
+**AppHost.java:**
+```java
+var api = builder
+    .addDockerfile("api", apiContextPath, "Dockerfile.jvm")
+    .withHttpEndpoint(
+        targetPort = 8080,
+        name = "http"
+    )
+    .withExternalHttpEndpoints();
+```
+
+## Verification
+
+- Proxied host URL and port present in Aspire dashboard
+- GET /api/notes returns persisted data
+- POST /api/notes persists successfully
+- Container accessible at dynamic host port
+
+## Pattern for Polyglot Resources
+
+For any container/Dockerfile resource serving HTTP:
+1. ALWAYS call `withHttpEndpoint(targetPort, name)` to declare the endpoint
+2. THEN call `withExternalHttpEndpoints()` to expose it
+3. Mirror the working svelte-go-bookmarks apphost.go pattern
+
+Commit: 7dcc925
