@@ -51,31 +51,47 @@ Falls back to SQLite when running standalone (no Aspire).
 
 ### Prerequisites
 
-- .NET 9.0 SDK
-- Python 3.11+
-- pip
-- Docker (for PostgreSQL container)
+- [Aspire CLI](https://aspire.dev/get-started/install-cli/) **13.4.x** — must match the SDK this sample is pinned to (`13.4.6`, see `sdk.version` in `aspire.config.json`). Check yours with `aspire --version`. A mismatch causes the errors in [Troubleshooting](#troubleshooting).
+- [Docker](https://docs.docker.com/get-docker/) — runs the PostgreSQL container and builds the Django image.
+- Python 3.11+ — only needed for the **Standalone** path below. The Aspire path builds and runs the app inside a container, so no local Python setup is required.
 
-### Run the Application
+### Run with Aspire (recommended)
 
-1. **Install Python dependencies:**
-   ```bash
-   cd src
-   pip install -r requirements.txt
-   cd ..
-   ```
+From the **sample root** (not `src/`):
 
-2. **Run with Aspire:**
-   ```bash
-   aspire run
-   ```
+```bash
+aspire run
+```
 
-3. **Access the app:**
-   - Open the Aspire dashboard (shown in terminal)
-   - Click on the `polls` endpoint
-   - Start voting!
+That's all — there is no local `pip install` step. The Django app is built from `src/Dockerfile` and its dependencies are installed during the image build. `aspire run` starts PostgreSQL, builds and starts the app, injects the `pollsdb` connection string, and runs database migrations on startup.
 
-The database will be automatically created and seeded with sample polls on first run.
+Then open the Aspire dashboard (URL shown in the terminal), click the `polls` endpoint, and start voting. The app starts with an empty poll list; run `python manage.py seed` (in the `polls` container, or locally in standalone mode) to load sample polls.
+
+### Run standalone (without Aspire)
+
+With no Aspire-provided connection string, the app falls back to SQLite:
+
+```bash
+cd src
+pip install -r requirements.txt
+python manage.py seed   # optional: load sample polls
+python run.py
+```
+
+Then open http://localhost:8080.
+
+### Troubleshooting
+
+**`AttributeError: 'IDistributedApplicationBuilder' object has no attribute 'postgres'`** (or `add_postgres`), or **`CapabilityError: Unknown capability: Aspire.Hosting/createBuilderWithOptions`:**
+
+Both mean your Aspire CLI version does not match the SDK this sample is pinned to. The Python AppHost talks to a version-specific backend, and the generated helper module in `.aspire/modules/aspire_app.py` must line up with your CLI — otherwise a capability such as `postgres` (from `Aspire.Hosting.PostgreSQL`) or `createBuilderWithOptions` won't resolve.
+
+To fix it, align the versions:
+
+1. Run `aspire --version` and confirm it is **13.4.x**, matching `sdk.version` in `aspire.config.json`. Install or update the CLI if needed.
+2. Run `aspire run` from a clean checkout — it regenerates `.aspire/modules/aspire_app.py` to match your CLI. If you previously ran `aspire update`, restore the pinned versions first: `git checkout -- aspire.config.json .aspire/`.
+
+**"Failed to install the Python dependencies":** you do not need to `pip install` anything to use `aspire run` — the app's dependencies are installed in the container image, not in your shell. Just run `aspire run` from the sample root.
 
 ## How HTMX Works Here
 
@@ -109,10 +125,13 @@ No JSON, no JavaScript fetch, no state management — just HTML over the wire!
 
 ```
 django-htmx-polls/
-├── apphost.py                  # Aspire orchestration
+├── apphost.py                  # Aspire orchestration (Python AppHost)
+├── aspire.config.json          # Pinned SDK + package versions
 ├── .aspire/
-│   └── settings.json
+│   └── modules/
+│       └── aspire_app.py       # Generated Aspire helper (create_builder)
 ├── src/
+│   ├── Dockerfile              # Image built and run by add_dockerfile
 │   ├── run.py                  # Waitress WSGI entry point
 │   ├── manage.py               # Django management
 │   ├── requirements.txt        # Python dependencies
@@ -135,7 +154,7 @@ django-htmx-polls/
 
 ### apphost.py
 
-Uses `AddPythonApp()` to run Django via the `run.py` wrapper script. Aspire sets the `PORT` environment variable, and the Python app binds to it.
+The Python AppHost imports `create_builder` from the generated `.aspire/modules/aspire_app.py` helper, then wires the graph: `add_postgres("pg").add_database("pollsdb")` for the database and `add_dockerfile("polls", "./src")` to build and run Django from `src/Dockerfile`. `with_reference(pollsdb)` injects the connection string, `wait_for(pollsdb)` orders startup, and `with_http_endpoint(target_port=8080, env="PORT")` tells the app which port to bind — Django reads `PORT` in `run.py`.
 
 ### src/run.py
 
