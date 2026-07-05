@@ -703,3 +703,121 @@ section.lead[data-background-image] {
   color: var(--aspire-black);
   text-shadow: none;
 }
+
+/* ── Data charts (pure CSS, render in HTML/PNG/PDF) ── */
+.chart {
+  max-width: 1060px;
+  margin: 0.4em auto 0;
+}
+
+.chart .hbars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55em;
+}
+
+.chart .metric {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  align-items: center;
+  column-gap: 0.9em;
+}
+
+.chart .metric .name {
+  font-weight: 600;
+  font-size: 0.9em;
+  text-align: right;
+  color: var(--aspire-black);
+  line-height: 1.15;
+}
+
+.chart .group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.32em;
+  min-width: 0;
+}
+
+.chart .bar {
+  height: 30px;
+  border-radius: 0 8px 8px 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 0.7em;
+  color: var(--aspire-white);
+  font-weight: 600;
+  font-size: 0.82em;
+  box-sizing: border-box;
+  min-width: 2.2em;
+  box-shadow: 0 1px 3px rgba(31, 30, 51, 0.14);
+}
+
+.chart .bar.before { background: var(--aspire-gray-3); }
+.chart .bar.after  { background: var(--aspire-gradient-purple-magenta); }
+.chart .bar.solo   { background: var(--aspire-gradient-blue-purple); }
+
+.chart .legend {
+  display: flex;
+  gap: 1.6em;
+  justify-content: center;
+  margin-top: 0.85em;
+  font-size: 0.78em;
+  color: var(--aspire-gray-4);
+  font-weight: 500;
+}
+
+.chart .legend .key { display: inline-flex; align-items: center; }
+
+.chart .legend .key::before {
+  content: '';
+  display: inline-block;
+  width: 0.95em;
+  height: 0.95em;
+  border-radius: 3px;
+  margin-right: 0.45em;
+}
+
+.chart .legend .key.k-before::before { background: var(--aspire-gray-3); }
+.chart .legend .key.k-after::before  { background: var(--aspire-purple); }
+
+.chart .caption {
+  text-align: center;
+  margin-top: 0.8em;
+  font-size: 0.84em;
+  color: var(--aspire-gray-4);
+  font-weight: 500;
+}
+
+.chart .caption strong { color: var(--aspire-purple); font-weight: 700; }
+
+/* ── Tech stack chips (demo slides) ── */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5em;
+  margin: 0.35em auto 0.15em;
+}
+
+.chips span {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3em 0.9em;
+  border-radius: 999px;
+  font-size: 0.72em;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0;
+  background: var(--aspire-muted);
+  color: var(--aspire-purple);
+  border: 1px solid var(--aspire-secondary);
+}
+
+.chips span.host {
+  background: var(--aspire-gradient-blue-purple);
+  color: var(--aspire-white);
+  border: none;
+  box-shadow: 0 1px 3px rgba(31, 30, 51, 0.18);
+}

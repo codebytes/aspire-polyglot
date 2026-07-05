@@ -77,6 +77,25 @@ Your team doesn't use one language — it uses **five**.
 
 <!-- _class: compact -->
 
+# What Collapses Into One
+
+**One `aspire run` replaces the sprawl of five toolchains:**
+
+<div class="chart">
+<div class="hbars">
+<div class="metric"><div class="name">Toolchains</div><div class="group"><div class="bar before" style="width:100%">5</div><div class="bar after" style="width:20%">1</div></div></div>
+<div class="metric"><div class="name">Config formats</div><div class="group"><div class="bar before" style="width:80%">4</div><div class="bar after" style="width:20%">1</div></div></div>
+<div class="metric"><div class="name">Observability panes</div><div class="group"><div class="bar before" style="width:60%">3</div><div class="bar after" style="width:20%">1</div></div></div>
+</div>
+<div class="legend"><span class="key k-before">Without Aspire</span><span class="key k-after">With Aspire</span></div>
+</div>
+
+<!-- Config formats: .env, YAML, application.properties, appsettings.json. Observability panes: logs, traces, metrics — normally three separate tools. Aspire folds all of it into one model and one dashboard. -->
+
+---
+
+<!-- _class: compact -->
+
 # The Four Pillars
 
 <div class="columns">
@@ -457,7 +476,7 @@ builder.AddPythonApp("api", "../api", "app.py")
 builder.Build().Run();
 ```
 
-**40+ integrations** — Redis, Azure, Kafka, MongoDB, PostgreSQL — available out of the box.
+**100+ integrations** — Redis, Azure, Kafka, MongoDB, PostgreSQL — available out of the box.
 
 <!-- C# is the original AppHost language. Most existing samples use this. -->
 
@@ -480,7 +499,7 @@ await builder
 await builder.build().run();
 ```
 
-**Same 40+ integrations** as C# — auto-generated via `[AspireExport]` attributes. A JS/TS team never needs to touch .NET.
+**Same 100+ integrations** as C# — auto-generated via `[AspireExport]` attributes. A JS/TS team never needs to touch .NET.
 
 <!-- The TypeScript AppHost uses the same integration packages as C#. -->
 
@@ -622,7 +641,7 @@ const svc = await addMyService(builder, "svc");
     "path": "apphost.py",
     "language": "python"
   },
-  "sdk": { "version": "13.2.0" },
+  "sdk": { "version": "13.4.6" },
   "channel": "stable",
   "features": {
     "polyglotSupportEnabled": true
@@ -806,11 +825,32 @@ $ code .    # reads .vscode/mcp.json
 
 <!-- _class: compact -->
 
+# Five Languages, One Dashboard
+
+**How many of the 8 samples use each language — all in one dashboard:**
+
+<div class="chart">
+<div class="hbars">
+<div class="metric"><div class="name">JavaScript / TS</div><div class="group"><div class="bar solo" style="width:100%">5</div></div></div>
+<div class="metric"><div class="name">Python</div><div class="group"><div class="bar solo" style="width:80%">4</div></div></div>
+<div class="metric"><div class="name">C# / .NET</div><div class="group"><div class="bar solo" style="width:40%">2</div></div></div>
+<div class="metric"><div class="name">Java</div><div class="group"><div class="bar solo" style="width:20%">1</div></div></div>
+<div class="metric"><div class="name">Go</div><div class="group"><div class="bar solo" style="width:20%">1</div></div></div>
+</div>
+<div class="caption"><strong>5</strong> languages · <strong>8</strong> sample apps · <strong>1</strong> dashboard</div>
+</div>
+
+<!-- The bars count how many of the eight samples use each language; polyglot samples span several. No matter the mix, it's one dashboard and one orchestration model. -->
+
+---
+
+<!-- _class: compact -->
+
 # Demo: TypeScript Starter
 
-**TypeScript AppHost** → Express API + React Frontend
+<div class="chips"><span class="host">TypeScript AppHost</span><span>Express</span><span>React</span><span>Vite</span></div>
 
-![w:780px center](./img/ts-starter-architecture.drawio.svg)
+![w:1120px center](./img/ts-starter-architecture.drawio.svg)
 
 <!-- The simplest polyglot demo. TypeScript AppHost with auto-wired API and frontend. -->
 
@@ -820,9 +860,9 @@ $ code .    # reads .vscode/mcp.json
 
 # Demo: Flask Markdown Wiki
 
-**Python AppHost** → Flask Wiki App + Redis Cache
+<div class="chips"><span class="host">Python AppHost</span><span>Flask</span><span>Redis</span></div>
 
-![w:780px center](./img/flask-markdown-wiki.drawio.svg)
+![w:1120px center](./img/flask-markdown-wiki.drawio.svg)
 
 <!-- Python orchestrating Python — the AppHost and the service are both Python. -->
 
@@ -832,9 +872,9 @@ $ code .    # reads .vscode/mcp.json
 
 # Demo: Vite React + FastAPI
 
-**TypeScript AppHost** → React Frontend + Python FastAPI + Redis
+<div class="chips"><span class="host">TypeScript AppHost</span><span>React</span><span>FastAPI</span><span>Redis</span></div>
 
-![w:780px center](./img/vite-react-api-architecture.drawio.svg)
+![w:1120px center](./img/vite-react-api-architecture.drawio.svg)
 
 <!-- Full-stack TypeScript-orchestrated app with Python backend and Redis caching. -->
 
@@ -844,9 +884,9 @@ $ code .    # reads .vscode/mcp.json
 
 # Demo: Django HTMX Polls
 
-**Python AppHost** → Django + HTMX + PostgreSQL
+<div class="chips"><span class="host">Python AppHost</span><span>Django</span><span>HTMX</span><span>PostgreSQL</span></div>
 
-![w:780px center](./img/django-htmx-voting-polls.drawio.svg)
+![w:1120px center](./img/django-htmx-voting-polls.drawio.svg)
 
 <!-- Real-time voting with HTMX partial updates, Django backend, PostgreSQL persistence. -->
 
@@ -856,9 +896,9 @@ $ code .    # reads .vscode/mcp.json
 
 # Demo: Spring Boot Notes
 
-**Java AppHost** → Spring Boot API + PostgreSQL
+<div class="chips"><span class="host">Java AppHost</span><span>Spring Boot</span><span>PostgreSQL</span></div>
 
-![w:780px center](./img/spring-boot-postgres.drawio.svg)
+![w:1120px center](./img/spring-boot-postgres.drawio.svg)
 
 <!-- Java orchestrating Java — experimental Java AppHost with Spring Boot and PostgreSQL. -->
 
@@ -868,9 +908,9 @@ $ code .    # reads .vscode/mcp.json
 
 # Demo: Svelte + Go Bookmarks
 
-**Go AppHost** → Go REST API + Svelte Frontend + PostgreSQL
+<div class="chips"><span class="host">Go AppHost</span><span>Go API</span><span>Svelte</span><span>PostgreSQL</span></div>
 
-![w:780px center](./img/go-svelte-bookmarks.drawio.svg)
+![w:1120px center](./img/go-svelte-bookmarks.drawio.svg)
 
 <!-- Go orchestrating a full-stack app — Go API backend with Svelte frontend. -->
 
@@ -880,9 +920,9 @@ $ code .    # reads .vscode/mcp.json
 
 # Demo: Angular + .NET + CosmosDB
 
-**C# AppHost** → Angular Frontend + .NET API + Azure CosmosDB
+<div class="chips"><span class="host">C# AppHost</span><span>Angular</span><span>.NET API</span><span>CosmosDB</span></div>
 
-![w:780px center](./img/dotnet-angular-cosmos.drawio.svg)
+![w:1120px center](./img/dotnet-angular-cosmos.drawio.svg)
 
 <!-- Classic .NET AppHost orchestrating Angular frontend with CosmosDB emulator. -->
 
@@ -892,9 +932,9 @@ $ code .    # reads .vscode/mcp.json
 
 # Demo: Polyglot Event Stream
 
-**C# AppHost** → .NET Producer + Python Consumer + Node.js Dashboard + Kafka
+<div class="chips"><span class="host">C# AppHost</span><span>.NET</span><span>Python</span><span>Node.js</span><span>Kafka</span></div>
 
-![w:780px center](./img/event-stream-architecture.drawio.svg)
+![w:1120px center](./img/event-stream-architecture.drawio.svg)
 
 <!-- The ultimate polyglot demo — three languages, one event pipeline, full distributed tracing. -->
 
