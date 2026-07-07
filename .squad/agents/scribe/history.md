@@ -183,3 +183,26 @@ Initial setup complete.
 2. **`scrollHeight` lies under `overflow:hidden` + fixed-height sections:** Marp sections are fixed 1280×720 with `overflow:hidden`, so `scrollHeight === clientHeight` (720) always and hides real overflow. To detect true overflow, neutralize clipping per section and measure natural content extent + widest child right-edge.
 3. **PNG export drops local images by default:** portrait/logo/architecture assets need `--allow-local-files` to render in exported PNGs; otherwise they silently drop with a security warning (making a "clipped" slide look like missing art).
 4. **Branch vs. worktree-folder divergence:** this worktree folder is `codebytes-symmetrical-happiness` (original generated name shown in the session-context header) but the checked-out branch was renamed to `codebytes-aspire-slide-refresh`. Always confirm the real branch with `git branch --show-current` before committing/reporting — the header name can be stale.
+
+### 2026-07-07 - Slide Visual Refresh + AI-Tell Rewrite Session
+
+Additive follow-up to the Aspire 13.4 content-correction session. All file changes for this
+work landed in commit `b1d4ae2` ("Add Four Pillars visual and SVG diagram for Orchestrator
+overview") and are pushed to `origin/codebytes-aspire-slide-refresh`.
+
+**Changes applied (all in `slides/Slides.md`, `slides/themes/custom-aspire-light.css`, and new `slides/img/one-orchestrator.drawio.svg`):**
+1. AI-tell removal: replaced all 108 em dashes with contextual punctuation; reworded 3 contrastive "X, not Y" phrasings. Verified 0 em/en dashes remain in the deck.
+2. Opening metaphor swap: replaced the "big city without a map" line with an orchestra/conductor metaphor ("orchestra with no conductor... every section reading from a different score").
+3. Factual chart fix ("What Collapses Into One"): Aspire does not remove language toolchains. Reheaded to "One `aspire run` replaces five separate startup commands"; renamed the chart row "Toolchains" to "Startup commands" (5 to 1 bar kept); corrected the speaker note.
+4. "The Four Pillars" slide: built a `.pillars` CSS temple component (roof beam, architrave band, 4 column shafts with distinct accent capitals, base plinths) and swapped the markup. Later removed the shaft fluting (vertical-line gradient) per feedback, replaced with a clean white-to-lavender gradient.
+5. "One Orchestrator for Every Language" slide: converted the 3-item text list into a hand-authored draw.io-editable SVG funnel graphic (5 brand-colored language chips converging into an Aspire Orchestrator hub, fanning out to 3 capability cards: Orchestration / Service Discovery / Observability). Embedded via `![w:1080px center](./img/one-orchestrator.drawio.svg)`.
+
+**Verification:**
+- Marp CLI build: exit 0, 58 rendered `<section>` elements (via `grep -o '<section'`).
+- Per-slide PNG render (`--images png --allow-local-files`): exit 0, visually confirmed Four Pillars (slide 007) and One Orchestrator (slide 008).
+- Playwright per-`<section>` overflow measurement vs 1280x720 bounds: 0 offenders / 58 sections.
+- 0 em/en dashes across the deck.
+
+**OTel audit (samples/, no code changes):** confirmed every Python sample (Flask, FastAPI, Django, event-stream consumer) and Node sample (ts-starter API, node-dashboard, plus Vite/React/Svelte/Angular browser SPAs) is OTel-instrumented and auto-wired via Aspire's injected `OTEL_EXPORTER_OTLP_ENDPOINT`, degrading gracefully when unset. Python backends export traces; Node backends export traces+metrics+logs via NodeSDK; browser coverage varies (Angular is most complete).
+
+**Open item flagged to user:** commit `b1d4ae2` is missing the `Co-authored-by: Copilot App` trailer (committed outside the standard flow). Fixing requires amend + force-push of a shared branch, so left for user decision.
