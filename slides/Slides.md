@@ -32,8 +32,8 @@ footer: '@Chris_L_Ayers - https://chris-ayers.com'
 
 # The Polyglot Problem
 
-> Modern apps are a **big city without a map** — and for polyglot teams,
-> the streets are in five different languages.
+> A polyglot stack is an **orchestra without a conductor** — five sections,
+> five languages, no one keeping them in time.
 
 Your team doesn't use one language — it uses **five**.
 
@@ -46,7 +46,7 @@ Your team doesn't use one language — it uses **five**.
 
 **The question:** How do you orchestrate, observe, and wire all of this **from one place**?
 
-<!-- We've all been there. The README says "just run docker-compose up" but it never works the first time. Five languages, one app, no map. -->
+<!-- We've all been there. The README says "just run docker-compose up" but it never works the first time. Five languages, one app, no conductor. -->
 
 ---
 
