@@ -45,5 +45,11 @@
     "@angular/cli": "20.3.25",
     "@angular/compiler-cli": "20.3.25",
     "typescript": "~5.9.2"
+  },
+  "overrides": {
+    "http-proxy-middleware": "3.0.7",
+    "@babel/core": "7.29.6",
+    "esbuild": "0.28.1",
+    "uuid": "11.1.1"
   }
 }
