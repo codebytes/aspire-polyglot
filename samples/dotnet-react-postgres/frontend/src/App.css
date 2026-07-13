@@ -1,0 +1,53 @@
+.app {
+  max-width: 640px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  font-family: system-ui, sans-serif;
+}
+h1 {
+  margin-bottom: 0.25rem;
+}
+.sub {
+  color: #666;
+  margin-top: 0;
+}
+.new-quote {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin: 1.5rem 0;
+}
+.new-quote input {
+  flex: 1 1 200px;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+.new-quote button {
+  padding: 0.5rem 1rem;
+  border: 0;
+  border-radius: 6px;
+  background: #512bd4;
+  color: #fff;
+  cursor: pointer;
+}
+.quotes {
+  list-style: none;
+  padding: 0;
+}
+.quotes li {
+  border-left: 3px solid #512bd4;
+  padding: 0.5rem 1rem;
+  margin: 0.75rem 0;
+  background: #faf9ff;
+}
+blockquote {
+  margin: 0;
+}
+cite {
+  color: #666;
+  font-size: 0.9rem;
+}
+.error {
+  color: #b00020;
+}

@@ -769,7 +769,7 @@ $ code .    # reads .vscode/mcp.json
 
 # <!--fit--> Demos
 
-8 samples — live with the Aspire dashboard
+Live with the Aspire dashboard
 
 <!-- Time to see Aspire in action! -->
 
@@ -777,7 +777,7 @@ $ code .    # reads .vscode/mcp.json
 
 <!-- _class: compact -->
 
-# 8 Live Demos
+# Live Demos
 
 <div class="columns">
 <div>

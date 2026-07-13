@@ -1,0 +1,119 @@
+:root {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: #e6e6e6;
+  background: #12141c;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+.wrap {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+}
+
+h1 {
+  margin: 0 0 0.25rem;
+  font-size: 1.9rem;
+}
+
+.sub {
+  margin: 0 0 1.75rem;
+  color: #9aa0b4;
+  font-size: 0.95rem;
+}
+
+form {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+input {
+  flex: 1;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid #2c2f3c;
+  border-radius: 8px;
+  background: #1b1e29;
+  color: #e6e6e6;
+  font-size: 1rem;
+}
+
+input:focus {
+  outline: none;
+  border-color: #6c8cff;
+}
+
+button {
+  padding: 0.65rem 1.1rem;
+  border: none;
+  border-radius: 8px;
+  background: #6c8cff;
+  color: #0b0d14;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #8aa2ff;
+}
+
+.error {
+  min-height: 1.2rem;
+  margin: 0 0 0.75rem;
+  color: #ff7a7a;
+  font-size: 0.9rem;
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.list li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.15rem 1rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid #2c2f3c;
+  border-radius: 8px;
+  background: #1b1e29;
+}
+
+.list .code {
+  font-weight: 600;
+  color: #8aa2ff;
+  text-decoration: none;
+}
+
+.list .target {
+  grid-column: 1 / 2;
+  color: #9aa0b4;
+  font-size: 0.85rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.list .clicks {
+  grid-row: 1 / 3;
+  grid-column: 2 / 3;
+  align-self: center;
+  color: #c9cede;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.list .empty {
+  display: block;
+  color: #9aa0b4;
+  text-align: center;
+}

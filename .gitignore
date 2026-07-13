@@ -379,7 +379,7 @@ slides/package-lock.json
 **/.aspire/integrations/
 
 # Compiled Go apphost binary (keep apphost.go source tracked)
-samples/svelte-go-bookmarks/apphost
+samples/preview/svelte-go-bookmarks/apphost
 
 # Python (virtualenvs + caches)
 **/.venv/
@@ -412,10 +412,17 @@ samples/svelte-go-bookmarks/apphost
 **/vite.config.d.ts
 **/vite.config.js
 # Negation: samples that author Vite config in plain JS (not compiled from .ts)
-!samples/svelte-go-bookmarks/frontend/vite.config.js
+!samples/preview/svelte-go-bookmarks/frontend/vite.config.js
 
 # Local nuget package cache (sample-specific)
 **/.nugetpackages/
+
+# Aspire publish output (aspire publish -o ...)
+**/aspire-output/
+**/compose-output/
+
+# Maven shade plugin leftover
+**/dependency-reduced-pom.xml
 
 # macOS / IDE junk
 .DS_Store

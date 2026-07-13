@@ -1,0 +1,8 @@
+{
+  "appHost": {
+    "path": "apphost.cs"
+  },
+  "features": {
+    "polyglotSupportEnabled": true
+  }
+}

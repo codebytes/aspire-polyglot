@@ -10,7 +10,7 @@ A Java Spring Boot REST API with PostgreSQL, orchestrated by Aspire via Dockerfi
 ## Running
 
 ```bash
-cd samples/spring-boot-postgres
+cd samples/preview/spring-boot-postgres
 aspire run
 ```
 
