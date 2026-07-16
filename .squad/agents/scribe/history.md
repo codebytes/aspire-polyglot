@@ -144,3 +144,65 @@ Initial setup complete.
 5. **Index (staged deletions) behavior:** Deleted files show as `D` in `git status -s` after deletion from disk. This is normal and expected. Stage them with `git add` after confirming they're build artifacts, NOT source code.
 
 **Trap: `find -delete` without `git add -u`:** Using `find` to delete files from disk bypasses git's index. Files deleted this way remain *tracked* until staged with `git add -u -- <pattern>`. After physical deletion, use `git add -u` (not bare `git add`) to stage the removal — common pattern when batch-deleting build artifacts.
+
+### 2026-07-04 — Aspire 13.4 Slide Validation + Visual QA
+
+**Task:** Validate and update `slides/Slides.md` against the official Aspire 13.4 release notes (aspire.dev/whats-new/aspire-13-4) and current guidance. Scope: TypeScript AppHost, polyglot/multi-language support, cloud/hosting/deployment. All corrections folded into EXISTING slides (no "What's New in 13.4" slide added). Followed by an additive style/visual overflow QA pass. Delegated task from coordinator session "Aspire 13.4 slide review".
+
+**Branch:** `codebytes-aspire-slide-refresh` (worktree folder: `codebytes-symmetrical-happiness`)
+
+**Content corrections applied (commit 7b4839e):**
+1. TypeScript AppHost import path → `import { createBuilder } from "./.aspire/modules/aspire.mjs";` (2 slides: The AppHost — TypeScript; Use From TypeScript — Zero Bindings)
+2. Entry point `apphost.ts` → `apphost.mts` (Two AppHost Languages)
+3. Generated SDK location `./.modules/` → `./.aspire/modules/`; `my-integration.js` → `my-integration.mjs`
+4. TypeScript AppHost status: "preview feature" → "generally available in Aspire 13.4 — TypeScript AppHosts are first-class alongside C#"
+5. Cheat Sheet — Runtimes: added Bun → `AddBunApp()`; Go → `AddGoApp()` (now core; dropped Community Toolkit tag); Java/Spring `AddSpringApp()` left as Community Toolkit (unchanged in 13.4)
+6. `aspire.config.json`: sdk version `13.2.0` → `13.4.0`
+7. "Same Model, Two Commands": removed `(Preview)` from `aspire deploy` and `aspire publish` (both GA in 13.4); KEPT `(Preview)` on `aspire do`
+8. Deployment slide: enhanced AKS ingress guidance — cert-manager HTTPS, Gateway API + Azure Application Gateway for Containers (AGC), external Helm charts via `AddHelmChart`
+9. Demo cleanup: marked Go/Java/Python "AppHost" labels *(preview)* to reconcile with the C#/TypeScript-only GA AppHost framing stated elsewhere (Go/Python/Java are hosted workloads; polyglot AppHost authoring is still preview). C#/TypeScript demo labels untouched.
+
+**Verification:**
+- Marp CLI build: exit 0. 50 source slides → 56 rendered `<section>` elements (6 extra from advanced-background `![bg]` layers — expected). Theme `custom-aspire-light` + all `_class`/columns/HTML-comment speaker-note structure preserved.
+- Grep sweep confirmed no stale references remained (`AddGolangApp`, `.modules/aspire.js`, `apphost.ts`, `13.2.0`, "preview feature").
+
+**Visual / overflow QA (additive pass, no content change):**
+- Rendered all slides to PNG (`--images png --allow-local-files`) → exit 0, 50 images.
+- Playwright per-`<section>` overflow measurement: neutralized `overflow:hidden` clipping per section (height:auto, overflow:visible), forced reflow, measured natural content height + widest child right-edge vs. 1280×720 bounds (4px tolerance) → **0 offenders** across all 56 sections.
+- Visual spot-check of every high-density / edited slide (code blocks, 2×2 language grids, both cheat sheets, config field reference, Agent-Ready CLI, 8 Live Demos, demo diagrams, Key Takeaways, Resources/QR): no clipping, no truncated code, no column collisions.
+- Result: **NO style fixes required** → no separate style commit was made.
+
+**Decisions inbox:** empty (0 entries; no `.squad/decisions/inbox/` dir) — nothing to merge.
+
+**Commits:**
+- `7b4839e` — content corrections (`slides/Slides.md`), with Co-authored-by: Copilot App trailer
+- (this) — `docs(.squad)`: session log entry
+
+**Learnings:**
+1. **Marp section count ≠ slide count:** advanced-background slides (`![bg ...]`) each emit an extra background `<section>`. 50 slides rendered as 56 sections — expected, not new slides. Always reconcile before flagging a count mismatch.
+2. **`scrollHeight` lies under `overflow:hidden` + fixed-height sections:** Marp sections are fixed 1280×720 with `overflow:hidden`, so `scrollHeight === clientHeight` (720) always and hides real overflow. To detect true overflow, neutralize clipping per section and measure natural content extent + widest child right-edge.
+3. **PNG export drops local images by default:** portrait/logo/architecture assets need `--allow-local-files` to render in exported PNGs; otherwise they silently drop with a security warning (making a "clipped" slide look like missing art).
+4. **Branch vs. worktree-folder divergence:** this worktree folder is `codebytes-symmetrical-happiness` (original generated name shown in the session-context header) but the checked-out branch was renamed to `codebytes-aspire-slide-refresh`. Always confirm the real branch with `git branch --show-current` before committing/reporting — the header name can be stale.
+
+### 2026-07-07 - Slide Visual Refresh + AI-Tell Rewrite Session
+
+Additive follow-up to the Aspire 13.4 content-correction session. All file changes for this
+work landed in commit `b1d4ae2` ("Add Four Pillars visual and SVG diagram for Orchestrator
+overview") and are pushed to `origin/codebytes-aspire-slide-refresh`.
+
+**Changes applied (all in `slides/Slides.md`, `slides/themes/custom-aspire-light.css`, and new `slides/img/one-orchestrator.drawio.svg`):**
+1. AI-tell removal: replaced all 108 em dashes with contextual punctuation; reworded 3 contrastive "X, not Y" phrasings. Verified 0 em/en dashes remain in the deck.
+2. Opening metaphor swap: replaced the "big city without a map" line with an orchestra/conductor metaphor ("orchestra with no conductor... every section reading from a different score").
+3. Factual chart fix ("What Collapses Into One"): Aspire does not remove language toolchains. Reheaded to "One `aspire run` replaces five separate startup commands"; renamed the chart row "Toolchains" to "Startup commands" (5 to 1 bar kept); corrected the speaker note.
+4. "The Four Pillars" slide: built a `.pillars` CSS temple component (roof beam, architrave band, 4 column shafts with distinct accent capitals, base plinths) and swapped the markup. Later removed the shaft fluting (vertical-line gradient) per feedback, replaced with a clean white-to-lavender gradient.
+5. "One Orchestrator for Every Language" slide: converted the 3-item text list into a hand-authored draw.io-editable SVG funnel graphic (5 brand-colored language chips converging into an Aspire Orchestrator hub, fanning out to 3 capability cards: Orchestration / Service Discovery / Observability). Embedded via `![w:1080px center](./img/one-orchestrator.drawio.svg)`.
+
+**Verification:**
+- Marp CLI build: exit 0, 58 rendered `<section>` elements (via `grep -o '<section'`).
+- Per-slide PNG render (`--images png --allow-local-files`): exit 0, visually confirmed Four Pillars (slide 007) and One Orchestrator (slide 008).
+- Playwright per-`<section>` overflow measurement vs 1280x720 bounds: 0 offenders / 58 sections.
+- 0 em/en dashes across the deck.
+
+**OTel audit (samples/, no code changes):** confirmed every Python sample (Flask, FastAPI, Django, event-stream consumer) and Node sample (ts-starter API, node-dashboard, plus Vite/React/Svelte/Angular browser SPAs) is OTel-instrumented and auto-wired via Aspire's injected `OTEL_EXPORTER_OTLP_ENDPOINT`, degrading gracefully when unset. Python backends export traces; Node backends export traces+metrics+logs via NodeSDK; browser coverage varies (Angular is most complete).
+
+**Open item flagged to user:** commit `b1d4ae2` is missing the `Co-authored-by: Copilot App` trailer (committed outside the standard flow). Fixing requires amend + force-push of a shared branch, so left for user decision.
