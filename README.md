@@ -15,30 +15,31 @@ The source deck for this presentation lives in [slides/](./slides/) and is built
 
 ## Samples
 
-### Python
+### Single-file AppHost ⭐
+
+The whole dev-time orchestrator is a single file — no AppHost project, no `Program.cs`.
 
 | Sample | AppHost | Description |
 |--------|---------|-------------|
-| [flask-markdown-wiki](./samples/flask-markdown-wiki) | `apphost.py` | Flask + SQLite — Markdown wiki with create/edit/render pages |
-| [django-htmx-polls](./samples/django-htmx-polls) | `apphost.py` | Django + HTMX — interactive voting polls with real-time bar charts |
+| [dotnet-react-postgres](./samples/dotnet-react-postgres) | `apphost.cs` | **C#** single-file AppHost — ASP.NET Core Minimal API + PostgreSQL + Vite React quotes board |
+| [hono-redis-urls](./samples/hono-redis-urls) | `apphost.ts` | **TypeScript** single-file AppHost — Hono API + Redis + Vite URL shortener |
+
+### Containers, Compose & publishing
+
+Single-file AppHosts focused on Docker images, `aspire publish`, and polyglot services.
+
+| Sample | AppHost | Description |
+|--------|---------|-------------|
+| [postgres-adminer](./samples/postgres-adminer) | `apphost.cs` | **C#** — adds two public Docker images directly (PostgreSQL + Adminer) with `AddContainer`; no Dockerfiles |
+| [go-redis-compose](./samples/go-redis-compose) | `apphost.cs` | **C# + Go** — `aspire publish` generates a runnable `docker-compose.yaml` (Go hit-counter API + Redis) |
+| [python-fastapi-docker](./samples/python-fastapi-docker) | `apphost.cs` | **C# + Python** — FastAPI runs natively (uvicorn) in dev; `aspire publish` auto-generates its Dockerfile |
+| [java-javalin-redis](./samples/java-javalin-redis) | `apphost.cs` | **C# + Java** — Javalin leaderboard API (multi-stage Maven build) + Redis via `AddDockerfile` |
 
 ### JavaScript / Vite
 
 | Sample | AppHost | Description |
 |--------|---------|-------------|
 | [vite-react-api](./samples/vite-react-api) | `apphost.ts` | Vite + React + FastAPI + Redis — TODO app with caching |
-
-### Go
-
-| Sample | AppHost | Description |
-|--------|---------|-------------|
-| [svelte-go-bookmarks](./samples/svelte-go-bookmarks) | `apphost.go` | Svelte SPA + Go API via `AddDockerfile` — bookmark manager with tagging |
-
-### Java
-
-| Sample | AppHost | Description |
-|--------|---------|-------------|
-| [spring-boot-postgres](./samples/spring-boot-postgres) | `AppHost.java` | Spring Boot + PostgreSQL + pgAdmin — notes REST API via `AddDockerfile` |
 
 ### C# / .NET
 
@@ -51,6 +52,18 @@ The source deck for this presentation lives in [slides/](./slides/) and is built
 | Sample | AppHost | Description |
 |--------|---------|-------------|
 | [polyglot-event-stream](./samples/polyglot-event-stream) | `AppHost/` | C# producer + Python consumer + Node.js dashboard + Kafka — IoT sensor streaming |
+
+### Preview
+
+> Experimental polyglot AppHosts (Python, Go, Java) live under [`samples/preview/`](./samples/preview).
+> They rely on Aspire's preview polyglot AppHost support and may change as those languages stabilize.
+
+| Sample | AppHost | Description |
+|--------|---------|-------------|
+| [flask-markdown-wiki](./samples/preview/flask-markdown-wiki) | `apphost.py` | Flask + SQLite — Markdown wiki with create/edit/render pages |
+| [django-htmx-polls](./samples/preview/django-htmx-polls) | `apphost.py` | Django + HTMX — interactive voting polls with real-time bar charts |
+| [svelte-go-bookmarks](./samples/preview/svelte-go-bookmarks) | `apphost.go` | Svelte SPA + Go API via `AddDockerfile` — bookmark manager with tagging |
+| [spring-boot-postgres](./samples/preview/spring-boot-postgres) | `AppHost.java` | Spring Boot + PostgreSQL + pgAdmin — notes REST API via `AddDockerfile` |
 
 ## Learn More
 

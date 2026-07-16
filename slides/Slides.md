@@ -819,7 +819,7 @@ $ code .    # reads .vscode/mcp.json
 
 <!-- _class: compact -->
 
-# 8 Live Demos
+# Live Demos
 
 <div class="columns">
 <div>
