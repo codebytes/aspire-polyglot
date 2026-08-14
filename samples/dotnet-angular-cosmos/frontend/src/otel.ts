@@ -80,10 +80,10 @@ tracerProvider.register({
 const loggerProvider = new LoggerProvider({
   resource,
   processors: [
-    new BatchLogRecordProcessor(
-      new OTLPLogExporter({ url: `${otlpBase}/v1/logs` }),
-      { scheduledDelayMillis: 1000 }
-    ),
+    new BatchLogRecordProcessor({
+      exporter: new OTLPLogExporter({ url: `${otlpBase}/v1/logs` }),
+      scheduledDelayMillis: 1000,
+    }),
   ],
 });
 

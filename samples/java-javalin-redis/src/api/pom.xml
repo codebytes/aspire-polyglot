@@ -12,10 +12,10 @@
     <properties>
         <maven.compiler.release>21</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <javalin.version>6.3.0</javalin.version>
+        <javalin.version>6.7.0</javalin.version>
         <jedis.version>5.2.0</jedis.version>
-        <jackson.version>2.18.9</jackson.version>
-        <slf4j.version>2.0.16</slf4j.version>
+        <jackson.version>2.22.1</jackson.version>
+        <slf4j.version>2.0.18</slf4j.version>
     </properties>
 
     <dependencies>
@@ -47,7 +47,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.6.0</version>
+                <version>3.6.2</version>
                 <executions>
                     <execution>
                         <phase>package</phase>

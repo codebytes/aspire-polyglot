@@ -23,9 +23,9 @@ if (env.OTEL_EXPORTER_OTLP_ENDPOINT) {
     metricReader: new PeriodicExportingMetricReader({
       exporter: new OTLPMetricExporter(),
     }),
-    logRecordProcessor: new BatchLogRecordProcessor(
-      new OTLPLogExporter(),
-    ),
+    logRecordProcessor: new BatchLogRecordProcessor({
+      exporter: new OTLPLogExporter(),
+    }),
     instrumentations: [getNodeAutoInstrumentations()],
   });
 
