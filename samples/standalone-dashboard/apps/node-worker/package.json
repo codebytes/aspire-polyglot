@@ -1,0 +1,19 @@
+{
+  "name": "node-worker",
+  "private": true,
+  "type": "module",
+  "description": "Polyglot standalone-dashboard demo: Node.js OTEL emitter",
+  "scripts": {
+    "start": "node worker.js"
+  },
+  "dependencies": {
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/api-logs": "^0.221.0",
+    "@opentelemetry/exporter-logs-otlp-grpc": "^0.221.0",
+    "@opentelemetry/exporter-metrics-otlp-grpc": "^0.221.0",
+    "@opentelemetry/exporter-trace-otlp-grpc": "^0.221.0",
+    "@opentelemetry/sdk-logs": "^0.221.0",
+    "@opentelemetry/sdk-metrics": "^2.10.0",
+    "@opentelemetry/sdk-node": "^0.221.0"
+  }
+}

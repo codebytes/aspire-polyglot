@@ -521,7 +521,7 @@ await builder
 await builder.build().run();
 ```
 
-**Same 100+ integrations** as C#, auto-generated via `[AspireExport]` attributes. A JS/TS team never needs to touch .NET.
+**Same 100+ integrations** as C#, projected to TypeScript by the **Aspire Type System (ATS)**. A JS/TS team never needs to touch .NET.
 
 <!-- The TypeScript AppHost uses the same integration packages as C#. -->
 
@@ -539,7 +539,9 @@ await builder.build().run();
 
 **Same integration surface**: the TypeScript SDK is auto-generated from the same .NET hosting integrations via the **Aspire Type System (ATS)**. No separate integration code to maintain.
 
-<!-- Per aspire.dev/languages-and-runtimes: only C# and TypeScript are documented AppHost authoring languages today. -->
+**Preview:** experimental **Python** (`apphost.py`), **Go** (`apphost.go`), and **Java** (`AppHost.java`) AppHosts also exist — demoed later.
+
+<!-- C# and TypeScript are the two GA AppHost authoring languages. Python, Go, and Java AppHosts are experimental preview (feature-flagged); the deck demos all three. -->
 
 ---
 
@@ -555,57 +557,52 @@ The TypeScript SDK is auto-generated from the same .NET hosting integrations via
 
 - C#, JavaScript, TypeScript, Python, Go, Java, Rust, PowerShell, and more
 
-via `AddProject`, `AddJavaScriptApp`, `AddPythonApp`, `AddDockerfile`, `AddContainer`, or `AddExecutable`.
+via `AddProject`, `AddJavaScriptApp`, `AddPythonApp`, `AddGoApp`, `AddBunApp`, `AddDenoApp`, `AddDockerfile`, `AddContainer`, or `AddExecutable`.
 
 <!-- AppHost authoring is C#/TS today; workload language support is separate and much broader. -->
 
 ---
 
 
-# Write Once with ATS
+<!-- _class: compact -->
 
-### Author the integration in C#. Use it from any AppHost.
+# Two Layers Make Polyglot Work: ATS + DCP
 
-**Aspire Type System (ATS)**: the contract that bridges .NET and guest languages.
+<div class="columns">
+<div>
 
-- Author your hosting integration **in C#** as you always have
-- Annotate exported APIs with ATS attributes: `[AspireExport]`, `[AspireExportType]`, `[AspireExportMethod]`
-- Aspire's analyzer validates the export shape at build time
+## 🧬 ATS — the model layer
 
-```csharp
-[AspireExport]
-public static class MyIntegrationExtensions
-{
-    [AspireExportMethod]
-    public static IResourceBuilder<MyResource>
-        AddMyService(
-            this IDistributedApplicationBuilder builder,
-            string name) { ... }
-}
-```
+**Aspire Type System.** Projects the *same* 100+ .NET hosting integrations into every AppHost language.
 
-<!-- Integration authors don't write a TS binding by hand. The analyzer + ATS scanner generates it. -->
+- Author the app model **once**, in C#/TS (Python·Go·Java preview)
+- CLI auto-generates a typed SDK into `.aspire/modules/`
+- Guest AppHost ↔ .NET host over a local JSON-RPC socket (named pipe / Unix socket)
+- No per-language bindings to maintain
 
----
+*"Describe the distributed app."*
 
-# Use From TypeScript: Zero Bindings
+</div>
+<div>
 
-**The CLI auto-generates a TypeScript SDK** into `.aspire/modules/` when a TS AppHost runs `aspire add <your-package>`. TypeScript callers get fluent, typed methods.
+## ⚙️ DCP — the runtime layer
 
-```typescript
-import { createBuilder } from "./.aspire/modules/aspire.mjs";
-import { addMyService } from
-    "./.aspire/modules/my-integration.mjs";
+**Developer Control Plane.** A Kubernetes-compatible, Go-based orchestrator that runs the model.
 
-const builder = await createBuilder();
-const svc = await addMyService(builder, "svc");
-```
+- AppHost **lowers** the model → DCP resource specs (CRDs)
+- Pulls images, starts containers · executables · projects
+- Allocates ports, wires service discovery + health checks
+- Drives resource lifecycle & state → the dashboard
+- **Dev-time only** — not a production runtime
 
-**The trade-off:** the guest process talks to the .NET host over a local JSON-RPC socket (Unix socket / named pipe), authenticated with a per-session token. One IPC hop, no port exposure, no duplicated integration code per language.
+*"Make the distributed app real."*
 
-*Status: generally available in Aspire 13.4. TypeScript AppHosts are first-class alongside C#.*
+</div>
+</div>
 
-<!-- That's how 100+ .NET integrations show up automatically in TypeScript AppHosts. -->
+**AppHost = your desired state → ATS carries it in any language → DCP reconciles it into running resources.**
+
+<!-- ATS is the authoring/model layer that makes one set of .NET integrations usable from any AppHost language over JSON-RPC. DCP (Microsoft Developer Control Plane) is the runtime engine — a K8s-compatible API server + controller (dcp.exe / dcpctrl.exe) written in Go — that the AppHost delegates to. The AppHost declares desired state; DCP reconciles it (eventual consistency, retries) into real containers/processes, assigns ports, resolves dependencies, and streams logs/state to the dashboard. Together they're why five languages run under one orchestrator. -->
 
 ---
 
@@ -615,21 +612,18 @@ const svc = await addMyService(builder, "svc");
 
 **Pick the right `Add*` for your service:**
 
-- Python / ASGI → `AddPythonApp()`
-- Python / Uvicorn → `AddUvicornApp()`
-- Node.js → `AddNodeApp()`
-- Vite / React → `AddViteApp()`
-- JavaScript → `AddJavaScriptApp()`
-- Bun → `AddBunApp()`
-- .NET project → `AddProject<T>()`
-- Go → `AddGoApp()`
+- Python / ASGI · Uvicorn → `AddPythonApp()` · `AddUvicornApp()`
+- Node.js · Vite → `AddNodeApp()` · `AddViteApp()`
+- JavaScript · Bun → `AddJavaScriptApp()` · `AddBunApp()` *(Bun core in 13.4)*
+- Deno → `AddDenoApp()` · `AddDenoTask()` *(Community Toolkit)*
+- .NET project · Blazor WASM → `AddProject<T>()` · `AddBlazorWasmProject()`
+- Go → `AddGoApp()` *(graduated to core in 13.4)*
 - Java / Spring Boot → `AddSpringApp()` *(Community Toolkit)*
-- Any Dockerfile → `AddDockerfile()`
-- Any executable → `AddExecutable()`
+- Any Dockerfile · executable → `AddDockerfile()` · `AddExecutable()`
 
 **Infrastructure:** `AddRedis("name")` · `AddPostgres("name").AddDatabase("db")` · `AddKafka("name")` · `AddAzureCosmosDB("name").RunAsEmulator()`
 
-<!-- Quick reference for the runtime side. -->
+<!-- Quick reference for the runtime side. In 13.4, Go (Aspire.Hosting.Go) and Bun (Aspire.Hosting.JavaScript) graduated from the Community Toolkit into core; Deno and Spring remain Community Toolkit; Blazor WebAssembly hosting is a 13.4 preview. -->
 
 ---
 
@@ -667,7 +661,8 @@ const svc = await addMyService(builder, "svc");
   "sdk": { "version": "13.4.6" },
   "channel": "stable",
   "features": {
-    "polyglotSupportEnabled": true
+    "polyglotSupportEnabled": true,
+    "experimentalPolyglot:python": true
   },
   "profiles": {
     "default": {
@@ -689,6 +684,7 @@ const svc = await addMyService(builder, "svc");
 - **`sdk.version`**: pins the Aspire SDK version
 - **`channel`**: release channel (`stable`, `preview`)
 - **`profiles`**: dashboard URLs (replaces `apphost.run.json`)
+- **Preview AppHosts** (Python/Go/Java) add `experimentalPolyglot:<lang>: true`
 - **Feature flags** use a **boolean `true`**, never the string `"true"`
 
 **Every sample in this talk** has one at its root. Peek inside.
@@ -923,7 +919,7 @@ $ code .    # reads .vscode/mcp.json
 
 ![w:1120px center](./img/spring-boot-postgres.drawio.svg)
 
-<!-- Java orchestrating Java: experimental Java AppHost with Spring Boot and PostgreSQL. -->
+<!-- Java orchestrating Java: experimental Java AppHost with Spring Boot and PostgreSQL. PRESENTER NOTE: the preview Java AppHost can hit Aspire's ~60s guest-AppHost-server startup timeout on a cold machine (the Spring workload itself builds/runs fine). Pre-warm before the talk or keep a recording/screenshot as a fallback. -->
 
 ---
 
@@ -935,7 +931,7 @@ $ code .    # reads .vscode/mcp.json
 
 ![w:1120px center](./img/go-svelte-bookmarks.drawio.svg)
 
-<!-- Go orchestrating a full-stack app: Go API backend with Svelte frontend. -->
+<!-- Go orchestrating a full-stack app: Go API backend with Svelte frontend. PRESENTER NOTE: the preview Go AppHost can hit Aspire's ~60s guest-AppHost-server startup timeout on a cold machine (the Go API workload itself builds/runs fine). Pre-warm before the talk or keep a recording/screenshot as a fallback. -->
 
 ---
 
@@ -1061,7 +1057,7 @@ Dashboard: http://localhost:15888
 ## Links
 
 - 🌐 [aspire.dev](https://aspire.dev): Official website & docs
-- 🐙 [github.com/dotnet/aspire](https://github.com/dotnet/aspire): Source code
+- 🐙 [github.com/microsoft/aspire](https://github.com/microsoft/aspire): Source code
 - 🐙 [github.com/codebytes/aspire-polyglot](https://github.com/codebytes/aspire-polyglot): This repo!
 - 🛒 [github.com/dotnet/eShop](https://github.com/dotnet/eShop): eShop sample
 - 🧰 [Aspire Community Toolkit](https://github.com/CommunityToolkit/Aspire)

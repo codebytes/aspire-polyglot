@@ -399,6 +399,8 @@ samples/preview/svelte-go-bookmarks/apphost
 **/.gradle/
 **/build/
 **/hs_err_pid*
+# Aspire Java AppHost javac output (from 'aspire run' on AppHost.java)
+**/.java-build/
 
 # Frontend build outputs & caches
 **/.angular/
