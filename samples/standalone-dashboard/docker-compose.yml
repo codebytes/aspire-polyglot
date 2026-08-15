@@ -1,0 +1,54 @@
+name: aspire-standalone-dashboard
+
+# Standalone Aspire dashboard — NO AppHost, NO .NET.
+# The dashboard is a single container. Any app with an OpenTelemetry SDK points
+# at its OTLP endpoint and shows up in the UI. Here three workers in three
+# languages (Node.js, Python, Go) each emit traces, metrics, and logs.
+
+services:
+  # The Aspire dashboard, straight from the public image.
+  dashboard:
+    image: mcr.microsoft.com/dotnet/aspire-dashboard:latest
+    container_name: aspire-dashboard
+    environment:
+      # Local demo only: disable the browser login token AND the OTLP API key so
+      # any app can push telemetry with zero auth setup. Do NOT do this in prod.
+      - DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS=true
+    ports:
+      - "18888:18888"   # Dashboard UI            -> http://localhost:18888
+      - "4317:18889"    # OTLP/gRPC ingestion      -> host localhost:4317
+      - "4318:18890"    # OTLP/HTTP ingestion      -> host localhost:4318
+    restart: unless-stopped
+
+  # Node.js worker — traces + metrics + logs via the OpenTelemetry JS SDK.
+  node-worker:
+    build: ./apps/node-worker
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://dashboard:18889
+      - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+      - OTEL_SERVICE_NAME=node-worker
+    depends_on:
+      - dashboard
+    restart: unless-stopped
+
+  # Python worker — traces + metrics + logs via the OpenTelemetry Python SDK.
+  python-worker:
+    build: ./apps/python-worker
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://dashboard:18889
+      - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+      - OTEL_SERVICE_NAME=python-worker
+    depends_on:
+      - dashboard
+    restart: unless-stopped
+
+  # Go worker — traces + metrics + logs via the OpenTelemetry Go SDK.
+  go-worker:
+    build: ./apps/go-worker
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://dashboard:18889
+      - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+      - OTEL_SERVICE_NAME=go-worker
+    depends_on:
+      - dashboard
+    restart: unless-stopped
