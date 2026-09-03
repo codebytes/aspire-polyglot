@@ -302,11 +302,12 @@ Experimental AppHosts require explicit feature flags and may change between rele
 
 **First-class helpers**
 
-- `.NET` → `AddProject`, `AddCSharpApp`
-- Node.js / Vite → `AddNodeApp`, `AddViteApp`
+- `.NET` → stable `AddProject`
+- C# files → `AddCSharpApp` *(preview package)*
+- Node.js / Vite → stable `AddNodeApp`, `AddViteApp`
 - Python → stable `AddPythonApp`, `AddUvicornApp`
 - Bun → stable `AddBunApp`
-- Go → `AddGoApp` in a preview-versioned package
+- Go → `AddGoApp` *(preview package)*
 
 </div>
 <div>
@@ -323,7 +324,7 @@ Experimental AppHosts require explicit feature flags and may change between rele
 
 **The integration surface is a convenience—not a gate.**
 
-<!-- Speaker: First-class integrations improve local run and publish behavior, but every workload can enter through a container, Dockerfile, or executable. In Aspire 13.5.3, Python and JavaScript hosting packages are stable; Aspire.Hosting.Go remains preview-versioned. This repo’s Go demo deliberately uses AddDockerfile. -->
+<!-- Speaker: First-class integrations improve local run and publish behavior, but every workload can enter through a container, Dockerfile, or executable. In Aspire 13.5.3, Python and JavaScript hosting packages are stable; Aspire.Hosting.Dotnet and Aspire.Hosting.Go are preview-versioned. This repo’s Go demo deliberately uses AddDockerfile. -->
 
 ---
 
@@ -676,7 +677,7 @@ aspire publish
 
 **Rule:** no live claim without a working sample and a rehearsed fallback.
 
-<!-- Speaker: Current 13.5.3 options include stable AddBunApp, stable Python/Uvicorn hosting, preview-versioned Aspire.Hosting.Go, path-based AddCSharpApp, and preview Blazor WASM hosting. This repository does not yet prove those newer APIs, so tie them to explicit follow-ups instead of pretending they are demoed. -->
+<!-- Speaker: Current 13.5.3 options include stable AddBunApp and Python/Uvicorn hosting; AddCSharpApp and AddGoApp both ship in preview-versioned packages, and Blazor WASM hosting is also preview. This repository does not yet prove those newer APIs, so tie them to explicit follow-ups instead of pretending they are demoed. -->
 
 ---
 
