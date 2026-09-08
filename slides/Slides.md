@@ -12,8 +12,6 @@ footer: '@Chris_L_Ayers - https://chris-ayers.com'
 ## Orchestrating Any Language with Aspire
 ## Chris Ayers
 
-![bg right fit](./img/aspire-logo.svg)
-
 ---
 
 ![bg left:40%](./img/portrait.png)
@@ -120,7 +118,7 @@ Your team doesn't use one language. It uses **five**.
 <div class="icon">🗺</div>
 <div class="pname">Aspire AppHost</div>
 <div class="ptag">Stack in code</div>
-<div class="pdesc">One file declares every service and how they connect. C#, TypeScript, or <code>aspire.config.json</code>.</div>
+<div class="pdesc">One AppHost declares every service and how they connect. Author it in C# or TypeScript.</div>
 </div>
 <div class="base"></div>
 </div>
@@ -131,7 +129,7 @@ Your team doesn't use one language. It uses **five**.
 <div class="icon">📊</div>
 <div class="pname">Aspire Dashboard</div>
 <div class="ptag">App at a glance</div>
-<div class="pdesc">Logs, traces, metrics, and health for every resource via OpenTelemetry, plus an MCP server for agents.</div>
+<div class="pdesc">Logs, traces, metrics, and health across runtimes. Interact with terminal-enabled resources.</div>
 </div>
 <div class="base"></div>
 </div>
@@ -206,135 +204,96 @@ builder.Build().Run();
 
 ---
 
-<!-- _class: compact -->
+<!-- _class: compact release-slide dashboard-slide -->
 
 # The Dashboard: One View for Everything
 
-**Same dashboard regardless of what language your services use:**
+<figure class="release-screenshot">
+<img src="./img/aspire-dashboard-13-5.png" alt="Refreshed Aspire 13.5 dashboard showing resource states, endpoints, and actions">
+<figcaption>Source: <a href="https://aspire.dev/whats-new/aspire-13-5/">Microsoft Aspire 13.5 release notes</a></figcaption>
+</figure>
+
+**13.5:** Case-insensitive console search, timestamp filters, and numeric `==` / `!=` comparisons.
+
+Add OpenTelemetry to your services; Aspire supplies `OTEL_EXPORTER_OTLP_ENDPOINT`.
+
+<!--
+Show the dashboard early: resources expose state, endpoints, and actions; console logs capture stdout/stderr; structured logs, traces, and metrics come through OpenTelemetry.
+In 13.5, demonstrate a case-insensitive console-log search, then narrow logs or traces by timestamp and exact numeric comparisons.
+Screenshot is the official release-note example, not a capture of this repository's demos.
+Source: https://aspire.dev/whats-new/aspire-13-5/
+Image: https://aspire.dev/_astro/projects.DUzpqXcM_Z1aIiSQ.webp
+-->
+
+---
+
+<!-- _class: compact release-slide terminal-slide -->
+
+# Not Everything Is an HTTP Service
+
+**Experimental in 13.5:** REPLs, shells, and TUIs are resources too.
+
+<figure class="release-screenshot">
+<img src="./img/aspire-terminal-13-5.png" alt="Interactive JavaScript guessing game accepting input in the Aspire dashboard terminal">
+<figcaption>Cropped from the <a href="https://devblogs.microsoft.com/aspire/whats-new-aspire-13-5/">Microsoft Aspire 13.5 announcement</a></figcaption>
+</figure>
 
 <div class="columns">
 <div>
 
-📋 **Resources**: All services, containers, status, endpoints
-📜 **Console Logs**: Real-time stdout/stderr from every process
-📊 **Structured Logs**: Parsed JSON logs, filter by level
-🔍 **Traces**: Distributed request tracing across services
-📈 **Metrics**: Latency, CPU/memory, custom metrics
+Enable C# `.WithTerminal()` or TypeScript `.withTerminal()` on a resource.
+
+**Real input and output. One session, multiple viewers.**
 
 </div>
 <div>
 
-![w:520px](./img/aspire-dashboard.png)
-
-Aspire sets `OTEL_EXPORTER_OTLP_ENDPOINT` automatically. Add OpenTelemetry to your service and traces flow to the dashboard.
+```bash
+aspire config set features.terminalCommandsEnabled true
+aspire terminal ps
+aspire terminal attach guessing-game
+```
 
 </div>
 </div>
 
-<!-- This is the payoff. Show it early. One dashboard for everything, regardless of language. Click a trace to see the full waterfall across Python, .NET, and Node.js. Export as .env for local debugging. -->
+<!--
+The screenshot shows Microsoft's JavaScript guessing-game playground, not an extra demo in this repository. If showing it live, enter 50, read the response, then attach from the CLI to show the same session in both places. Replace guessing-game with the name of your terminal-enabled resource.
+WithTerminal() and the terminal CLI are experimental in 13.5. C# callers must suppress ASPIRETERMINAL001. The feature flag enables the CLI commands; it is not required to use the dashboard terminal.
+Terminal-enabled resources run as plain processes and do not get automatic debugger attachment. Attach the debugger manually from your IDE when needed.
+Sources: https://aspire.dev/app-host/with-terminal/ and https://aspire.dev/reference/cli/commands/aspire-terminal/
+Image: https://devblogs.microsoft.com/aspire/wp-content/uploads/sites/90/2026/08/aspire-terminal-guessing-game.webp (cropped to the interactive content).
+-->
 
 ---
 
-# Standalone Dashboard: No AppHost Required
+# Observability Without Rewrites
 
-### Already on OTEL? Get the dashboard with zero rewrites.
+**Already emitting OpenTelemetry? Start with the dashboard, then adopt the AppHost when you need orchestration.**
 
-**The Aspire Dashboard ships as a standalone container.** Point any OTLP-emitting app at it and you get logs, traces, and metrics. No AppHost, no .NET, no commitment.
+<div class="columns">
+<div>
 
-- ✅ **Node.js / Python / Java / Go / Rust**: anything with an OTEL SDK works
-- ✅ **Same UI** as the AppHost-managed dashboard
-- ✅ **Local-only by default**: OTLP endpoint and dashboard auth keys printed at startup
-- ✅ **Use it in CI**, in a Dockerfile, in `docker-compose.yml`, or attached to a Kubernetes pod
-
+**Standalone mode**
 ```bash
-docker run --rm -it -p 18888:18888 -p 4317:18889 \
-  -d --name aspire-dashboard \
+docker run --rm -d \
+  -p 18888:18888 -p 4317:18889 \
   mcr.microsoft.com/dotnet/aspire-dashboard:latest
 ```
 
-Open `http://localhost:18888`. Done.
+</div>
+<div>
 
-<!-- This closes a real adoption gap for polyglot teams: "I'm not on .NET, can I still use any of this?" Yes, start here. -->
+**AppHost mode**
 
----
+Aspire injects `OTEL_EXPORTER_OTLP_ENDPOINT` automatically. The same dashboard adds service discovery, integrations, health, and lifecycle.
 
-# Wire Any OTEL App in 30 Seconds
+</div>
+</div>
 
-**Point your Node.js app at the standalone dashboard:**
+**No .NET requirement:** Node.js, Python, Java, Go, and Rust services can all send OTLP to the same dashboard.
 
-```javascript
-// otel.js
-import { NodeSDK } from "@opentelemetry/sdk-node";
-import {
-  OTLPTraceExporter
-} from "@opentelemetry/exporter-trace-otlp-grpc";
-
-const sdk = new NodeSDK({
-  traceExporter: new OTLPTraceExporter({
-    url: "http://localhost:4317"
-  })
-});
-sdk.start();
-```
-
-**Migration path:** start with the standalone dashboard for observability today; adopt the AppHost later when you want service discovery, integrations, and `aspire deploy`.
-
-<!-- Once they like the UI, the AppHost story becomes a much easier sell. -->
-
----
-
-# OpenTelemetry: Python
-
-**Wire OTEL once. Aspire injects `OTEL_EXPORTER_OTLP_ENDPOINT` automatically.**
-
-```python
-from opentelemetry import trace
-from opentelemetry.exporter.otlp.proto.grpc \
-  .trace_exporter import OTLPSpanExporter
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export \
-  import BatchSpanProcessor
-
-provider = TracerProvider()
-provider.add_span_processor(
-  BatchSpanProcessor(OTLPSpanExporter(
-    endpoint=os.environ.get(
-      'OTEL_EXPORTER_OTLP_ENDPOINT')
-  ))
-)
-trace.set_tracer_provider(provider)
-```
-
-**One block of boilerplate**, and your Python service is in the dashboard.
-
-<!-- Add the OTel SDK, point at the env var Aspire injects, and you're done. -->
-
----
-
-# OpenTelemetry: Node.js
-
-**Same idea, different runtime. You get auto-instrumentation for free.**
-
-```javascript
-const { NodeSDK } =
-  require('@opentelemetry/sdk-node');
-const { getNodeAutoInstrumentations } =
-  require('@opentelemetry/auto-instrumentations-node');
-const { OTLPTraceExporter } =
-  require('@opentelemetry/exporter-trace-otlp-grpc');
-
-const sdk = new NodeSDK({
-  traceExporter: new OTLPTraceExporter({
-    url: process.env.OTEL_EXPORTER_OTLP_ENDPOINT
-  }),
-  instrumentations: [getNodeAutoInstrumentations()]
-});
-sdk.start();
-```
-
-**Auto-instrumentations** capture Express, Fastify, fetch, pg, and redis with no code changes.
-
-<!-- Node gets even better: auto-instrumentations grab HTTP, DB, redis, etc. for free. -->
+<!-- Keep this as the adoption bridge: observability first, orchestration when the team is ready. -->
 
 ---
 
@@ -378,45 +337,6 @@ services__frontend__http__0=http://localhost:3000
 
 ---
 
-# Service Discovery: Read It Anywhere
-
-**Same env-var pattern, every language:**
-
-<div class="columns">
-<div>
-
-**Python:**
-```python
-api_url = os.environ['services__api__http__0']
-requests.get(f'{api_url}/data')
-```
-
-**Go:**
-```go
-apiURL := os.Getenv("services__api__http__0")
-```
-
-</div>
-<div>
-
-**Node.js:**
-```javascript
-const apiUrl = process.env['services__api__http__0'];
-await fetch(`${apiUrl}/data`);
-```
-
-**Java:**
-```java
-String apiUrl = System.getenv("services__api__http__0");
-```
-
-</div>
-</div>
-
-<!-- Each runtime has its own env-var idiom, but the pattern is identical. -->
-
----
-
 # Connection Strings: The Pattern
 
 **Infrastructure resources get connection strings as environment variables:**
@@ -435,32 +355,9 @@ client = redis.from_url(
 )
 ```
 
-**Aspire injects the env var.** Your service reads it using its language's standard mechanism.
+**Aspire injects the env var.** Python, Node.js, Go, Java, Rust, .NET, and PowerShell read it with their standard environment APIs.
 
-<!-- Aspire handles connection-string complexity so you don't manage .env files. -->
-
----
-
-# Same Pattern, Every Language
-
-**Node.js + Kafka:**
-```javascript
-const kafka = new Kafka({
-  brokers: [process.env.CONNECTIONSTRINGS__messaging]
-});
-```
-
-**Java + PostgreSQL:**
-```java
-String url = "jdbc:postgresql://"
-  + System.getenv("PG_HOST") + ":"
-  + System.getenv("PG_PORT") + "/"
-  + System.getenv("PG_DB");
-```
-
-**Go, Rust, .NET, PowerShell**: same pattern. Aspire sets the env var; your code reads it.
-
-<!-- For C# AppHosts using AddPostgres, connection strings are auto-generated. For polyglot AppHosts, you wire env vars explicitly, for the same result with more control. -->
+<!-- Service discovery and connection strings share one universal interface: environment variables. -->
 
 ---
 
@@ -468,14 +365,22 @@ String url = "jdbc:postgresql://"
 
 # Resource Lifecycle Management
 
-![w:1080px center](./img/resource-lifecycle-management.drawio.svg)
+<div class="lifecycle-visual">
+<img src="./img/resource-lifecycle-management.drawio.svg" alt="Resource lifecycle from starting through stopped">
+</div>
 
-**Dependency Order:** Infrastructure → Backend Services → Frontend
-**Health Monitoring:** `WithHttpHealthCheck("/health")` for automatic restarts on failure
+<div class="lifecycle-caption">Aspire keeps startup order, monitoring, and shutdown coordinated across the whole app.</div>
+
+**Startup Gating:** `WaitFor(...)` holds dependents until a resource is ready
+**Health Monitoring:** `WithHttpHealthCheck("/health")` reports readiness and status
 **Graceful Shutdown:** Clean termination of all processes
 **Backed by 100+ integrations**: Postgres, Redis, Kafka, Cosmos, OpenAI, Ollama, and your own containers all participate in the same lifecycle.
 
-<!-- Aspire manages startup ordering automatically based on WithReference and WaitFor dependencies. Infrastructure comes up first, then backends, then frontends. Over 100 integrations are wired to the same lifecycle so health/dependency rules apply to everything in the AppHost. -->
+<!--
+WithReference wires configuration; it does not itself impose startup ordering. Use WaitFor to gate a dependent resource on its dependency's readiness. With a registered health check, WaitFor waits for healthy; without one, it waits for the Running state.
+WithHttpHealthCheck reports readiness and dashboard status. It does not by itself promise automatic restarts on failure. Production liveness probes and restart policies belong to the deployment orchestrator.
+Source: https://aspire.dev/fundamentals/health-checks/
+-->
 
 ---
 
@@ -504,7 +409,7 @@ builder.Build().Run();
 
 # The AppHost: TypeScript
 
-**Same model, different syntax. Best fit for Node.js / TS workspaces:**
+**Generally available in 13.5. Same model, TypeScript syntax.**
 
 ```typescript
 import { createBuilder } from "./.aspire/modules/aspire.mjs";
@@ -521,27 +426,14 @@ await builder
 await builder.build().run();
 ```
 
-**Same 100+ integrations** as C#, projected to TypeScript by the **Aspire Type System (ATS)**. A JS/TS team never needs to touch .NET.
+**Same integration model via ATS.** 13.5 adds custom health-check callbacks and container file copying.
 
-<!-- The TypeScript AppHost uses the same integration packages as C#. -->
-
----
-
-# Two AppHost Languages
-
-**Author your AppHost in C# or TypeScript today. Both are officially supported.**
-
-💜 **C# (.NET)**: `AppHost.cs`, best fit for teams already on .NET tooling.
-
-🟦 **TypeScript**: `apphost.mts`, best fit for Node.js / TypeScript workspaces.
-
-**Same model, different syntax.** Both produce the same dashboard, service discovery, health checks, and deployment artifacts.
-
-**Same integration surface**: the TypeScript SDK is auto-generated from the same .NET hosting integrations via the **Aspire Type System (ATS)**. No separate integration code to maintain.
-
-**Preview:** experimental **Python** (`apphost.py`), **Go** (`apphost.go`), and **Java** (`AppHost.java`) AppHosts also exist — demoed later.
-
-<!-- C# and TypeScript are the two GA AppHost authoring languages. Python, Go, and Java AppHosts are experimental preview (feature-flagged); the deck demos all three. -->
+<!--
+TypeScript AppHosts are GA in 13.5; ASPIREATS001 is no longer required. This does not make every experimental AppHost authoring language GA: keep Python, Go, and Java preview labels separate from workload support.
+Custom checks use builder.addHealthCheck(name, check) and resource.withHealthCheck(key). withContainerFiles and withContainerFilesCallback copy or generate container files. Keep these as examples of parity, not another API walkthrough.
+Current entry points use apphost.mts. aspire update --migrate can migrate older apphost.ts projects; no project migration is part of these slide changes.
+Source: https://aspire.dev/whats-new/aspire-13-5/
+-->
 
 ---
 
@@ -608,7 +500,7 @@ via `AddProject`, `AddJavaScriptApp`, `AddPythonApp`, `AddGoApp`, `AddBunApp`, `
 
 <!-- _class: compact -->
 
-# Cheat Sheet: Runtimes
+# Runtimes
 
 **Pick the right `Add*` for your service:**
 
@@ -627,111 +519,98 @@ via `AddProject`, `AddJavaScriptApp`, `AddPythonApp`, `AddGoApp`, `AddBunApp`, `
 
 ---
 
-# Cheat Sheet: Common Patterns
+<!-- _class: compact code-reference -->
+
+# Common Patterns
 
 **Chainable methods you'll use everywhere:**
 
 ```csharp
-.WithReference(redis)              // wire endpoints
-.WaitFor(postgres)                 // start ordering
-.WithHttpEndpoint(env: "PORT")     // expose http
-.WithExternalHttpEndpoints()       // public ingress
-.WithUv()                          // python: uv
-.WithNpm() / .WithBun()            // js: package mgr
-.WithBuildSecret("key", secret)    // build-time secret
-.WithRunScript("dev")              // npm script
-.WithHttpHealthCheck("/health")    // probe
-.WithMcpServer("mcp")              // expose MCP
+.WithReference(redis)           // pass connection info
+.WaitFor(postgres)              // wait for readiness
+.WithHttpEndpoint(env: "PORT")   // expose HTTP
+.WithExternalHttpEndpoints()    // public ingress
+.WithUv()                       // Python package manager
+.WithNpm()                      // JavaScript package manager
+.WithHttpHealthCheck("/health") // readiness probe
+.WithMcpServer("mcp")            // resource's MCP tools
 ```
 
-<!-- Keep this slide handy. These are the building blocks for everything we covered. -->
+<!-- Keep this slide handy. WithMcpServer describes a resource's own MCP endpoint; it is separate from the Aspire CLI's runtime MCP server. WithReference supplies configuration and WaitFor supplies startup gating. -->
 
 ---
 
-# `aspire.config.json`: The File
+<!-- _class: invert -->
 
-**This file tells the CLI which language your AppHost uses.**
+# Practical Setup
 
-```json
-{
-  "appHost": {
-    "path": "apphost.py",
-    "language": "python"
-  },
-  "sdk": { "version": "13.4.6" },
-  "channel": "stable",
-  "features": {
-    "polyglotSupportEnabled": true,
-    "experimentalPolyglot:python": true
-  },
-  "profiles": {
-    "default": {
-      "applicationUrl": "https://localhost:17000"
-    }
-  }
-}
-```
+Repeatable workflows. Familiar tools. Agents with live context.
 
-<!-- Drop aspire.config.json at the project root. The CLI reads it on every command. -->
+<!-- Keep this section about the developer's workflow, not the structure of aspire.config.json. -->
 
 ---
 
-<!-- _class: compact -->
+<!-- _class: compact release-slide -->
 
-# `aspire.config.json`: What Each Field Does
+# Turn README Steps into Resource Commands
 
-- **`appHost.path`** + **`appHost.language`**: declares your stack (`csharp`, `typescript`, `python`...)
-- **`sdk.version`**: pins the Aspire SDK version
-- **`channel`**: release channel (`stable`, `preview`)
-- **`profiles`**: dashboard URLs (replaces `apphost.run.json`)
-- **Preview AppHosts** (Python/Go/Java) add `experimentalPolyglot:<lang>: true`
-- **Feature flags** use a **boolean `true`**, never the string `"true"`
+**Define a workflow once. Use it from the dashboard or CLI.**
 
-**Every sample in this talk** has one at its root. Peek inside.
+<div class="columns">
+<div>
 
-<!-- Common gotcha: feature flags are JSON booleans, not strings. -->
+**Named arguments** become dashboard inputs and CLI options.
 
----
-
-# Manage Config From the CLI
-
-**No manual JSON editing required:**
+Example after registering a custom `seed` command:
 
 ```bash
-# Read & write config values
-aspire config list
-aspire config get <key>
-aspire config set <key> <value>
-
-# Manage secrets (encrypted at rest)
-aspire secret set <key> <value>
-aspire secret list / get / delete
-
-# Local dev certs
-aspire certs clean
-aspire certs trust
+aspire resource api seed --help
+aspire resource api seed --count 100
 ```
 
-**Every sample in this talk** has an `aspire.config.json` at its root. Peek inside.
+**Import files** with a picker, type filters, and size limits.
 
-<!-- The CLI is the friendlier surface. Most teams never edit aspire.config.json directly. -->
+</div>
+<div>
+
+<figure class="release-screenshot">
+<img src="./img/aspire-file-upload-13-5.png" alt="Aspire resource command prompting for a JSON or YAML configuration file">
+<figcaption>Cropped from the <a href="https://devblogs.microsoft.com/aspire/whats-new-aspire-13-5/">Microsoft Aspire 13.5 announcement</a></figcaption>
+</figure>
+
+**Stable in 13.5:** Command arguments, core prompts, and file inputs.
+
+**Experimental:** Progress dialogs with optional cancellation.
+
+</div>
+</div>
+
+<!--
+Connect this to the 15-step README problem: an integration author can make import, seed, or reset actions part of the resource model.
+The seed command is illustrative, not a built-in Aspire command or an implemented command in these samples. It assumes an api resource with a custom seed command and a count argument.
+Declare CommandOptions.Arguments and read ExecuteCommandContext.Arguments; TypeScript has the corresponding ATS exports. The dashboard collects inputs, while the CLI accepts named options and reports missing required values. If an argument collides with an Aspire option, separate command options with --.
+File inputs support allowed types and maximum size; the AppHost reads the uploaded content as a stream. Core prompts, command arguments, and file input are stable. Progress dialogs remain experimental (ASPIREINTERACTION001) and are a dashboard interaction, not a prerequisite for a CLI command.
+Sources: https://aspire.dev/fundamentals/custom-resource-commands/ and https://aspire.dev/reference/cli/commands/aspire-resource/ and https://aspire.dev/whats-new/aspire-13-5/
+Image: https://devblogs.microsoft.com/aspire/wp-content/uploads/sites/90/2026/08/interaction-file-upload.webp (cropped to the file picker).
+-->
 
 ---
+
+<!-- _class: code-reference -->
 
 # Getting Started
 
-**No .NET SDK required**: [get.aspire.dev](http://get.aspire.dev)
+**Install with a familiar package manager:** [get.aspire.dev](https://get.aspire.dev)
 
 <div class="columns">
 <div>
 
 **Install & scaffold**
 ```bash
-curl -sSL https://aspire.dev/install.sh | bash
-aspire new aspire-py-starter -n my-app
+npm install -g @microsoft/aspire-cli
 aspire new aspire-ts-starter -n my-app
-aspire new aspire-starter -n my-app
-cd my-app && aspire run
+cd my-app
+aspire run
 ```
 
 </div>
@@ -739,18 +618,25 @@ cd my-app && aspire run
 
 **Day-to-day commands**
 ```bash
-aspire run / aspire start    # Run / background
-aspire ps / aspire stop      # List / stop
-aspire describe --follow     # Watch resources
-aspire doctor                # Environment check
-aspire otel / aspire logs    # Telemetry & logs
-aspire export                # Capture to zip
+aspire start     # Background
+aspire ps        # AppHost summaries
+aspire describe  # Resource details
+aspire doctor    # Environment
+aspire logs      # Console output
+aspire stop      # Stop the app
 ```
 
 </div>
 </div>
 
-<!-- aspire doctor is great before a talk. aspire start runs in detached mode. aspire new is language-aware. It scaffolds the right AppHost structure for your chosen language. -->
+<!--
+npm is convenient for Node/TypeScript teams; Homebrew, WinGet, mise, Nix, NuGet, and the install script are also supported. Package-manager distribution started in the 13.4 timeframe; do not present every installation option as new in 13.5. Keep the workload's own toolchain installed.
+For C# use aspire-starter; aspire-py-starter is an experimental Python AppHost path. The slide uses just one scaffold command so it is a coherent sequence, not three conflicting project creations.
+In 13.5, aspire ps summarizes AppHosts; use aspire describe for resource-level details. The old aspire ps --resources and --include-hidden options were removed.
+Before the talk, run aspire doctor. In VS Code the dashboard no longer auto-opens by default: open it explicitly, or opt in with Aspire: Dashboard Browser / dashboardBrowser in launch.json.
+Use ordinary aspire stop during the demo. aspire stop --force permanently deletes persistent resource data without an extra confirmation; it is not a harmless "stop harder" option.
+Sources: https://aspire.dev/get-started/install-cli/ and https://aspire.dev/whats-new/aspire-13-5/
+-->
 
 ---
 
@@ -758,24 +644,48 @@ aspire export                # Capture to zip
 
 # Agent-Ready CLI
 
-### Two MCP servers. One model. Any agent.
+### Skills for workflow. MCP for runtime context.
 
-**MCP support out of the box. No plugins, no glue.**
+**Start with Aspire skills. Add MCP when the agent needs live application data.**
 
-- 🛠 **CLI MCP**: stdio. Agent spawns `aspire agent mcp` as a subprocess. Set up by `aspire agent init`.
-- 📊 **Dashboard MCP**: streamable HTTP + API key. Click the **MCP** button in the dashboard top-right.
-- 🧠 **Tools agents get**: `list_resources`, `list_console_logs`, `list_traces`, `execute_resource_command`, `search_docs`, `doctor`.
-- 🔌 **Clients**: VS Code, Claude Code, Copilot CLI, OpenCode. Any MCP-aware client works.
+<div class="columns">
+<div>
 
-**Polyglot bonus:** the agent sees Python tracebacks, Go panics, Java stack traces, and Node errors through the same OTEL pipeline.
+## 🧭 Aspire skills
 
-<!-- Per aspire.dev/get-started/aspire-mcp-server/. CLI MCP = stdio + `aspire agent init`. Dashboard MCP = streamable HTTP + API key from the dashboard UI. -->
+Teach agents the CLI, AppHost conventions, and debugging workflows.
+
+Install project guidance with `aspire agent init`.
+
+</div>
+<div>
+
+## 🔌 Aspire MCP
+
+The agent starts `aspire agent mcp` as a local **stdio** subprocess.
+
+Read resource state, logs, and traces; execute resource commands.
+
+</div>
+</div>
+
+**One runtime view** across Python, Go, Java, Node.js, and .NET.
+
+<!--
+Current guidance recommends Aspire skills first and MCP when live runtime context is needed. VS Code, Claude Code, Copilot CLI, and OpenCode can use the CLI-hosted MCP server.
+The former dashboard-hosted MCP server has been removed: do not look for a dashboard MCP button, HTTP endpoint, or API key. aspire agent init configures the stdio command aspire agent mcp.
+Separately, the dashboard AI Assistant chat UI was removed in 13.5. The supported story is an external coding agent using skills and the CLI/MCP, not an embedded dashboard chat.
+Tools include list_resources, list_console_logs, list_structured_logs, list_traces, execute_resource_command, search_docs, and doctor.
+Sources: https://aspire.dev/get-started/aspire-mcp-server/ and https://aspire.dev/get-started/aspire-skills/ and https://aspire.dev/whats-new/aspire-13-5/
+-->
 
 ---
 
+<!-- _class: compact -->
+
 # Wire It Up in 30 Seconds
 
-**One-time setup, then any MCP-aware agent works:**
+**Install skills first; select the MCP server when you need runtime access.**
 
 ```bash
 # 1. One-time setup in your AppHost dir
@@ -799,7 +709,7 @@ $ code .    # reads .vscode/mcp.json
 } } }
 ```
 
-<!-- Earlier drafts invented an `http://localhost:15889/mcp` URL that doesn't exist for the CLI server. -->
+<!-- aspire agent init creates configuration for the detected agent. The shown .vscode/mcp.json is only needed when MCP is selected; skills do not require it. The agent launches aspire agent mcp over stdio, not an HTTP connection to the dashboard. Source: https://aspire.dev/get-started/aspire-mcp-server/ -->
 
 ---
 
@@ -807,38 +717,15 @@ $ code .    # reads .vscode/mcp.json
 
 # <!--fit--> Demos
 
-8 samples, live with the Aspire dashboard
+Three representative examples, live with the Aspire dashboard
 
-<!-- Time to see Aspire in action! -->
-
----
-
-<!-- _class: compact -->
-
-# Live Demos
-
-<div class="columns">
-<div>
-
-**Simple → Full-stack**
-1. **ts-starter**: Express + React (TS AppHost)
-2. **flask-markdown-wiki**: Flask + Redis (Python AppHost, preview)
-3. **vite-react-api**: FastAPI + React + Redis (TS AppHost)
-4. **django-htmx-polls**: Django + HTMX + PostgreSQL (Python AppHost, preview)
-
-</div>
-<div>
-
-**Multi-runtime → Polyglot**
-5. **spring-boot-postgres**: Spring Boot + PostgreSQL (Java AppHost, preview)
-6. **svelte-go-bookmarks**: Go API + Svelte + PostgreSQL (Go AppHost, preview)
-7. **dotnet-angular-cosmos**: Angular + .NET + CosmosDB (C# AppHost)
-8. **polyglot-event-stream**: .NET + Python + Node.js + Kafka (C# AppHost)
-
-</div>
-</div>
-
-<!-- Ordered by escalating complexity: same orchestration model, increasing sophistication. -->
+<!--
+Time to see the same orchestration model at increasing complexity. Go directly to the examples rather than reading a demo catalog.
+13.5 demo preparation: align the AppHost SDK, core packages, and every Aspire.Hosting.* integration on matching 13.5 versions. Mixing 13.4.6 integrations with 13.5 can cause MissingMethodException or TypeLoadException, including Go, JavaScript, and Python hosting integrations. Preview packages need the corresponding 13.5-preview family.
+This presentation update does not upgrade the sample applications. Prepare a consistently versioned demo environment before demonstrating the 13.5-only features; the new screenshots are official reference captures.
+Open the dashboard explicitly if VS Code does not auto-launch it. Use aspire describe to inspect resources and ordinary aspire stop to preserve persistent demo data.
+Source: https://aspire.dev/whats-new/aspire-13-5/
+-->
 
 ---
 
@@ -877,18 +764,6 @@ $ code .    # reads .vscode/mcp.json
 
 <!-- _class: compact -->
 
-# Demo: Flask Markdown Wiki
-
-<div class="chips"><span class="host">Python AppHost (preview)</span><span>Flask</span><span>Redis</span></div>
-
-![w:1120px center](./img/flask-markdown-wiki.drawio.svg)
-
-<!-- Python orchestrating Python: the AppHost and the service are both Python. -->
-
----
-
-<!-- _class: compact -->
-
 # Demo: Vite React + FastAPI
 
 <div class="chips"><span class="host">TypeScript AppHost</span><span>React</span><span>FastAPI</span><span>Redis</span></div>
@@ -896,54 +771,6 @@ $ code .    # reads .vscode/mcp.json
 ![w:1120px center](./img/vite-react-api-architecture.drawio.svg)
 
 <!-- Full-stack TypeScript-orchestrated app with Python backend and Redis caching. -->
-
----
-
-<!-- _class: compact -->
-
-# Demo: Django HTMX Polls
-
-<div class="chips"><span class="host">Python AppHost (preview)</span><span>Django</span><span>HTMX</span><span>PostgreSQL</span></div>
-
-![w:1120px center](./img/django-htmx-voting-polls.drawio.svg)
-
-<!-- Real-time voting with HTMX partial updates, Django backend, PostgreSQL persistence. -->
-
----
-
-<!-- _class: compact -->
-
-# Demo: Spring Boot Notes
-
-<div class="chips"><span class="host">Java AppHost (preview)</span><span>Spring Boot</span><span>PostgreSQL</span></div>
-
-![w:1120px center](./img/spring-boot-postgres.drawio.svg)
-
-<!-- Java orchestrating Java: experimental Java AppHost with Spring Boot and PostgreSQL. PRESENTER NOTE: the preview Java AppHost can hit Aspire's ~60s guest-AppHost-server startup timeout on a cold machine (the Spring workload itself builds/runs fine). Pre-warm before the talk or keep a recording/screenshot as a fallback. -->
-
----
-
-<!-- _class: compact -->
-
-# Demo: Svelte + Go Bookmarks
-
-<div class="chips"><span class="host">Go AppHost (preview)</span><span>Go API</span><span>Svelte</span><span>PostgreSQL</span></div>
-
-![w:1120px center](./img/go-svelte-bookmarks.drawio.svg)
-
-<!-- Go orchestrating a full-stack app: Go API backend with Svelte frontend. PRESENTER NOTE: the preview Go AppHost can hit Aspire's ~60s guest-AppHost-server startup timeout on a cold machine (the Go API workload itself builds/runs fine). Pre-warm before the talk or keep a recording/screenshot as a fallback. -->
-
----
-
-<!-- _class: compact -->
-
-# Demo: Angular + .NET + CosmosDB
-
-<div class="chips"><span class="host">C# AppHost</span><span>Angular</span><span>.NET API</span><span>CosmosDB</span></div>
-
-![w:1120px center](./img/dotnet-angular-cosmos.drawio.svg)
-
-<!-- Classic .NET AppHost orchestrating Angular frontend with CosmosDB emulator. -->
 
 ---
 
@@ -958,7 +785,6 @@ $ code .    # reads .vscode/mcp.json
 <!-- The ultimate polyglot demo: three languages, one event pipeline, full distributed tracing. -->
 
 ---
-
 
 <!-- _class: compact -->
 
@@ -1059,7 +885,7 @@ Dashboard: http://localhost:15888
 - 🌐 [aspire.dev](https://aspire.dev): Official website & docs
 - 🐙 [github.com/microsoft/aspire](https://github.com/microsoft/aspire): Source code
 - 🐙 [github.com/codebytes/aspire-polyglot](https://github.com/codebytes/aspire-polyglot): This repo!
-- 🛒 [github.com/dotnet/eShop](https://github.com/dotnet/eShop): eShop sample
+- 🆕 [Aspire 13.5 release notes](https://aspire.dev/whats-new/aspire-13-5/): Features & migration notes
 - 🧰 [Aspire Community Toolkit](https://github.com/CommunityToolkit/Aspire)
 - 💬 [Discord: Aspire channel](https://aka.ms/dotnet-discord)
 

@@ -356,6 +356,10 @@ MigrationBackup/
 # Squad: SubSquad activation file (local to this machine)
 .squad-workstream
 
+# Impeccable local state (keep shared configuration trackable)
+/.impeccable/hook.cache.json
+/.impeccable/config.local.json
+
 # Marp build & audit artifacts
 slides/out/
 slides/audit-slides.cjs
@@ -437,3 +441,4 @@ Thumbs.db
 # VSCode workspace files (keep .vscode/ for shared launch configs if any)
 .vscode/*.local.json
 .playwright-mcp/
+slides/Slides.pdf

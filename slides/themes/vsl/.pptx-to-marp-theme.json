@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "sourceSha256": "cd1b23963f45c7bbd1c3cbc62af4d2f53a788ab177f063d5d962f05d4e78057b",
+  "theme": "vsl",
+  "generatedFiles": [
+    "vsl.css",
+    "vsl/.pptx-to-marp-theme.json",
+    "vsl/README.md",
+    "vsl/assets/image1.jpg",
+    "vsl/assets/image2.jpg",
+    "vsl/assets/image3.png",
+    "vsl/sample.md",
+    "vsl/theme-report.json"
+  ]
+}

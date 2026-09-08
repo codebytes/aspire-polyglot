@@ -1,4 +1,6 @@
-# Squad Team
+# Historical Squad Team
+
+> Archived on 2026-09-08. The repo-local Squad coordinator, skill snapshots, templates, and automation have been retired. This roster and the retained decisions, histories, and team context are historical records, not current setup instructions.
 
 > aspire-polyglot — Polyglot Aspire samples and Marp slide deck for conference talk
 
@@ -10,7 +12,7 @@
 
 ## Members
 
-| Name | Role | Charter | Status |
+| Name | Role | Charter | Status at retirement |
 |------|------|---------|--------|
 | Stark | Lead | `.squad/agents/stark/charter.md` | 🏗️ Active |
 | Parker | JS/TS Dev | `.squad/agents/parker/charter.md` | ⚛️ Active |
