@@ -4,10 +4,10 @@ Polyglot samples for Aspire — demonstrating service orchestration across Pytho
 
 ## Slides
 
-The hosted slides for the related talk can be found at:\
-[https://chris-ayers.com/aspire-polyglot/](https://chris-ayers.com/aspire-polyglot/)
+[View HTML slides](https://chris-ayers.com/aspire-polyglot/) | [Download PDF](https://chris-ayers.com/aspire-polyglot/Slides.pdf)
 
 The source deck for this presentation lives in [slides/](./slides/) and is built with [Marp](https://marp.app/).
+The [Pages workflow](./.github/workflows/marp-pages.yml) generates and deploys both formats on pushes to `main` or when run manually.
 
 **Quick Start:** `cd samples/<sample> && aspire run`
 
@@ -120,6 +120,12 @@ These wire the services together regardless of language — every runtime reads 
 - **Connection strings** — resources publish `ConnectionStrings__<resource>` to their consumers (`WithReference`).
 - **OpenTelemetry** — any app that speaks OTLP shows up in the dashboard; the [standalone dashboard](https://aspire.dev/dashboard/standalone/) needs no AppHost at all.
 - **Publishing** — `aspire publish` targets Docker Compose (`AddDockerComposeEnvironment`), Kubernetes, or bakes SPAs into a container (`PublishWithContainerFiles`), independent of workload language.
+
+## Agent tooling
+
+Use shared skills from [codebytes/skills](https://github.com/codebytes/skills) through your agent's installation rather than copying them into this repository. Agent tooling is optional; running the samples and building the slides does not require it.
+
+The repo-local Squad agent, skills, templates, and issue workflows have been retired. Decisions, agent histories, and team context remain under [.squad/](./.squad/) as historical records.
 
 ## Learn More
 

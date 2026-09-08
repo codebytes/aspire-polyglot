@@ -1,0 +1,762 @@
+{
+  "source": {
+    "path": "VSLSD26_Speaker Slide Template.pptx",
+    "sha256": "cd1b23963f45c7bbd1c3cbc62af4d2f53a788ab177f063d5d962f05d4e78057b",
+    "extension": ".pptx"
+  },
+  "theme": "vsl",
+  "cssImports": [],
+  "slideSize": {
+    "cx": 9144000,
+    "cy": 5143500,
+    "widthInches": 10.0,
+    "heightInches": 5.625,
+    "ratio": 1.777778,
+    "type": "screen16x9"
+  },
+  "colors": {
+    "scheme": {
+      "dk1": "#000000",
+      "lt1": "#FFFFFF",
+      "dk2": "#1F497D",
+      "lt2": "#EEECE1",
+      "accent1": "#4F81BD",
+      "accent2": "#C0504D",
+      "accent3": "#9BBB59",
+      "accent4": "#8064A2",
+      "accent5": "#4BACC6",
+      "accent6": "#F79646",
+      "hlink": "#0000FF",
+      "folHlink": "#800080"
+    },
+    "usage": {
+      "scheme:tx1": 84,
+      "#00B0EB": 9,
+      "#000000": 9,
+      "#F27036": 5,
+      "scheme:accent1": 4,
+      "scheme:bg2": 2,
+      "#1F497D": 2,
+      "scheme:bg1": 2
+    },
+    "recommended": {
+      "background": "#FFFFFF",
+      "foreground": "#000000",
+      "primary": "#00B0EB",
+      "secondary": "#F27036",
+      "accent": "#1F497D",
+      "heading": "#1F497D",
+      "muted": "#1F497D",
+      "panel": "#EEECE1",
+      "inverseText": "#FFFFFF",
+      "inverseBackground": "#1F497D",
+      "link": "#0000FF"
+    },
+    "powerPointThemes": [
+      {
+        "packagePath": "ppt/theme/theme1.xml",
+        "slideCount": 3,
+        "colors": {
+          "dk1": "#000000",
+          "lt1": "#FFFFFF",
+          "dk2": "#1F497D",
+          "lt2": "#EEECE1",
+          "accent1": "#4F81BD",
+          "accent2": "#C0504D",
+          "accent3": "#9BBB59",
+          "accent4": "#8064A2",
+          "accent5": "#4BACC6",
+          "accent6": "#F79646",
+          "hlink": "#0000FF",
+          "folHlink": "#800080"
+        },
+        "fonts": {
+          "major": {
+            "latin": "Calibri",
+            "eastAsian": "",
+            "complexScript": "",
+            "scripts": {
+              "Jpan": "ＭＳ Ｐゴシック",
+              "Hang": "맑은 고딕",
+              "Hans": "宋体",
+              "Hant": "新細明體",
+              "Arab": "Times New Roman",
+              "Hebr": "Times New Roman",
+              "Thai": "Angsana New",
+              "Ethi": "Nyala",
+              "Beng": "Vrinda",
+              "Gujr": "Shruti",
+              "Khmr": "MoolBoran",
+              "Knda": "Tunga",
+              "Guru": "Raavi",
+              "Cans": "Euphemia",
+              "Cher": "Plantagenet Cherokee",
+              "Yiii": "Microsoft Yi Baiti",
+              "Tibt": "Microsoft Himalaya",
+              "Thaa": "MV Boli",
+              "Deva": "Mangal",
+              "Telu": "Gautami",
+              "Taml": "Latha",
+              "Syrc": "Estrangelo Edessa",
+              "Orya": "Kalinga",
+              "Mlym": "Kartika",
+              "Laoo": "DokChampa",
+              "Sinh": "Iskoola Pota",
+              "Mong": "Mongolian Baiti",
+              "Viet": "Times New Roman",
+              "Uigh": "Microsoft Uighur",
+              "Geor": "Sylfaen"
+            }
+          },
+          "minor": {
+            "latin": "Calibri",
+            "eastAsian": "",
+            "complexScript": "",
+            "scripts": {
+              "Jpan": "ＭＳ Ｐゴシック",
+              "Hang": "맑은 고딕",
+              "Hans": "宋体",
+              "Hant": "新細明體",
+              "Arab": "Arial",
+              "Hebr": "Arial",
+              "Thai": "Cordia New",
+              "Ethi": "Nyala",
+              "Beng": "Vrinda",
+              "Gujr": "Shruti",
+              "Khmr": "DaunPenh",
+              "Knda": "Tunga",
+              "Guru": "Raavi",
+              "Cans": "Euphemia",
+              "Cher": "Plantagenet Cherokee",
+              "Yiii": "Microsoft Yi Baiti",
+              "Tibt": "Microsoft Himalaya",
+              "Thaa": "MV Boli",
+              "Deva": "Mangal",
+              "Telu": "Gautami",
+              "Taml": "Latha",
+              "Syrc": "Estrangelo Edessa",
+              "Orya": "Kalinga",
+              "Mlym": "Kartika",
+              "Laoo": "DokChampa",
+              "Sinh": "Iskoola Pota",
+              "Mong": "Mongolian Baiti",
+              "Viet": "Arial",
+              "Uigh": "Microsoft Uighur",
+              "Geor": "Sylfaen"
+            }
+          }
+        }
+      },
+      {
+        "packagePath": "ppt/theme/theme2.xml",
+        "slideCount": 0,
+        "colors": {
+          "dk1": "#000000",
+          "lt1": "#FFFFFF",
+          "dk2": "#1F497D",
+          "lt2": "#EEECE1",
+          "accent1": "#4F81BD",
+          "accent2": "#C0504D",
+          "accent3": "#9BBB59",
+          "accent4": "#8064A2",
+          "accent5": "#4BACC6",
+          "accent6": "#F79646",
+          "hlink": "#0000FF",
+          "folHlink": "#800080"
+        },
+        "fonts": {
+          "major": {
+            "latin": "Calibri",
+            "eastAsian": "",
+            "complexScript": "",
+            "scripts": {
+              "Jpan": "ＭＳ Ｐゴシック",
+              "Hang": "맑은 고딕",
+              "Hans": "宋体",
+              "Hant": "新細明體",
+              "Arab": "Times New Roman",
+              "Hebr": "Times New Roman",
+              "Thai": "Angsana New",
+              "Ethi": "Nyala",
+              "Beng": "Vrinda",
+              "Gujr": "Shruti",
+              "Khmr": "MoolBoran",
+              "Knda": "Tunga",
+              "Guru": "Raavi",
+              "Cans": "Euphemia",
+              "Cher": "Plantagenet Cherokee",
+              "Yiii": "Microsoft Yi Baiti",
+              "Tibt": "Microsoft Himalaya",
+              "Thaa": "MV Boli",
+              "Deva": "Mangal",
+              "Telu": "Gautami",
+              "Taml": "Latha",
+              "Syrc": "Estrangelo Edessa",
+              "Orya": "Kalinga",
+              "Mlym": "Kartika",
+              "Laoo": "DokChampa",
+              "Sinh": "Iskoola Pota",
+              "Mong": "Mongolian Baiti",
+              "Viet": "Times New Roman",
+              "Uigh": "Microsoft Uighur",
+              "Geor": "Sylfaen"
+            }
+          },
+          "minor": {
+            "latin": "Calibri",
+            "eastAsian": "",
+            "complexScript": "",
+            "scripts": {
+              "Jpan": "ＭＳ Ｐゴシック",
+              "Hang": "맑은 고딕",
+              "Hans": "宋体",
+              "Hant": "新細明體",
+              "Arab": "Arial",
+              "Hebr": "Arial",
+              "Thai": "Cordia New",
+              "Ethi": "Nyala",
+              "Beng": "Vrinda",
+              "Gujr": "Shruti",
+              "Khmr": "DaunPenh",
+              "Knda": "Tunga",
+              "Guru": "Raavi",
+              "Cans": "Euphemia",
+              "Cher": "Plantagenet Cherokee",
+              "Yiii": "Microsoft Yi Baiti",
+              "Tibt": "Microsoft Himalaya",
+              "Thaa": "MV Boli",
+              "Deva": "Mangal",
+              "Telu": "Gautami",
+              "Taml": "Latha",
+              "Syrc": "Estrangelo Edessa",
+              "Orya": "Kalinga",
+              "Mlym": "Kartika",
+              "Laoo": "DokChampa",
+              "Sinh": "Iskoola Pota",
+              "Mong": "Mongolian Baiti",
+              "Viet": "Arial",
+              "Uigh": "Microsoft Uighur",
+              "Geor": "Sylfaen"
+            }
+          }
+        }
+      },
+      {
+        "packagePath": "ppt/theme/theme3.xml",
+        "slideCount": 0,
+        "colors": {
+          "dk1": "#000000",
+          "lt1": "#FFFFFF",
+          "dk2": "#1F497D",
+          "lt2": "#EEECE1",
+          "accent1": "#4F81BD",
+          "accent2": "#C0504D",
+          "accent3": "#9BBB59",
+          "accent4": "#8064A2",
+          "accent5": "#4BACC6",
+          "accent6": "#F79646",
+          "hlink": "#0000FF",
+          "folHlink": "#800080"
+        },
+        "fonts": {
+          "major": {
+            "latin": "Calibri",
+            "eastAsian": "",
+            "complexScript": "",
+            "scripts": {
+              "Jpan": "ＭＳ Ｐゴシック",
+              "Hang": "맑은 고딕",
+              "Hans": "宋体",
+              "Hant": "新細明體",
+              "Arab": "Times New Roman",
+              "Hebr": "Times New Roman",
+              "Thai": "Angsana New",
+              "Ethi": "Nyala",
+              "Beng": "Vrinda",
+              "Gujr": "Shruti",
+              "Khmr": "MoolBoran",
+              "Knda": "Tunga",
+              "Guru": "Raavi",
+              "Cans": "Euphemia",
+              "Cher": "Plantagenet Cherokee",
+              "Yiii": "Microsoft Yi Baiti",
+              "Tibt": "Microsoft Himalaya",
+              "Thaa": "MV Boli",
+              "Deva": "Mangal",
+              "Telu": "Gautami",
+              "Taml": "Latha",
+              "Syrc": "Estrangelo Edessa",
+              "Orya": "Kalinga",
+              "Mlym": "Kartika",
+              "Laoo": "DokChampa",
+              "Sinh": "Iskoola Pota",
+              "Mong": "Mongolian Baiti",
+              "Viet": "Times New Roman",
+              "Uigh": "Microsoft Uighur",
+              "Geor": "Sylfaen"
+            }
+          },
+          "minor": {
+            "latin": "Calibri",
+            "eastAsian": "",
+            "complexScript": "",
+            "scripts": {
+              "Jpan": "ＭＳ Ｐゴシック",
+              "Hang": "맑은 고딕",
+              "Hans": "宋体",
+              "Hant": "新細明體",
+              "Arab": "Arial",
+              "Hebr": "Arial",
+              "Thai": "Cordia New",
+              "Ethi": "Nyala",
+              "Beng": "Vrinda",
+              "Gujr": "Shruti",
+              "Khmr": "DaunPenh",
+              "Knda": "Tunga",
+              "Guru": "Raavi",
+              "Cans": "Euphemia",
+              "Cher": "Plantagenet Cherokee",
+              "Yiii": "Microsoft Yi Baiti",
+              "Tibt": "Microsoft Himalaya",
+              "Thaa": "MV Boli",
+              "Deva": "Mangal",
+              "Telu": "Gautami",
+              "Taml": "Latha",
+              "Syrc": "Estrangelo Edessa",
+              "Orya": "Kalinga",
+              "Mlym": "Kartika",
+              "Laoo": "DokChampa",
+              "Sinh": "Iskoola Pota",
+              "Mong": "Mongolian Baiti",
+              "Viet": "Arial",
+              "Uigh": "Microsoft Uighur",
+              "Geor": "Sylfaen"
+            }
+          }
+        }
+      },
+      {
+        "packagePath": "ppt/theme/theme4.xml",
+        "slideCount": 0,
+        "colors": {
+          "dk1": "#000000",
+          "lt1": "#FFFFFF",
+          "dk2": "#1F497D",
+          "lt2": "#EEECE1",
+          "accent1": "#4F81BD",
+          "accent2": "#C0504D",
+          "accent3": "#9BBB59",
+          "accent4": "#8064A2",
+          "accent5": "#4BACC6",
+          "accent6": "#F79646",
+          "hlink": "#0000FF",
+          "folHlink": "#800080"
+        },
+        "fonts": {
+          "major": {
+            "latin": "Calibri",
+            "eastAsian": "",
+            "complexScript": "",
+            "scripts": {
+              "Jpan": "ＭＳ Ｐゴシック",
+              "Hang": "맑은 고딕",
+              "Hans": "宋体",
+              "Hant": "新細明體",
+              "Arab": "Times New Roman",
+              "Hebr": "Times New Roman",
+              "Thai": "Angsana New",
+              "Ethi": "Nyala",
+              "Beng": "Vrinda",
+              "Gujr": "Shruti",
+              "Khmr": "MoolBoran",
+              "Knda": "Tunga",
+              "Guru": "Raavi",
+              "Cans": "Euphemia",
+              "Cher": "Plantagenet Cherokee",
+              "Yiii": "Microsoft Yi Baiti",
+              "Tibt": "Microsoft Himalaya",
+              "Thaa": "MV Boli",
+              "Deva": "Mangal",
+              "Telu": "Gautami",
+              "Taml": "Latha",
+              "Syrc": "Estrangelo Edessa",
+              "Orya": "Kalinga",
+              "Mlym": "Kartika",
+              "Laoo": "DokChampa",
+              "Sinh": "Iskoola Pota",
+              "Mong": "Mongolian Baiti",
+              "Viet": "Times New Roman",
+              "Uigh": "Microsoft Uighur",
+              "Geor": "Sylfaen"
+            }
+          },
+          "minor": {
+            "latin": "Calibri",
+            "eastAsian": "",
+            "complexScript": "",
+            "scripts": {
+              "Jpan": "ＭＳ Ｐゴシック",
+              "Hang": "맑은 고딕",
+              "Hans": "宋体",
+              "Hant": "新細明體",
+              "Arab": "Arial",
+              "Hebr": "Arial",
+              "Thai": "Cordia New",
+              "Ethi": "Nyala",
+              "Beng": "Vrinda",
+              "Gujr": "Shruti",
+              "Khmr": "DaunPenh",
+              "Knda": "Tunga",
+              "Guru": "Raavi",
+              "Cans": "Euphemia",
+              "Cher": "Plantagenet Cherokee",
+              "Yiii": "Microsoft Yi Baiti",
+              "Tibt": "Microsoft Himalaya",
+              "Thaa": "MV Boli",
+              "Deva": "Mangal",
+              "Telu": "Gautami",
+              "Taml": "Latha",
+              "Syrc": "Estrangelo Edessa",
+              "Orya": "Kalinga",
+              "Mlym": "Kartika",
+              "Laoo": "DokChampa",
+              "Sinh": "Iskoola Pota",
+              "Mong": "Mongolian Baiti",
+              "Viet": "Arial",
+              "Uigh": "Microsoft Uighur",
+              "Geor": "Sylfaen"
+            }
+          }
+        }
+      }
+    ]
+  },
+  "fonts": {
+    "scheme": {
+      "major": {
+        "latin": "Calibri",
+        "eastAsian": "",
+        "complexScript": "",
+        "scripts": {
+          "Jpan": "ＭＳ Ｐゴシック",
+          "Hang": "맑은 고딕",
+          "Hans": "宋体",
+          "Hant": "新細明體",
+          "Arab": "Times New Roman",
+          "Hebr": "Times New Roman",
+          "Thai": "Angsana New",
+          "Ethi": "Nyala",
+          "Beng": "Vrinda",
+          "Gujr": "Shruti",
+          "Khmr": "MoolBoran",
+          "Knda": "Tunga",
+          "Guru": "Raavi",
+          "Cans": "Euphemia",
+          "Cher": "Plantagenet Cherokee",
+          "Yiii": "Microsoft Yi Baiti",
+          "Tibt": "Microsoft Himalaya",
+          "Thaa": "MV Boli",
+          "Deva": "Mangal",
+          "Telu": "Gautami",
+          "Taml": "Latha",
+          "Syrc": "Estrangelo Edessa",
+          "Orya": "Kalinga",
+          "Mlym": "Kartika",
+          "Laoo": "DokChampa",
+          "Sinh": "Iskoola Pota",
+          "Mong": "Mongolian Baiti",
+          "Viet": "Times New Roman",
+          "Uigh": "Microsoft Uighur",
+          "Geor": "Sylfaen"
+        }
+      },
+      "minor": {
+        "latin": "Calibri",
+        "eastAsian": "",
+        "complexScript": "",
+        "scripts": {
+          "Jpan": "ＭＳ Ｐゴシック",
+          "Hang": "맑은 고딕",
+          "Hans": "宋体",
+          "Hant": "新細明體",
+          "Arab": "Arial",
+          "Hebr": "Arial",
+          "Thai": "Cordia New",
+          "Ethi": "Nyala",
+          "Beng": "Vrinda",
+          "Gujr": "Shruti",
+          "Khmr": "DaunPenh",
+          "Knda": "Tunga",
+          "Guru": "Raavi",
+          "Cans": "Euphemia",
+          "Cher": "Plantagenet Cherokee",
+          "Yiii": "Microsoft Yi Baiti",
+          "Tibt": "Microsoft Himalaya",
+          "Thaa": "MV Boli",
+          "Deva": "Mangal",
+          "Telu": "Gautami",
+          "Taml": "Latha",
+          "Syrc": "Estrangelo Edessa",
+          "Orya": "Kalinga",
+          "Mlym": "Kartika",
+          "Laoo": "DokChampa",
+          "Sinh": "Iskoola Pota",
+          "Mong": "Mongolian Baiti",
+          "Viet": "Arial",
+          "Uigh": "Microsoft Uighur",
+          "Geor": "Sylfaen"
+        }
+      }
+    },
+    "usage": {
+      "+mn-cs": 49,
+      "+mn-lt": 45,
+      "+mn-ea": 45,
+      "Arial": 16,
+      "Lucida Console": 9,
+      "Arial Black": 8,
+      "+mj-lt": 3,
+      "+mj-ea": 3,
+      "+mj-cs": 3,
+      "Times New Roman": 1
+    },
+    "embeddedFontFiles": []
+  },
+  "media": {
+    "items": [
+      {
+        "packagePath": "ppt/media/image1.jpg",
+        "filename": "image1.jpg",
+        "extension": ".jpg",
+        "bytes": 98297,
+        "sha256": "f24f3fa6c3f603cfc8529770f096e645882ac7dc8e9a8bbbc5c1580e8e51e882",
+        "width": 1383,
+        "height": 778,
+        "aspectRatio": 1.77763,
+        "slideAspectMatch": true,
+        "hasAlpha": false,
+        "browserCompatible": true,
+        "activeContentRisk": false,
+        "occurrences": [
+          {
+            "owner": "ppt/slideMasters/slideMaster1.xml",
+            "context": "master",
+            "geometry": null
+          },
+          {
+            "owner": "ppt/slideMasters/slideMaster2.xml",
+            "context": "master",
+            "geometry": null
+          }
+        ],
+        "logoScore": -2,
+        "backgroundScore": 12
+      },
+      {
+        "packagePath": "ppt/media/image2.jpg",
+        "filename": "image2.jpg",
+        "extension": ".jpg",
+        "bytes": 213059,
+        "sha256": "1ef0a41f06a098ac26d6bae5ab01f6cb49f3166fe1bb3e09e325f9625dd8c254",
+        "width": 1383,
+        "height": 778,
+        "aspectRatio": 1.77763,
+        "slideAspectMatch": true,
+        "hasAlpha": false,
+        "browserCompatible": true,
+        "activeContentRisk": false,
+        "occurrences": [
+          {
+            "owner": "ppt/slides/slide1.xml",
+            "context": "slide",
+            "geometry": null
+          }
+        ],
+        "logoScore": -8,
+        "backgroundScore": 5
+      },
+      {
+        "packagePath": "ppt/media/image3.png",
+        "filename": "image3.png",
+        "extension": ".png",
+        "bytes": 3293,
+        "sha256": "dc115ae0f959c9eaf5d14b693b7e8ac0cb5a70ce7b7bc8239d7b12a2da6a1db4",
+        "width": 124,
+        "height": 125,
+        "aspectRatio": 0.992,
+        "slideAspectMatch": false,
+        "hasAlpha": false,
+        "browserCompatible": true,
+        "activeContentRisk": false,
+        "occurrences": [
+          {
+            "owner": "ppt/slides/slide2.xml",
+            "context": "slide",
+            "geometry": {
+              "x": 6249137,
+              "y": 2876550,
+              "cx": 1427276,
+              "cy": 1428750,
+              "areaRatio": 0.04336,
+              "nearEdge": false
+            }
+          }
+        ],
+        "logoScore": 4,
+        "backgroundScore": 1
+      }
+    ],
+    "logoCandidates": [],
+    "autoLogo": null,
+    "backgroundCandidates": [
+      {
+        "packagePath": "ppt/media/image1.jpg",
+        "filename": "image1.jpg",
+        "extension": ".jpg",
+        "bytes": 98297,
+        "sha256": "f24f3fa6c3f603cfc8529770f096e645882ac7dc8e9a8bbbc5c1580e8e51e882",
+        "width": 1383,
+        "height": 778,
+        "aspectRatio": 1.77763,
+        "slideAspectMatch": true,
+        "hasAlpha": false,
+        "browserCompatible": true,
+        "activeContentRisk": false,
+        "occurrences": [
+          {
+            "owner": "ppt/slideMasters/slideMaster1.xml",
+            "context": "master",
+            "geometry": null
+          },
+          {
+            "owner": "ppt/slideMasters/slideMaster2.xml",
+            "context": "master",
+            "geometry": null
+          }
+        ],
+        "logoScore": -2,
+        "backgroundScore": 12
+      },
+      {
+        "packagePath": "ppt/media/image2.jpg",
+        "filename": "image2.jpg",
+        "extension": ".jpg",
+        "bytes": 213059,
+        "sha256": "1ef0a41f06a098ac26d6bae5ab01f6cb49f3166fe1bb3e09e325f9625dd8c254",
+        "width": 1383,
+        "height": 778,
+        "aspectRatio": 1.77763,
+        "slideAspectMatch": true,
+        "hasAlpha": false,
+        "browserCompatible": true,
+        "activeContentRisk": false,
+        "occurrences": [
+          {
+            "owner": "ppt/slides/slide1.xml",
+            "context": "slide",
+            "geometry": null
+          }
+        ],
+        "logoScore": -8,
+        "backgroundScore": 5
+      }
+    ],
+    "autoBackground": {
+      "packagePath": "ppt/media/image1.jpg",
+      "filename": "image1.jpg",
+      "extension": ".jpg",
+      "bytes": 98297,
+      "sha256": "f24f3fa6c3f603cfc8529770f096e645882ac7dc8e9a8bbbc5c1580e8e51e882",
+      "width": 1383,
+      "height": 778,
+      "aspectRatio": 1.77763,
+      "slideAspectMatch": true,
+      "hasAlpha": false,
+      "browserCompatible": true,
+      "activeContentRisk": false,
+      "occurrences": [
+        {
+          "owner": "ppt/slideMasters/slideMaster1.xml",
+          "context": "master",
+          "geometry": null
+        },
+        {
+          "owner": "ppt/slideMasters/slideMaster2.xml",
+          "context": "master",
+          "geometry": null
+        }
+      ],
+      "logoScore": -2,
+      "backgroundScore": 12
+    },
+    "titleBackgroundCandidates": [
+      {
+        "packagePath": "ppt/media/image2.jpg",
+        "filename": "image2.jpg",
+        "extension": ".jpg",
+        "bytes": 213059,
+        "sha256": "1ef0a41f06a098ac26d6bae5ab01f6cb49f3166fe1bb3e09e325f9625dd8c254",
+        "width": 1383,
+        "height": 778,
+        "aspectRatio": 1.77763,
+        "slideAspectMatch": true,
+        "hasAlpha": false,
+        "browserCompatible": true,
+        "activeContentRisk": false,
+        "occurrences": [
+          {
+            "owner": "ppt/slides/slide1.xml",
+            "context": "slide",
+            "geometry": null
+          }
+        ],
+        "logoScore": -8,
+        "backgroundScore": 5
+      }
+    ],
+    "autoTitleBackground": {
+      "packagePath": "ppt/media/image2.jpg",
+      "filename": "image2.jpg",
+      "extension": ".jpg",
+      "bytes": 213059,
+      "sha256": "1ef0a41f06a098ac26d6bae5ab01f6cb49f3166fe1bb3e09e325f9625dd8c254",
+      "width": 1383,
+      "height": 778,
+      "aspectRatio": 1.77763,
+      "slideAspectMatch": true,
+      "hasAlpha": false,
+      "browserCompatible": true,
+      "activeContentRisk": false,
+      "occurrences": [
+        {
+          "owner": "ppt/slides/slide1.xml",
+          "context": "slide",
+          "geometry": null
+        }
+      ],
+      "logoScore": -8,
+      "backgroundScore": 5
+    }
+  },
+  "outputs": {
+    "themeCss": "vsl.css",
+    "sampleDeck": "vsl/sample.md",
+    "report": "vsl/theme-report.json",
+    "summary": "vsl/README.md"
+  },
+  "embeddedThemeAssets": [
+    "image1.jpg",
+    "image2.jpg"
+  ],
+  "warnings": [
+    "PowerPoint package contains 4 themes; selected ppt/theme/theme1.xml used by 3 slide(s).",
+    "Primary color contrast is 2.50:1; use it decoratively or darken it."
+  ],
+  "limitations": [
+    "PowerPoint layout geometry is not automatically converted into equivalent Marp CSS.",
+    "Vector logos built from PowerPoint shapes are not extracted as standalone images.",
+    "EMF and WMF media are extracted but are not browser-compatible Marp assets.",
+    "Font family names are extracted; embedded font binaries are not copied or licensed for reuse.",
+    "Logo detection is heuristic and requires visual confirmation."
+  ]
+}
