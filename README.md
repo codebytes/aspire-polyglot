@@ -30,7 +30,7 @@ The whole dev-time orchestrator is a single file — no AppHost project, no `Pro
 | Sample | AppHost | Description |
 |--------|---------|-------------|
 | [dotnet-react-postgres](./samples/dotnet-react-postgres) | `apphost.cs` | **C#** single-file AppHost — ASP.NET Core Minimal API + PostgreSQL + Vite React quotes board |
-| [hono-redis-urls](./samples/hono-redis-urls) | `apphost.ts` | **TypeScript** single-file AppHost — Hono API + Redis + Vite URL shortener |
+| [hono-redis-urls](./samples/hono-redis-urls) | `apphost.mts` | **TypeScript** single-file AppHost — Hono API + Redis + Vite URL shortener |
 
 ### Containers, Compose & publishing
 
@@ -47,7 +47,7 @@ Single-file AppHosts focused on Docker images, `aspire publish`, and polyglot se
 
 | Sample | AppHost | Description |
 |--------|---------|-------------|
-| [vite-react-api](./samples/vite-react-api) | `apphost.ts` | Vite + React + FastAPI + Redis — TODO app with caching |
+| [vite-react-api](./samples/vite-react-api) | `apphost.mts` | Vite + React + FastAPI + Redis — TODO app with caching |
 
 ### C# / .NET
 
@@ -84,13 +84,13 @@ The orchestrator itself can be written in several languages. C# and TypeScript a
 | AppHost language | File | Status | Sample(s) |
 |------------------|------|--------|-----------|
 | **C#** | `apphost.cs` (single-file) or `AppHost.csproj` | GA | [dotnet-react-postgres](./samples/dotnet-react-postgres), [postgres-adminer](./samples/postgres-adminer), [go-redis-compose](./samples/go-redis-compose), [python-fastapi-docker](./samples/python-fastapi-docker), [java-javalin-redis](./samples/java-javalin-redis), [dotnet-angular-cosmos](./samples/dotnet-angular-cosmos), [polyglot-event-stream](./samples/polyglot-event-stream) |
-| **TypeScript** | `apphost.ts` (legacy) / `apphost.mts` | GA (13.4) | [hono-redis-urls](./samples/hono-redis-urls), [vite-react-api](./samples/vite-react-api), [ts-starter](./samples/ts-starter) |
+| **TypeScript** | `apphost.mts` | GA (13.4) | [hono-redis-urls](./samples/hono-redis-urls), [vite-react-api](./samples/vite-react-api), [ts-starter](./samples/ts-starter) |
 | **Python** | `apphost.py` | Preview | [flask-markdown-wiki](./samples/preview/flask-markdown-wiki), [django-htmx-polls](./samples/preview/django-htmx-polls) |
 | **Go** | `apphost.go` | Preview | [svelte-go-bookmarks](./samples/preview/svelte-go-bookmarks) |
 | **Java** | `AppHost.java` | Preview | [spring-boot-postgres](./samples/preview/spring-boot-postgres) |
 | **Rust** | `apphost.rs` | Planned (SDK codegen groundwork exists) | — |
 
-> The same `.NET` hosting integrations are surfaced to every AppHost language through the **Aspire Type System (ATS)**: the CLI auto-generates a typed SDK (into `.aspire/modules/`, or `.modules/` for legacy `apphost.ts`) so guest-language AppHosts call the same integrations without hand-written bindings.
+> The same `.NET` hosting integrations are surfaced to every AppHost language through the **Aspire Type System (ATS)**: the CLI auto-generates a typed SDK into `.aspire/modules/` so guest-language AppHosts call the same integrations without hand-written bindings.
 
 ### 2. Adding a workload in any language
 

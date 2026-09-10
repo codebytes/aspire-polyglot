@@ -1,3 +1,4 @@
+import os
 import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent / ".aspire/modules"))
@@ -5,9 +6,12 @@ sys.path.insert(0, str(Path(__file__).parent / ".aspire/modules"))
 from aspire_app import create_builder
 
 with create_builder() as builder:
+    pip_index_url = os.environ.get("PIP_INDEX_URL") or os.environ.get("UV_DEFAULT_INDEX") or "https://pypi.org/simple/"
+
     cache = builder.add_redis("cache")
 
     wiki = builder.add_dockerfile("wiki", "./src")
+    wiki.with_build_arg("PIP_INDEX_URL", pip_index_url)
     wiki.with_reference(cache)
     # Wait for Redis to be healthy before starting Flask. Prevents cold-start race where
     # the app could launch before Redis is reachable. with_reference() only injects the

@@ -1,5 +1,6 @@
-#:sdk Aspire.AppHost.Sdk@13.4.6
-#:package Aspire.Hosting.Docker@13.4.6
+#:sdk Aspire.AppHost.Sdk@13.5.3
+#:property AspireUseCliBundle=true
+#:package Aspire.Hosting.Docker@13.5.3
 
 // Single-file C# AppHost that targets a Docker Compose ENVIRONMENT. Running
 // `aspire publish` turns this model into a docker-compose.yaml you can deploy

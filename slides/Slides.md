@@ -1,6 +1,6 @@
 ---
 marp: true
-theme: custom-aspire-light
+theme: custom-default
 footer: '@Chris_L_Ayers - https://chris-ayers.com'
 ---
 
@@ -9,7 +9,8 @@ footer: '@Chris_L_Ayers - https://chris-ayers.com'
 
 # Polyglot Aspire
 
-## Orchestrating Any Language with Aspire
+<p class="cover-tagline">One app model.<br><strong>Any AppHost.<br>Any workload.</strong></p>
+
 ## Chris Ayers
 
 ---
@@ -118,7 +119,7 @@ Your team doesn't use one language. It uses **five**.
 <div class="icon">🗺</div>
 <div class="pname">Aspire AppHost</div>
 <div class="ptag">Stack in code</div>
-<div class="pdesc">One AppHost declares every service and how they connect. Author it in C# or TypeScript.</div>
+<div class="pdesc">One AppHost declares every service and connection. Author in C# or TypeScript, with Python, Go, and Java in preview.</div>
 </div>
 <div class="base"></div>
 </div>
@@ -154,53 +155,63 @@ Your team doesn't use one language. It uses **five**.
 
 <!-- _class: compact -->
 
-# One Orchestrator for Every Language
+# One Orchestrator. Every Language.
 
-![w:1080px center](./img/one-orchestrator.drawio.svg)
+<div class="polyglot-flow">
+<div class="flow-panel">
 
-<!-- Five languages funnel into one orchestrator, and out come the same three capabilities: orchestration, service discovery, and observability. Each one maps onto the rest of the talk. -->
+## Workload runtimes
+
+🐍 Python · 🐹 Go · ☕ Java<br>
+🟦 TypeScript · 💜 .NET
+
+</div>
+<div class="flow-hub">
+
+## Aspire AppHost
+
+**C# · TypeScript**<br>
+<small>Python · Go · Java (preview)</small>
+
+one run · one model
+
+</div>
+<div class="flow-panel">
+
+## Same capabilities
+
+🎯 Orchestration<br>
+🔗 Service discovery<br>
+📊 OpenTelemetry
+
+</div>
+</div>
+
+<!-- Polyglot has two independent axes: the language used to author the AppHost and the languages used by its workloads. Five languages funnel into one orchestrator, and out come the same three capabilities: orchestration, service discovery, and observability. -->
 
 ---
 
-# Your Stack in One File
+<!-- _class: code-focus -->
 
-**One C# AppHost wires Python, React, and .NET with auto-discovery, observability, and lifecycle:**
+# AppHost Language ≠ Workload Language
 
-<div class="columns">
-<div>
+**This C# AppHost wires Python, TypeScript/React, and .NET with one lifecycle:**
 
 ```csharp
 var builder = DistributedApplication.CreateBuilder(args);
 
-var redis = builder.AddRedis("cache");
-var postgres = builder.AddPostgres("db")
-                      .AddDatabase("appdata");
+var cache = builder.AddRedis("cache");
+var api = builder.AddUvicornApp("ml", "../python", "main:app")
+    .WithReference(cache);
 
-builder.AddUvicornApp("ml-service", "../python", "main:app")
-       .WithUv()
-       .WithReference(redis);
-
-```
-
-</div>
-<div>
-
-```
-builder.AddViteApp("frontend", "../react")
-       .WithHttpEndpoint(env: "PORT")
-       .WithReference(postgres);
-
-builder.AddProject<Projects.Api>("api")
-       .WithReference(redis)
-       .WithReference(postgres);
-
+builder.AddViteApp("web", "../react").WithReference(api);
+builder.AddProject<Projects.Api>("api").WithReference(cache);
 builder.Build().Run();
 ```
 
-</div>
-</div>
+**The orchestrator is C#. The workloads are not. That independence is the polyglot model.**
 
-<!-- This is the Aspire AppHost, the central brain that starts everything and wires it together. Python, React, .NET, all visible in one dashboard. -->
+<!-- The AppHost language never constrains the workload languages. This C# file starts Python, React/TypeScript, and .NET, then exposes all of them through the same dashboard and service-discovery model. -->
 
 ---
 
@@ -213,7 +224,7 @@ builder.Build().Run();
 <figcaption>Source: <a href="https://aspire.dev/whats-new/aspire-13-5/">Microsoft Aspire 13.5 release notes</a></figcaption>
 </figure>
 
-**13.5:** Case-insensitive console search, timestamp filters, and numeric `==` / `!=` comparisons.
+**13.5:** Refreshed resource views, clearer health states, faster filtering, and sharper telemetry search.
 
 Add OpenTelemetry to your services; Aspire supplies `OTEL_EXPORTER_OTLP_ENDPOINT`.
 
@@ -238,7 +249,7 @@ Image: https://aspire.dev/_astro/projects.DUzpqXcM_Z1aIiSQ.webp
 <figcaption>Cropped from the <a href="https://devblogs.microsoft.com/aspire/whats-new-aspire-13-5/">Microsoft Aspire 13.5 announcement</a></figcaption>
 </figure>
 
-<div class="columns">
+<div class="columns dashboard-columns">
 <div>
 
 Enable C# `.WithTerminal()` or TypeScript `.withTerminal()` on a resource.
@@ -407,51 +418,70 @@ builder.Build().Run();
 
 ---
 
+<!-- _class: code-focus -->
+
 # The AppHost: TypeScript
 
-**Generally available in 13.5. Same model, TypeScript syntax.**
+**GA since 13.4. Aspire 13.5 closes more parity gaps with C#.**
 
 ```typescript
 import { createBuilder } from "./.aspire/modules/aspire.mjs";
 
 const builder = await createBuilder();
 
-const redis = await builder.addRedis("cache");
+const cache = await builder.addRedis("cache");
+const api = await builder.addPythonApp("api", "../api", "app.py")
+  .withReference(cache);
 
-await builder
-  .addPythonApp("api", "../api", "app.py")
-  .withReference(redis)
-  .withHttpEndpoint({ env: "PORT" });
-
+await builder.addViteApp("web", "../web").withReference(api);
 await builder.build().run();
 ```
 
-**Same integration model via ATS.** 13.5 adds custom health-check callbacks and container file copying.
+**Same integration model via ATS.** 13.5 adds custom health checks, container files, HTTPS certificates, and richer interactions.
 
 <!--
-TypeScript AppHosts are GA in 13.5; ASPIREATS001 is no longer required. This does not make every experimental AppHost authoring language GA: keep Python, Go, and Java preview labels separate from workload support.
+TypeScript AppHosts became GA in 13.4, when ASPIREATS001 was retired. Aspire 13.5 closes more parity gaps with C#. This does not make every experimental AppHost authoring language GA: keep Python, Go, and Java preview labels separate from workload support.
 Custom checks use builder.addHealthCheck(name, check) and resource.withHealthCheck(key). withContainerFiles and withContainerFilesCallback copy or generate container files. Keep these as examples of parity, not another API walkthrough.
-Current entry points use apphost.mts. aspire update --migrate can migrate older apphost.ts projects; no project migration is part of these slide changes.
-Source: https://aspire.dev/whats-new/aspire-13-5/
+Current entry points use apphost.mts. aspire update --migrate can migrate older apphost.ts projects.
+Sources: https://aspire.dev/whats-new/aspire-13-4/ and https://aspire.dev/whats-new/aspire-13-5/
 -->
 
 ---
 
 <!-- _class: compact -->
 
-# Workloads Can Be Anything
+# Choose Workload Languages Independently
 
-**Pick the AppHost language that fits your repo. Your services don't need to match.**
+<div class="columns">
+<div>
 
-The TypeScript SDK is auto-generated from the same .NET hosting integrations via the **Aspire Type System (ATS)**. There's no separate integration surface to maintain.
+## AppHost authoring
 
-**Workloads inside the AppHost** can be written in:
+- C# or TypeScript
+- Python, Go, Java in preview
+- Declares topology and dependencies
+- Produces one portable app model
 
-- C#, JavaScript, TypeScript, Python, Go, Java, Rust, PowerShell, and more
+*"Describe the distributed app."*
 
-via `AddProject`, `AddJavaScriptApp`, `AddPythonApp`, `AddGoApp`, `AddBunApp`, `AddDenoApp`, `AddDockerfile`, `AddContainer`, or `AddExecutable`.
+</div>
+<div>
 
-<!-- AppHost authoring is C#/TS today; workload language support is separate and much broader. -->
+## Workload runtimes
+
+- .NET, JavaScript, TypeScript
+- Python, Go, Java, Rust, PowerShell
+- Native process, container, executable, or project
+- Keep each language's existing toolchain
+
+*"Run what the team already owns."*
+
+</div>
+</div>
+
+**Any AppHost language can orchestrate any workload language.**
+
+<!-- This is the central polyglot distinction: AppHost authoring language and workload runtime language are separate decisions. Teams keep their existing services and toolchains while gaining one model around them. -->
 
 ---
 
@@ -717,12 +747,12 @@ $ code .    # reads .vscode/mcp.json
 
 # <!--fit--> Demos
 
-Three representative examples, live with the Aspire dashboard
+Three representative examples from a 15-sample polyglot repository
 
 <!--
 Time to see the same orchestration model at increasing complexity. Go directly to the examples rather than reading a demo catalog.
-13.5 demo preparation: align the AppHost SDK, core packages, and every Aspire.Hosting.* integration on matching 13.5 versions. Mixing 13.4.6 integrations with 13.5 can cause MissingMethodException or TypeLoadException, including Go, JavaScript, and Python hosting integrations. Preview packages need the corresponding 13.5-preview family.
-This presentation update does not upgrade the sample applications. Prepare a consistently versioned demo environment before demonstrating the 13.5-only features; the new screenshots are official reference captures.
+The samples in this branch align the AppHost SDK, core packages, and every Aspire.Hosting.* integration on 13.5.3. Mixing 13.4.6 integrations with 13.5 can cause MissingMethodException or TypeLoadException, including Go, JavaScript, and Python hosting integrations.
+The screenshots are official reference captures; the repository demos exercise the same resource model across C#, TypeScript, Python, Go, and Java AppHosts.
 Open the dashboard explicitly if VS Code does not auto-launch it. Use aspire describe to inspect resources and ordinary aspire stop to preserve persistent demo data.
 Source: https://aspire.dev/whats-new/aspire-13-5/
 -->
@@ -733,20 +763,20 @@ Source: https://aspire.dev/whats-new/aspire-13-5/
 
 # Five Languages, One Dashboard
 
-**How many of the 8 samples use each language, all in one dashboard:**
+**How many of the 15 samples use each language, all in one dashboard:**
 
 <div class="chart">
 <div class="hbars">
-<div class="metric"><div class="name">JavaScript / TS</div><div class="group"><div class="bar solo" style="width:100%">5</div></div></div>
-<div class="metric"><div class="name">Python</div><div class="group"><div class="bar solo" style="width:80%">4</div></div></div>
-<div class="metric"><div class="name">C# / .NET</div><div class="group"><div class="bar solo" style="width:40%">2</div></div></div>
-<div class="metric"><div class="name">Java</div><div class="group"><div class="bar solo" style="width:20%">1</div></div></div>
-<div class="metric"><div class="name">Go</div><div class="group"><div class="bar solo" style="width:20%">1</div></div></div>
+<div class="metric"><div class="name">JavaScript / TS</div><div class="group"><div class="bar solo" style="width:100%">8</div></div></div>
+<div class="metric"><div class="name">C# / .NET</div><div class="group"><div class="bar solo" style="width:87.5%">7</div></div></div>
+<div class="metric"><div class="name">Python</div><div class="group"><div class="bar solo" style="width:75%">6</div></div></div>
+<div class="metric"><div class="name">Go</div><div class="group"><div class="bar solo" style="width:37.5%">3</div></div></div>
+<div class="metric"><div class="name">Java</div><div class="group"><div class="bar solo" style="width:25%">2</div></div></div>
 </div>
-<div class="caption"><strong>5</strong> languages · <strong>8</strong> sample apps · <strong>1</strong> dashboard</div>
+<div class="caption"><strong>5</strong> languages · <strong>15</strong> sample apps · <strong>1</strong> dashboard</div>
 </div>
 
-<!-- The bars count how many of the eight samples use each language; polyglot samples span several. No matter the mix, it's one dashboard and one orchestration model. -->
+<!-- The bars count how many of the fifteen samples use each language; polyglot samples span several. No matter the mix, it's one dashboard and one orchestration model. -->
 
 ---
 
@@ -788,24 +818,25 @@ Source: https://aspire.dev/whats-new/aspire-13-5/
 
 <!-- _class: compact -->
 
-# Same Model, Two Commands
+# Same Model: Run or Deploy
 
 **One AppHost. Local, staging, production.**
 
-```bash
-aspire run       # Local development
-aspire deploy    # Deploy to target
-aspire publish   # Generate artifacts
-aspire do        # Pipeline step      (Preview)
-```
+<div class="command-row">
+<div><code>aspire run</code><span>local development</span></div>
+<div><code>aspire deploy</code><span>target environment</span></div>
+</div>
+
+Supporting surfaces: `aspire publish` generates artifacts; `aspire do` runs pipeline steps.
 
 **What Aspire generates from your AppHost:**
 
 - 🐳 Container images for **all languages**
-- ☸️ Azure Container Apps, Kubernetes & **AKS** Helm charts
-- 🔒 **AKS ingress**: cert-manager HTTPS, Gateway API + App Gateway for Containers (AGC), external Helm charts via `AddHelmChart`
-- 🔌 Infrastructure wiring (Redis, Postgres, Kafka…)
-- 🔗 Service connections + environment variables
+- ☸️ Azure Container Apps, Kubernetes & **AKS**
+- 💾 Persistent volumes and StatefulSets
+- 🔒 cert-manager HTTPS, Gateway API, and AGC ingress
+- ☁️ Existing Azure resources across resource groups, subscriptions, and tenants
+- 🔗 Infrastructure wiring, connections, and environment variables
 
 **No separate deploy config.** The AppHost is the contract.
 
@@ -861,7 +892,7 @@ Dashboard: http://localhost:15888
 
 <br>
 
-🎯 **One orchestrator for every language**: Define your entire stack in one AppHost file, regardless of runtime
+🎯 **Two independent choices, one model**: Pick the AppHost language and workload runtimes separately
 
 <br>
 
@@ -869,7 +900,7 @@ Dashboard: http://localhost:15888
 
 <br>
 
-🚀 **From local dev to production**: same model, same CLI, same config, from `aspire run` to `aspire deploy`
+🚀 **One path to production**: the same model drives local development and deployment
 
 <!-- If your team uses multiple languages, Aspire gives you a single place to define, run, observe, and deploy your entire stack. -->
 
@@ -882,12 +913,12 @@ Dashboard: http://localhost:15888
 
 ## Links
 
-- 🌐 [aspire.dev](https://aspire.dev): Official website & docs
-- 🐙 [github.com/microsoft/aspire](https://github.com/microsoft/aspire): Source code
-- 🐙 [github.com/codebytes/aspire-polyglot](https://github.com/codebytes/aspire-polyglot): This repo!
-- 🆕 [Aspire 13.5 release notes](https://aspire.dev/whats-new/aspire-13-5/): Features & migration notes
+- 🌐 [Aspire docs](https://aspire.dev)
+- 🐙 [Aspire source](https://github.com/microsoft/aspire)
+- 🧪 [Polyglot demos](https://github.com/codebytes/aspire-polyglot)
+- 🆕 [Aspire 13.5](https://aspire.dev/whats-new/aspire-13-5/)
 - 🧰 [Aspire Community Toolkit](https://github.com/CommunityToolkit/Aspire)
-- 💬 [Discord: Aspire channel](https://aka.ms/dotnet-discord)
+- 💬 [Aspire Discord](https://aka.ms/dotnet-discord)
 
 </div>
 <div>
@@ -895,6 +926,8 @@ Dashboard: http://localhost:15888
 ## Follow Chris Ayers
 
 ![w:400px](./img/chris_ayers.svg)
+
+**chris-ayers.com**
 
 </div>
 </div>

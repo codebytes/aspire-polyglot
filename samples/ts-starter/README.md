@@ -1,10 +1,10 @@
 # TypeScript Starter — Express + React with Aspire
 
-A minimal starter sample scaffolded from the **official Aspire TypeScript template** (`aspire-ts-starter`). The AppHost itself is TypeScript — not C#, not Python — making this a first-class polyglot citizen in Aspire 13.2+.
+A minimal starter sample scaffolded from the **official Aspire TypeScript template** (`aspire-ts-starter`). The AppHost itself is TypeScript — not C#, not Python — and uses the generally available Aspire 13.5 AppHost layout.
 
 ## What It Demonstrates
 
-- **TypeScript AppHost** (`apphost.ts`) — the orchestrator is written in TypeScript
+- **TypeScript AppHost** (`apphost.mts`) — the orchestrator is written in TypeScript
 - **Express API** — weather forecast endpoint with OpenTelemetry instrumentation
 - **React + Vite frontend** — single-page app consuming the API
 - **Aspire service discovery** — `withReference()` wires the frontend to the API automatically
@@ -15,7 +15,7 @@ A minimal starter sample scaffolded from the **official Aspire TypeScript templa
 ```
 ┌─────────────────────────────────────────────────┐
 │              Aspire AppHost (TypeScript)         │
-│                  apphost.ts                      │
+│                  apphost.mts                     │
 ├─────────────────────┬───────────────────────────┤
 │                     │                           │
 │   ┌─────────────┐   │   ┌───────────────────┐   │
@@ -54,10 +54,11 @@ The Aspire dashboard URL will appear in the terminal. Open it to see the API and
 
 ```
 ts-starter/
-├── apphost.ts          # TypeScript AppHost — orchestrates all services
+├── apphost.mts         # TypeScript AppHost — orchestrates all services
+├── .aspire/modules/    # Generated Aspire TypeScript SDK
 ├── aspire.config.json  # Aspire configuration
 ├── package.json        # Root dependencies (TypeScript, tsx, eslint)
-├── tsconfig.json       # TypeScript config
+├── tsconfig.apphost.json # AppHost TypeScript config
 ├── api/                # Express API service
 │   ├── src/
 │   │   ├── index.ts            # Express server + weather endpoint
@@ -72,7 +73,7 @@ ts-starter/
 
 ## Key Files
 
-### `apphost.ts`
+### `apphost.mts`
 
 ```typescript
 const app = await builder

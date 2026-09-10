@@ -1,6 +1,7 @@
-#:sdk Aspire.AppHost.Sdk@13.4.6
-#:package Aspire.Hosting.Python@13.4.6
-#:package Aspire.Hosting.Docker@13.4.6
+#:sdk Aspire.AppHost.Sdk@13.5.3
+#:property AspireUseCliBundle=true
+#:package Aspire.Hosting.Python@13.5.3
+#:package Aspire.Hosting.Docker@13.5.3
 
 // Single-file C# AppHost whose only service is a Python FastAPI app. In local
 // development the app runs NATIVELY: Aspire creates a virtual environment from

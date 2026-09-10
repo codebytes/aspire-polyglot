@@ -22,7 +22,10 @@ services:
 
   # Node.js worker — traces + metrics + logs via the OpenTelemetry JS SDK.
   node-worker:
-    build: ./apps/node-worker
+    build:
+      context: ./apps/node-worker
+      args:
+        NPM_CONFIG_REGISTRY: ${NPM_CONFIG_REGISTRY:-https://registry.npmjs.org/}
     environment:
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://dashboard:18889
       - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
@@ -33,7 +36,10 @@ services:
 
   # Python worker — traces + metrics + logs via the OpenTelemetry Python SDK.
   python-worker:
-    build: ./apps/python-worker
+    build:
+      context: ./apps/python-worker
+      args:
+        PIP_INDEX_URL: ${PIP_INDEX_URL:-https://pypi.org/simple/}
     environment:
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://dashboard:18889
       - OTEL_EXPORTER_OTLP_PROTOCOL=grpc

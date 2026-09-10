@@ -32,9 +32,9 @@ public class ResourceCommandService extends HandleWrapperBase {
     }
 
     /** Executes a command for the specified resource. */
-    public ExecuteCommandResult executeCommandAsync(AspireUnion resource, String commandName, ExecuteCommandAsyncOptions options) {
-        var arguments = options == null ? null : options.getArguments();
-        var cancellationToken = options == null ? null : options.getCancellationToken();
+    public ExecuteCommandResult executeCommandAsync(AspireUnion resource, String commandName, ExecuteCommandAsyncOptions optionsBag) {
+        var arguments = optionsBag == null ? null : optionsBag.getArguments();
+        var cancellationToken = optionsBag == null ? null : optionsBag.getCancellationToken();
         return executeCommandAsyncImpl(resource, commandName, arguments, cancellationToken);
     }
 

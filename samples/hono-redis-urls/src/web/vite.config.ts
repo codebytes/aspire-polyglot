@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 
 // Aspire injects the API's endpoint as a service-discovery env var when the
-// web resource references it (see apphost.ts `.withReference(api.getEndpoint(...))`).
+// web resource references it (see apphost.mts `.withReference(api.getEndpoint(...))`).
 const apiTarget =
   process.env.services__api__https__0 ||
   process.env.services__api__http__0 ||

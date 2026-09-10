@@ -4,7 +4,7 @@
     "language": "go"
   },
   "sdk": {
-    "version": "13.4.6"
+    "version": "13.5.3"
   },
   "features": {
     "polyglotSupportEnabled": true,

@@ -7,6 +7,7 @@ import java.util.function.*;
 
 /** HttpCommandExportOptions DTO. */
 public class HttpCommandExportOptions implements JsonSerializable {
+    private CommandOptions commandOptions;
     private String description;
     private String confirmationMessage;
     private String iconName;
@@ -15,8 +16,11 @@ public class HttpCommandExportOptions implements JsonSerializable {
     private String commandName;
     private String endpointName;
     private String methodName;
+    private AspireFunc1<HttpCommandPrepareRequestContext, HttpCommandRequestExportData> prepareRequest;
     private HttpCommandResultMode resultMode;
 
+    public CommandOptions getCommandOptions() { return commandOptions; }
+    public void setCommandOptions(CommandOptions value) { this.commandOptions = value; }
     public String getDescription() { return description; }
     public void setDescription(String value) { this.description = value; }
     public String getConfirmationMessage() { return confirmationMessage; }
@@ -33,12 +37,16 @@ public class HttpCommandExportOptions implements JsonSerializable {
     public void setEndpointName(String value) { this.endpointName = value; }
     public String getMethodName() { return methodName; }
     public void setMethodName(String value) { this.methodName = value; }
+    public AspireFunc1<HttpCommandPrepareRequestContext, HttpCommandRequestExportData> getPrepareRequest() { return prepareRequest; }
+    public void setPrepareRequest(AspireFunc1<HttpCommandPrepareRequestContext, HttpCommandRequestExportData> value) { this.prepareRequest = value; }
     public HttpCommandResultMode getResultMode() { return resultMode; }
     public void setResultMode(HttpCommandResultMode value) { this.resultMode = value; }
 
     @SuppressWarnings("unchecked")
     public static HttpCommandExportOptions fromMap(Map<String, Object> map) {
         var value = new HttpCommandExportOptions();
+        var commandOptionsValue = map.get("CommandOptions");
+        value.setCommandOptions(commandOptionsValue == null ? null : CommandOptions.fromMap((Map<String, Object>) commandOptionsValue));
         var descriptionValue = map.get("Description");
         value.setDescription(descriptionValue == null ? null : (String) descriptionValue);
         var confirmationMessageValue = map.get("ConfirmationMessage");
@@ -62,6 +70,7 @@ public class HttpCommandExportOptions implements JsonSerializable {
 
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>();
+        map.put("CommandOptions", AspireClient.serializeValue(commandOptions));
         map.put("Description", AspireClient.serializeValue(description));
         map.put("ConfirmationMessage", AspireClient.serializeValue(confirmationMessage));
         map.put("IconName", AspireClient.serializeValue(iconName));
@@ -70,6 +79,10 @@ public class HttpCommandExportOptions implements JsonSerializable {
         map.put("CommandName", AspireClient.serializeValue(commandName));
         map.put("EndpointName", AspireClient.serializeValue(endpointName));
         map.put("MethodName", AspireClient.serializeValue(methodName));
+        map.put("PrepareRequest", prepareRequest == null ? null : (java.util.function.Function<Object, Object>) (transportArg -> {
+            var arg = (HttpCommandPrepareRequestContext) transportArg;
+            return AspireClient.awaitValue(prepareRequest.invoke(arg));
+        }));
         map.put("ResultMode", AspireClient.serializeValue(resultMode));
         return map;
     }

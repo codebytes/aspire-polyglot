@@ -1,7 +1,7 @@
 /* custom-default.css */
 /* @theme custom-default */
 
-@import 'default';
+@import 'custom-aspire-light';
 
 .columns {
   display: grid;
@@ -13,6 +13,138 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
 } 
+
+.polyglot-flow {
+  display: grid;
+  grid-template-columns: 1.15fr 0.8fr 1.15fr;
+  align-items: stretch;
+  gap: 1.1rem;
+  margin-top: 1.3rem;
+}
+
+.polyglot-flow > div {
+  position: relative;
+  border-radius: 18px;
+  padding: 1.1rem 1rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 310px;
+}
+
+.polyglot-flow .flow-panel:first-child::after,
+.polyglot-flow .flow-hub::after {
+  content: '→';
+  position: absolute;
+  left: calc(100% + 0.55rem);
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  color: var(--aspire-primary);
+  font-size: 2.2rem;
+  font-weight: 700;
+}
+
+.polyglot-flow .flow-panel {
+  background: var(--aspire-white);
+  border: 3px solid var(--aspire-muted);
+  box-shadow: 0 10px 28px rgba(31, 30, 51, 0.1);
+}
+
+.polyglot-flow .flow-hub {
+  background: var(--aspire-gradient-purple-magenta);
+  color: var(--aspire-white);
+  box-shadow: 0 14px 32px rgba(81, 43, 212, 0.28);
+}
+
+.polyglot-flow .flow-hub h2,
+.polyglot-flow .flow-hub strong {
+  color: var(--aspire-white);
+}
+
+.polyglot-flow .flow-hub small {
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 0.72em;
+}
+
+.cover-tagline {
+  max-width: 62%;
+  color: var(--aspire-purple);
+  font-size: 1.32em;
+  line-height: 1.22;
+  margin: 0.55em 0 0.8em;
+}
+
+.cover-tagline strong {
+  color: var(--aspire-primary);
+}
+
+.cover-logo {
+  position: absolute;
+  right: 3.5%;
+  top: 50%;
+  width: 27%;
+  max-height: 68%;
+  transform: translateY(-50%);
+  object-fit: contain;
+}
+
+.dashboard-columns {
+  grid-template-columns: 0.72fr 1.28fr;
+  align-items: center;
+}
+
+section.code-focus pre code {
+  font-size: 0.74em;
+  line-height: 1.25;
+}
+
+section.compact pre code {
+  font-size: 0.64em;
+  line-height: 1.18;
+}
+
+section.release-slide pre code {
+  font-size: 0.7em;
+  line-height: 1.2;
+}
+
+section.code-focus .columns > div {
+  height: 100%;
+}
+
+section.purple footer {
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.command-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 0.5rem 0 0.7rem;
+}
+
+.command-row > div {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 14px;
+  background: var(--aspire-white);
+  border: 2px solid var(--aspire-muted);
+}
+
+.command-row code {
+  font-size: 1.05em;
+  white-space: nowrap;
+}
+
+.command-row span {
+  color: var(--aspire-gray-4);
+  font-size: 0.82em;
+}
+
 img[alt~="center"] {
   display: block;
   margin: 0 auto;

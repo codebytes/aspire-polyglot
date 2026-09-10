@@ -178,22 +178,12 @@ public record Recipe
 
 ## Technologies
 
-- **.NET 9** - Latest .NET runtime
+- **.NET 10** - Current .NET runtime
 - **ASP.NET Core Minimal APIs** - Lightweight HTTP API
-- **Angular 19** - Modern standalone components
+- **Angular 22** - Modern standalone components
 - **Azure Cosmos DB SDK** - NoSQL document database client
-- **Aspire 13.1.3** - Cloud-native orchestration
+- **Aspire 13.5.3** - Cloud-native orchestration
 - **OpenTelemetry** - Distributed tracing & metrics
-
-## Differences from David Fowler's Samples
-
-| Feature | David's Sample | This Sample |
-|---------|---------------|-------------|
-| Frontend | React | **Angular 19** (standalone) |
-| Database | PostgreSQL | **Azure CosmosDB** (NoSQL) |
-| DB Client | Npgsql | Microsoft.Azure.Cosmos |
-| Data Access | Entity Framework | Cosmos SDK + LINQ |
-| Port Config | Static | Dynamic via Aspire |
 
 ## Learn More
 

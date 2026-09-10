@@ -20,9 +20,9 @@ public class IDistributedApplicationPipeline extends HandleWrapperBase {
     }
 
     /** Adds an application-level pipeline step in a TypeScript-friendly shape. */
-    public void addStep(String stepName, AspireAction1<PipelineStepContext> callback, AddStepOptions options) {
-        var dependsOn = options == null ? null : options.getDependsOn();
-        var requiredBy = options == null ? null : options.getRequiredBy();
+    public void addStep(String stepName, AspireAction1<PipelineStepContext> callback, AddStepOptions optionsBag) {
+        var dependsOn = optionsBag == null ? null : optionsBag.getDependsOn();
+        var requiredBy = optionsBag == null ? null : optionsBag.getRequiredBy();
         addStepImpl(stepName, callback, dependsOn, requiredBy);
     }
 

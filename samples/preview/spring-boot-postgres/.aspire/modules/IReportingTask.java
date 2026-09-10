@@ -42,10 +42,10 @@ public class IReportingTask extends HandleWrapperBase {
     }
 
     /** Completes the reporting task with plain-text completion text. */
-    public void completeTask(CompleteTaskOptions options) {
-        var completionMessage = options == null ? null : options.getCompletionMessage();
-        var completionState = options == null ? null : options.getCompletionState();
-        var cancellationToken = options == null ? null : options.getCancellationToken();
+    public void completeTask(CompleteTaskOptions optionsBag) {
+        var completionMessage = optionsBag == null ? null : optionsBag.getCompletionMessage();
+        var completionState = optionsBag == null ? null : optionsBag.getCompletionState();
+        var cancellationToken = optionsBag == null ? null : optionsBag.getCancellationToken();
         completeTaskImpl(completionMessage, completionState, cancellationToken);
     }
 
@@ -70,9 +70,9 @@ public class IReportingTask extends HandleWrapperBase {
     }
 
     /** Completes the reporting task with Markdown-formatted completion text. */
-    public void completeTaskMarkdown(String markdownString, CompleteTaskMarkdownOptions options) {
-        var completionState = options == null ? null : options.getCompletionState();
-        var cancellationToken = options == null ? null : options.getCancellationToken();
+    public void completeTaskMarkdown(String markdownString, CompleteTaskMarkdownOptions optionsBag) {
+        var completionState = optionsBag == null ? null : optionsBag.getCompletionState();
+        var cancellationToken = optionsBag == null ? null : optionsBag.getCancellationToken();
         completeTaskMarkdownImpl(markdownString, completionState, cancellationToken);
     }
 

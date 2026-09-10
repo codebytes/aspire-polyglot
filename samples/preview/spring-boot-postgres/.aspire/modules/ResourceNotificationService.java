@@ -67,9 +67,9 @@ public class ResourceNotificationService extends HandleWrapperBase {
     }
 
     /** Publishes an update for a resource's state. */
-    public void publishResourceUpdate(IResource resource, PublishResourceUpdateOptions options) {
-        var state = options == null ? null : options.getState();
-        var stateStyle = options == null ? null : options.getStateStyle();
+    public void publishResourceUpdate(IResource resource, PublishResourceUpdateOptions optionsBag) {
+        var state = optionsBag == null ? null : optionsBag.getState();
+        var stateStyle = optionsBag == null ? null : optionsBag.getStateStyle();
         publishResourceUpdateImpl(resource, state, stateStyle);
     }
 

@@ -62,9 +62,9 @@ public class IReportingStep extends HandleWrapperBase {
     }
 
     /** Completes the reporting step with plain-text completion text. */
-    public void completeStep(String completionText, CompleteStepOptions options) {
-        var completionState = options == null ? null : options.getCompletionState();
-        var cancellationToken = options == null ? null : options.getCancellationToken();
+    public void completeStep(String completionText, CompleteStepOptions optionsBag) {
+        var completionState = optionsBag == null ? null : optionsBag.getCompletionState();
+        var cancellationToken = optionsBag == null ? null : optionsBag.getCancellationToken();
         completeStepImpl(completionText, completionState, cancellationToken);
     }
 
@@ -87,9 +87,9 @@ public class IReportingStep extends HandleWrapperBase {
     }
 
     /** Completes the reporting step with Markdown-formatted completion text. */
-    public void completeStepMarkdown(String markdownString, CompleteStepMarkdownOptions options) {
-        var completionState = options == null ? null : options.getCompletionState();
-        var cancellationToken = options == null ? null : options.getCancellationToken();
+    public void completeStepMarkdown(String markdownString, CompleteStepMarkdownOptions optionsBag) {
+        var completionState = optionsBag == null ? null : optionsBag.getCompletionState();
+        var cancellationToken = optionsBag == null ? null : optionsBag.getCancellationToken();
         completeStepMarkdownImpl(markdownString, completionState, cancellationToken);
     }
 

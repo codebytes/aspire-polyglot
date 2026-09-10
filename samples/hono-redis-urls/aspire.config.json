@@ -1,15 +1,12 @@
 {
   "appHost": {
-    "path": "apphost.ts",
+    "path": "apphost.mts",
     "language": "typescript/nodejs"
   },
   "sdk": {
-    "version": "13.4.6"
+    "version": "13.5.3"
   },
   "packages": {
-    "Aspire.Hosting.JavaScript": "13.4.6"
-  },
-  "features": {
-    "polyglotSupportEnabled": true
+    "Aspire.Hosting.JavaScript": "13.5.3"
   }
 }

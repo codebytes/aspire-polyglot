@@ -10,13 +10,14 @@ public class CommandOptions implements JsonSerializable {
     private String description;
     private Object parameter;
     private InteractionInput[] arguments;
-    private Object validateArguments;
+    private AspireAction1<InputsDialogValidationContext> validateArguments;
     private ResourceCommandVisibility visibility;
     private String confirmationMessage;
     private String iconName;
     private IconVariant iconVariant;
     private boolean isHighlighted;
-    private Object updateState;
+    private AspireFunc1<UpdateCommandStateContext, ResourceCommandState> updateState;
+    private CommandProgressOptions progress;
 
     public String getDescription() { return description; }
     public void setDescription(String value) { this.description = value; }
@@ -24,8 +25,8 @@ public class CommandOptions implements JsonSerializable {
     public void setParameter(Object value) { this.parameter = value; }
     public InteractionInput[] getArguments() { return arguments; }
     public void setArguments(InteractionInput[] value) { this.arguments = value; }
-    public Object getValidateArguments() { return validateArguments; }
-    public void setValidateArguments(Object value) { this.validateArguments = value; }
+    public AspireAction1<InputsDialogValidationContext> getValidateArguments() { return validateArguments; }
+    public void setValidateArguments(AspireAction1<InputsDialogValidationContext> value) { this.validateArguments = value; }
     public ResourceCommandVisibility getVisibility() { return visibility; }
     public void setVisibility(ResourceCommandVisibility value) { this.visibility = value; }
     public String getConfirmationMessage() { return confirmationMessage; }
@@ -36,8 +37,10 @@ public class CommandOptions implements JsonSerializable {
     public void setIconVariant(IconVariant value) { this.iconVariant = value; }
     public boolean getIsHighlighted() { return isHighlighted; }
     public void setIsHighlighted(boolean value) { this.isHighlighted = value; }
-    public Object getUpdateState() { return updateState; }
-    public void setUpdateState(Object value) { this.updateState = value; }
+    public AspireFunc1<UpdateCommandStateContext, ResourceCommandState> getUpdateState() { return updateState; }
+    public void setUpdateState(AspireFunc1<UpdateCommandStateContext, ResourceCommandState> value) { this.updateState = value; }
+    public CommandProgressOptions getProgress() { return progress; }
+    public void setProgress(CommandProgressOptions value) { this.progress = value; }
 
     @SuppressWarnings("unchecked")
     public static CommandOptions fromMap(Map<String, Object> map) {
@@ -48,8 +51,6 @@ public class CommandOptions implements JsonSerializable {
         value.setParameter(parameterValue);
         var argumentsValue = map.get("Arguments");
         value.setArguments((InteractionInput[]) argumentsValue);
-        var validateArgumentsValue = map.get("ValidateArguments");
-        value.setValidateArguments(validateArgumentsValue);
         var visibilityValue = map.get("Visibility");
         value.setVisibility(ResourceCommandVisibility.fromValue((String) visibilityValue));
         var confirmationMessageValue = map.get("ConfirmationMessage");
@@ -60,8 +61,8 @@ public class CommandOptions implements JsonSerializable {
         value.setIconVariant(iconVariantValue == null ? null : IconVariant.fromValue((String) iconVariantValue));
         var isHighlightedValue = map.get("IsHighlighted");
         value.setIsHighlighted((Boolean) isHighlightedValue);
-        var updateStateValue = map.get("UpdateState");
-        value.setUpdateState(updateStateValue);
+        var progressValue = map.get("Progress");
+        value.setProgress(progressValue == null ? null : CommandProgressOptions.fromMap((Map<String, Object>) progressValue));
         return value;
     }
 
@@ -70,13 +71,21 @@ public class CommandOptions implements JsonSerializable {
         map.put("Description", AspireClient.serializeValue(description));
         map.put("Parameter", AspireClient.serializeValue(parameter));
         map.put("Arguments", AspireClient.serializeValue(arguments));
-        map.put("ValidateArguments", AspireClient.serializeValue(validateArguments));
+        map.put("ValidateArguments", validateArguments == null ? null : (java.util.function.Function<Object, Object>) (transportArg -> {
+            var arg = (InputsDialogValidationContext) transportArg;
+            validateArguments.invoke(arg);
+            return null;
+        }));
         map.put("Visibility", AspireClient.serializeValue(visibility));
         map.put("ConfirmationMessage", AspireClient.serializeValue(confirmationMessage));
         map.put("IconName", AspireClient.serializeValue(iconName));
         map.put("IconVariant", AspireClient.serializeValue(iconVariant));
         map.put("IsHighlighted", AspireClient.serializeValue(isHighlighted));
-        map.put("UpdateState", AspireClient.serializeValue(updateState));
+        map.put("UpdateState", updateState == null ? null : (java.util.function.Function<Object, Object>) (transportArg -> {
+            var arg = (UpdateCommandStateContext) transportArg;
+            return AspireClient.awaitValue(updateState.invoke(arg));
+        }));
+        map.put("Progress", AspireClient.serializeValue(progress));
         return map;
     }
 }

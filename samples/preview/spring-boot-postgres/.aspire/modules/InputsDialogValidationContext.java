@@ -27,6 +27,14 @@ public class InputsDialogValidationContext extends HandleWrapperBase {
         return (CancellationToken) result;
     }
 
+    /** Gets the service provider for resolving services during validation. */
+    public IServiceProvider services() {
+        Map<String, Object> reqArgs = new HashMap<>();
+        reqArgs.put("context", AspireClient.serializeValue(getHandle()));
+        var result = getClient().invokeCapability("Aspire.Hosting/InputsDialogValidationContext.services", reqArgs);
+        return (IServiceProvider) result;
+    }
+
     /** Adds a validation error for the input with the specified name. */
     public void addValidationError(String inputName, String errorMessage) {
         Map<String, Object> reqArgs = new HashMap<>();
