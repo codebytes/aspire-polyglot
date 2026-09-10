@@ -25,9 +25,9 @@ public class DotnetToolResource extends ExecutableResource {
     }
 
     /** Configures custom base images for generated Dockerfiles. */
-    public DotnetToolResource withDockerfileBaseImage(WithDockerfileBaseImageOptions options) {
-        var buildImage = options == null ? null : options.getBuildImage();
-        var runtimeImage = options == null ? null : options.getRuntimeImage();
+    public DotnetToolResource withDockerfileBaseImage(WithDockerfileBaseImageOptions optionsBag) {
+        var buildImage = optionsBag == null ? null : optionsBag.getBuildImage();
+        var runtimeImage = optionsBag == null ? null : optionsBag.getRuntimeImage();
         return withDockerfileBaseImageImpl(buildImage, runtimeImage);
     }
 
@@ -135,9 +135,9 @@ public class DotnetToolResource extends ExecutableResource {
     }
 
     /** Marks the resource as hosting a Model Context Protocol (MCP) server on the specified endpoint. */
-    public DotnetToolResource withMcpServer(WithMcpServerOptions options) {
-        var path = options == null ? null : options.getPath();
-        var endpointName = options == null ? null : options.getEndpointName();
+    public DotnetToolResource withMcpServer(WithMcpServerOptions optionsBag) {
+        var path = optionsBag == null ? null : optionsBag.getPath();
+        var endpointName = optionsBag == null ? null : optionsBag.getEndpointName();
         return withMcpServerImpl(path, endpointName);
     }
 
@@ -187,6 +187,29 @@ public class DotnetToolResource extends ExecutableResource {
             reqArgs.put("helpLink", AspireClient.serializeValue(helpLink));
         }
         getClient().invokeCapability("Aspire.Hosting/withRequiredCommand", reqArgs);
+        return this;
+    }
+
+    public DotnetToolResource withRequiredCommandValidation(String command, AspireFunc1<RequiredCommandValidationContext, RequiredCommandValidationResult> validationCallback) {
+        return withRequiredCommandValidation(command, validationCallback, null);
+    }
+
+    /** Declares that a resource requires a specific command/executable to be available on the local machine PATH before it can start, with custom validation logic. */
+    public DotnetToolResource withRequiredCommandValidation(String command, AspireFunc1<RequiredCommandValidationContext, RequiredCommandValidationResult> validationCallback, String helpLink) {
+        Map<String, Object> reqArgs = new HashMap<>();
+        reqArgs.put("builder", AspireClient.serializeValue(getHandle()));
+        reqArgs.put("command", AspireClient.serializeValue(command));
+        var validationCallbackId = getClient().registerCallback(args -> {
+            var arg = (RequiredCommandValidationContext) args[0];
+            return AspireClient.awaitValue(validationCallback.invoke(arg));
+        });
+        if (validationCallbackId != null) {
+            reqArgs.put("validationCallback", validationCallbackId);
+        }
+        if (helpLink != null) {
+            reqArgs.put("helpLink", AspireClient.serializeValue(helpLink));
+        }
+        getClient().invokeCapability("Aspire.Hosting/withRequiredCommandValidation", reqArgs);
         return this;
     }
 
@@ -353,10 +376,10 @@ public class DotnetToolResource extends ExecutableResource {
     }
 
     /** Adds a reference to another resource */
-    public DotnetToolResource withReference(AspireUnion source, WithReferenceOptions options) {
-        var connectionName = options == null ? null : options.getConnectionName();
-        var optional = options == null ? null : options.getOptional();
-        var name = options == null ? null : options.getName();
+    public DotnetToolResource withReference(AspireUnion source, WithReferenceOptions optionsBag) {
+        var connectionName = optionsBag == null ? null : optionsBag.getConnectionName();
+        var optional = optionsBag == null ? null : optionsBag.getOptional();
+        var name = optionsBag == null ? null : optionsBag.getName();
         return withReferenceImpl(source, connectionName, optional, name);
     }
 
@@ -407,9 +430,9 @@ public class DotnetToolResource extends ExecutableResource {
     }
 
     /** Updates an HTTP endpoint via callback */
-    public DotnetToolResource withHttpEndpointCallback(AspireAction1<EndpointUpdateContext> callback, WithHttpEndpointCallbackOptions options) {
-        var name = options == null ? null : options.getName();
-        var createIfNotExists = options == null ? null : options.getCreateIfNotExists();
+    public DotnetToolResource withHttpEndpointCallback(AspireAction1<EndpointUpdateContext> callback, WithHttpEndpointCallbackOptions optionsBag) {
+        var name = optionsBag == null ? null : optionsBag.getName();
+        var createIfNotExists = optionsBag == null ? null : optionsBag.getCreateIfNotExists();
         return withHttpEndpointCallbackImpl(callback, name, createIfNotExists);
     }
 
@@ -440,9 +463,9 @@ public class DotnetToolResource extends ExecutableResource {
     }
 
     /** Updates an HTTPS endpoint via callback */
-    public DotnetToolResource withHttpsEndpointCallback(AspireAction1<EndpointUpdateContext> callback, WithHttpsEndpointCallbackOptions options) {
-        var name = options == null ? null : options.getName();
-        var createIfNotExists = options == null ? null : options.getCreateIfNotExists();
+    public DotnetToolResource withHttpsEndpointCallback(AspireAction1<EndpointUpdateContext> callback, WithHttpsEndpointCallbackOptions optionsBag) {
+        var name = optionsBag == null ? null : optionsBag.getName();
+        var createIfNotExists = optionsBag == null ? null : optionsBag.getCreateIfNotExists();
         return withHttpsEndpointCallbackImpl(callback, name, createIfNotExists);
     }
 
@@ -473,15 +496,15 @@ public class DotnetToolResource extends ExecutableResource {
     }
 
     /** Adds a network endpoint */
-    public DotnetToolResource withEndpoint(WithEndpointOptions options) {
-        var port = options == null ? null : options.getPort();
-        var targetPort = options == null ? null : options.getTargetPort();
-        var scheme = options == null ? null : options.getScheme();
-        var name = options == null ? null : options.getName();
-        var env = options == null ? null : options.getEnv();
-        var isProxied = options == null ? null : options.isProxied();
-        var isExternal = options == null ? null : options.isExternal();
-        var protocol = options == null ? null : options.getProtocol();
+    public DotnetToolResource withEndpoint(WithEndpointOptions optionsBag) {
+        var port = optionsBag == null ? null : optionsBag.getPort();
+        var targetPort = optionsBag == null ? null : optionsBag.getTargetPort();
+        var scheme = optionsBag == null ? null : optionsBag.getScheme();
+        var name = optionsBag == null ? null : optionsBag.getName();
+        var env = optionsBag == null ? null : optionsBag.getEnv();
+        var isProxied = optionsBag == null ? null : optionsBag.isProxied();
+        var isExternal = optionsBag == null ? null : optionsBag.isExternal();
+        var protocol = optionsBag == null ? null : optionsBag.getProtocol();
         return withEndpointImpl(port, targetPort, scheme, name, env, isProxied, isExternal, protocol);
     }
 
@@ -531,12 +554,12 @@ public class DotnetToolResource extends ExecutableResource {
     }
 
     /** Adds an HTTP endpoint */
-    public DotnetToolResource withHttpEndpoint(WithHttpEndpointOptions options) {
-        var port = options == null ? null : options.getPort();
-        var targetPort = options == null ? null : options.getTargetPort();
-        var name = options == null ? null : options.getName();
-        var env = options == null ? null : options.getEnv();
-        var isProxied = options == null ? null : options.isProxied();
+    public DotnetToolResource withHttpEndpoint(WithHttpEndpointOptions optionsBag) {
+        var port = optionsBag == null ? null : optionsBag.getPort();
+        var targetPort = optionsBag == null ? null : optionsBag.getTargetPort();
+        var name = optionsBag == null ? null : optionsBag.getName();
+        var env = optionsBag == null ? null : optionsBag.getEnv();
+        var isProxied = optionsBag == null ? null : optionsBag.isProxied();
         return withHttpEndpointImpl(port, targetPort, name, env, isProxied);
     }
 
@@ -568,12 +591,12 @@ public class DotnetToolResource extends ExecutableResource {
     }
 
     /** Adds an HTTPS endpoint */
-    public DotnetToolResource withHttpsEndpoint(WithHttpsEndpointOptions options) {
-        var port = options == null ? null : options.getPort();
-        var targetPort = options == null ? null : options.getTargetPort();
-        var name = options == null ? null : options.getName();
-        var env = options == null ? null : options.getEnv();
-        var isProxied = options == null ? null : options.isProxied();
+    public DotnetToolResource withHttpsEndpoint(WithHttpsEndpointOptions optionsBag) {
+        var port = optionsBag == null ? null : optionsBag.getPort();
+        var targetPort = optionsBag == null ? null : optionsBag.getTargetPort();
+        var name = optionsBag == null ? null : optionsBag.getName();
+        var env = optionsBag == null ? null : optionsBag.getEnv();
+        var isProxied = optionsBag == null ? null : optionsBag.isProxied();
         return withHttpsEndpointImpl(port, targetPort, name, env, isProxied);
     }
 
@@ -784,10 +807,10 @@ public class DotnetToolResource extends ExecutableResource {
     }
 
     /** Adds a health check to the resource which is mapped to a specific endpoint. */
-    public DotnetToolResource withHttpHealthCheck(WithHttpHealthCheckOptions options) {
-        var path = options == null ? null : options.getPath();
-        var statusCode = options == null ? null : options.getStatusCode();
-        var endpointName = options == null ? null : options.getEndpointName();
+    public DotnetToolResource withHttpHealthCheck(WithHttpHealthCheckOptions optionsBag) {
+        var path = optionsBag == null ? null : optionsBag.getPath();
+        var statusCode = optionsBag == null ? null : optionsBag.getStatusCode();
+        var endpointName = optionsBag == null ? null : optionsBag.getEndpointName();
         return withHttpHealthCheckImpl(path, statusCode, endpointName);
     }
 
@@ -929,6 +952,38 @@ public class DotnetToolResource extends ExecutableResource {
         return this;
     }
 
+    /** Adds a callback that allows configuring the resource to use a specific HTTPS/TLS certificate key pair for server authentication. */
+    public DotnetToolResource withHttpsCertificateConfiguration(AspireAction1<HttpsCertificateConfigurationCallbackAnnotationContext> callback) {
+        Map<String, Object> reqArgs = new HashMap<>();
+        reqArgs.put("builder", AspireClient.serializeValue(getHandle()));
+        var callbackId = getClient().registerCallback(args -> {
+            var arg = (HttpsCertificateConfigurationCallbackAnnotationContext) args[0];
+            callback.invoke(arg);
+            return null;
+        });
+        if (callbackId != null) {
+            reqArgs.put("callback", callbackId);
+        }
+        getClient().invokeCapability("Aspire.Hosting/withHttpsCertificateConfiguration", reqArgs);
+        return this;
+    }
+
+    /** Subscribes to the `BeforeStartEvent` and invokes the specified callback when an HTTPS certificate is determined to be available for the resource. This is used to conditionally update endpoint URI schemes or perform other HTTPS-related configuration at startup. */
+    public DotnetToolResource subscribeHttpsEndpointsUpdate(AspireAction1<HttpsEndpointUpdateCallbackContext> callback) {
+        Map<String, Object> reqArgs = new HashMap<>();
+        reqArgs.put("builder", AspireClient.serializeValue(getHandle()));
+        var callbackId = getClient().registerCallback(args -> {
+            var obj = (HttpsEndpointUpdateCallbackContext) args[0];
+            callback.invoke(obj);
+            return null;
+        });
+        if (callbackId != null) {
+            reqArgs.put("callback", callbackId);
+        }
+        getClient().invokeCapability("Aspire.Hosting/subscribeHttpsEndpointsUpdate", reqArgs);
+        return this;
+    }
+
     /** Adds a relationship to another resource using its builder. */
     public DotnetToolResource withRelationship(IResource resourceBuilder, String type) {
         Map<String, Object> reqArgs = new HashMap<>();
@@ -999,14 +1054,14 @@ public class DotnetToolResource extends ExecutableResource {
     }
 
     /** Adds an HTTP health probe to the resource */
-    public DotnetToolResource withHttpProbe(ProbeType probeType, WithHttpProbeOptions options) {
-        var path = options == null ? null : options.getPath();
-        var initialDelaySeconds = options == null ? null : options.getInitialDelaySeconds();
-        var periodSeconds = options == null ? null : options.getPeriodSeconds();
-        var timeoutSeconds = options == null ? null : options.getTimeoutSeconds();
-        var failureThreshold = options == null ? null : options.getFailureThreshold();
-        var successThreshold = options == null ? null : options.getSuccessThreshold();
-        var endpointName = options == null ? null : options.getEndpointName();
+    public DotnetToolResource withHttpProbe(ProbeType probeType, WithHttpProbeOptions optionsBag) {
+        var path = optionsBag == null ? null : optionsBag.getPath();
+        var initialDelaySeconds = optionsBag == null ? null : optionsBag.getInitialDelaySeconds();
+        var periodSeconds = optionsBag == null ? null : optionsBag.getPeriodSeconds();
+        var timeoutSeconds = optionsBag == null ? null : optionsBag.getTimeoutSeconds();
+        var failureThreshold = optionsBag == null ? null : optionsBag.getFailureThreshold();
+        var successThreshold = optionsBag == null ? null : optionsBag.getSuccessThreshold();
+        var endpointName = optionsBag == null ? null : optionsBag.getEndpointName();
         return withHttpProbeImpl(probeType, path, initialDelaySeconds, periodSeconds, timeoutSeconds, failureThreshold, successThreshold, endpointName);
     }
 
@@ -1061,9 +1116,9 @@ public class DotnetToolResource extends ExecutableResource {
     }
 
     /** Hides the resource from default resource lists after successful completion */
-    public DotnetToolResource withHiddenOnCompletion(WithHiddenOnCompletionOptions options) {
-        var exitCode = options == null ? null : options.getExitCode();
-        var exitCodes = options == null ? null : options.getExitCodes();
+    public DotnetToolResource withHiddenOnCompletion(WithHiddenOnCompletionOptions optionsBag) {
+        var exitCode = optionsBag == null ? null : optionsBag.getExitCode();
+        var exitCodes = optionsBag == null ? null : optionsBag.getExitCodes();
         return withHiddenOnCompletionImpl(exitCode, exitCodes);
     }
 
@@ -1119,12 +1174,20 @@ public class DotnetToolResource extends ExecutableResource {
         return this;
     }
 
+    /** Adds an interactive terminal session to a resource using the default terminal options. */
+    public DotnetToolResource withTerminal() {
+        Map<String, Object> reqArgs = new HashMap<>();
+        reqArgs.put("builder", AspireClient.serializeValue(getHandle()));
+        getClient().invokeCapability("Aspire.Hosting/withTerminal", reqArgs);
+        return this;
+    }
+
     /** Adds a pipeline step to the resource that will be executed during deployment. */
-    public DotnetToolResource withPipelineStepFactory(String stepName, AspireAction1<PipelineStepContext> callback, WithPipelineStepFactoryOptions options) {
-        var dependsOn = options == null ? null : options.getDependsOn();
-        var requiredBy = options == null ? null : options.getRequiredBy();
-        var tags = options == null ? null : options.getTags();
-        var description = options == null ? null : options.getDescription();
+    public DotnetToolResource withPipelineStepFactory(String stepName, AspireAction1<PipelineStepContext> callback, WithPipelineStepFactoryOptions optionsBag) {
+        var dependsOn = optionsBag == null ? null : optionsBag.getDependsOn();
+        var requiredBy = optionsBag == null ? null : optionsBag.getRequiredBy();
+        var tags = optionsBag == null ? null : optionsBag.getTags();
+        var description = optionsBag == null ? null : optionsBag.getDescription();
         return withPipelineStepFactoryImpl(stepName, callback, dependsOn, requiredBy, tags, description);
     }
 
@@ -1271,6 +1334,22 @@ public class DotnetToolResource extends ExecutableResource {
         reqArgs.put("resource", AspireClient.serializeValue(getHandle()));
         var result = getClient().invokeCapability("Aspire.Hosting/createExecutionConfiguration", reqArgs);
         return (IExecutionConfigurationBuilder) result;
+    }
+
+    /** Configures container build options for a compute resource using an async callback. */
+    public DotnetToolResource withContainerBuildOptions(AspireAction1<ContainerBuildOptionsCallbackContext> callback) {
+        Map<String, Object> reqArgs = new HashMap<>();
+        reqArgs.put("builder", AspireClient.serializeValue(getHandle()));
+        var callbackId = getClient().registerCallback(args -> {
+            var arg = (ContainerBuildOptionsCallbackContext) args[0];
+            callback.invoke(arg);
+            return null;
+        });
+        if (callbackId != null) {
+            reqArgs.put("callback", callbackId);
+        }
+        getClient().invokeCapability("Aspire.Hosting/withContainerBuildOptions", reqArgs);
+        return this;
     }
 
 }

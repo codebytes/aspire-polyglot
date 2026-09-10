@@ -7,7 +7,7 @@ import { customAlphabet } from "nanoid";
 
 const port = Number(process.env.PORT ?? 8080);
 
-// Aspire injects REDIS_HOST / REDIS_PORT (see apphost.ts). In-container the
+// Aspire injects REDIS_HOST / REDIS_PORT (see apphost.mts). In-container the
 // hostname "cache" resolves to the Redis container on the shared network.
 const redis = new Redis({
   host: process.env.REDIS_HOST ?? "localhost",

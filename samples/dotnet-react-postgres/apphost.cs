@@ -1,6 +1,7 @@
-#:sdk Aspire.AppHost.Sdk@13.4.6
-#:package Aspire.Hosting.PostgreSQL@13.4.6
-#:package Aspire.Hosting.JavaScript@13.4.6
+#:sdk Aspire.AppHost.Sdk@13.5.3
+#:property AspireUseCliBundle=true
+#:package Aspire.Hosting.PostgreSQL@13.5.3
+#:package Aspire.Hosting.JavaScript@13.5.3
 #:project Api/Api.csproj
 
 // Single-file C# AppHost (apphost.cs). No .csproj, no Program.cs — the whole

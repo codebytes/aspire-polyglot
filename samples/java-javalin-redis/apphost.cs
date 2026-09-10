@@ -1,4 +1,5 @@
-#:sdk Aspire.AppHost.Sdk@13.4.6
+#:sdk Aspire.AppHost.Sdk@13.5.3
+#:property AspireUseCliBundle=true
 
 // Single-file C# AppHost orchestrating a Java service. The API is a lightweight
 // Javalin app built from a multi-stage Dockerfile (Maven build + JRE runtime),

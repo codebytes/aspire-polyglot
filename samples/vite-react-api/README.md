@@ -6,7 +6,7 @@ A Vite-powered React frontend backed by a Python FastAPI service with Redis cach
 - **Frontend**: React 19 + TypeScript + Vite
 - **Backend**: Python FastAPI
 - **Cache**: Redis
-- **AppHost**: TypeScript `apphost.ts`
+- **AppHost**: TypeScript `apphost.mts`
 
 ## Running
 
@@ -17,7 +17,7 @@ aspire run
 ```
 
 ## What It Demonstrates
-- TypeScript AppHost (`apphost.ts`) orchestrating polyglot services
+- TypeScript AppHost (`apphost.mts`) orchestrating polyglot services
 - `addDockerfile` for Vite frontend and FastAPI backend containers
 - `addContainer` for Redis caching layer
 - Environment variable wiring between services

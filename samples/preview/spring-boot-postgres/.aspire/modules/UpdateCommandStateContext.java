@@ -19,4 +19,12 @@ public class UpdateCommandStateContext extends HandleWrapperBase {
         return UpdateCommandStateResourceSnapshot.fromMap((Map<String, Object>) result);
     }
 
+    /** The service provider. */
+    public IServiceProvider services() {
+        Map<String, Object> reqArgs = new HashMap<>();
+        reqArgs.put("context", AspireClient.serializeValue(getHandle()));
+        var result = getClient().invokeCapability("Aspire.Hosting.ApplicationModel/UpdateCommandStateContext.services", reqArgs);
+        return (IServiceProvider) result;
+    }
+
 }

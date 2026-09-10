@@ -63,9 +63,9 @@ public class IDistributedApplicationBuilder extends HandleWrapperBase {
     }
 
     /** Adds a Dockerfile to the application model that can be treated like a container resource. */
-    public ContainerResource addDockerfile(String name, String contextPath, AddDockerfileOptions options) {
-        var dockerfilePath = options == null ? null : options.getDockerfilePath();
-        var stage = options == null ? null : options.getStage();
+    public ContainerResource addDockerfile(String name, String contextPath, AddDockerfileOptions optionsBag) {
+        var dockerfilePath = optionsBag == null ? null : optionsBag.getDockerfilePath();
+        var stage = optionsBag == null ? null : optionsBag.getStage();
         return addDockerfileImpl(name, contextPath, dockerfilePath, stage);
     }
 
@@ -235,10 +235,10 @@ public class IDistributedApplicationBuilder extends HandleWrapperBase {
     }
 
     /** Adds a parameter resource */
-    public ParameterResource addParameter(String name, AddParameterOptions options) {
-        var value = options == null ? null : options.getValue();
-        var publishValueAsDefault = options == null ? null : options.getPublishValueAsDefault();
-        var secret = options == null ? null : options.getSecret();
+    public ParameterResource addParameter(String name, AddParameterOptions optionsBag) {
+        var value = optionsBag == null ? null : optionsBag.getValue();
+        var publishValueAsDefault = optionsBag == null ? null : optionsBag.getPublishValueAsDefault();
+        var secret = optionsBag == null ? null : optionsBag.getSecret();
         return addParameterImpl(name, value, publishValueAsDefault, secret);
     }
 
@@ -282,9 +282,9 @@ public class IDistributedApplicationBuilder extends HandleWrapperBase {
     }
 
     /** Adds a parameter with a generated default value */
-    public ParameterResource addParameterWithGeneratedValue(String name, GenerateParameterDefault value, AddParameterWithGeneratedValueOptions options) {
-        var secret = options == null ? null : options.getSecret();
-        var persist = options == null ? null : options.getPersist();
+    public ParameterResource addParameterWithGeneratedValue(String name, GenerateParameterDefault value, AddParameterWithGeneratedValueOptions optionsBag) {
+        var secret = optionsBag == null ? null : optionsBag.getSecret();
+        var persist = optionsBag == null ? null : optionsBag.getPersist();
         return addParameterWithGeneratedValueImpl(name, value, secret, persist);
     }
 
@@ -474,6 +474,20 @@ public class IDistributedApplicationBuilder extends HandleWrapperBase {
             reqArgs.put("subscribe", subscribeId);
         }
         getClient().invokeCapability("Aspire.Hosting/tryAddEventingSubscriber", reqArgs);
+    }
+
+    /** Adds a custom health check callback to the distributed-application builder. */
+    public void addHealthCheck(String name, AspireFunc0<HealthCheckResult> check) {
+        Map<String, Object> reqArgs = new HashMap<>();
+        reqArgs.put("builder", AspireClient.serializeValue(getHandle()));
+        reqArgs.put("name", AspireClient.serializeValue(name));
+        var checkId = getClient().registerCallback(args -> {
+            return AspireClient.awaitValue(check.invoke());
+        });
+        if (checkId != null) {
+            reqArgs.put("check", checkId);
+        }
+        getClient().invokeCapability("Aspire.Hosting/addHealthCheck", reqArgs);
     }
 
 }

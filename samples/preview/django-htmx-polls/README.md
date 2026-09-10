@@ -51,7 +51,7 @@ Falls back to SQLite when running standalone (no Aspire).
 
 ### Prerequisites
 
-- [Aspire CLI](https://aspire.dev/get-started/install-cli/) **13.4.x** — must match the SDK this sample is pinned to (`13.4.6`, see `sdk.version` in `aspire.config.json`). Check yours with `aspire --version`. A mismatch causes the errors in [Troubleshooting](#troubleshooting).
+- [Aspire CLI](https://aspire.dev/get-started/install-cli/) **13.5.3** — must match the SDK this sample is pinned to (`13.5.3`, see `sdk.version` in `aspire.config.json`). Check yours with `aspire --version`. A mismatch causes the errors in [Troubleshooting](#troubleshooting).
 - [Docker](https://docs.docker.com/get-docker/) — runs the PostgreSQL container and builds the Django image.
 - Python 3.11+ — only needed for the **Standalone** path below. The Aspire path builds and runs the app inside a container, so no local Python setup is required.
 
@@ -88,7 +88,7 @@ Both mean your Aspire CLI version does not match the SDK this sample is pinned t
 
 To fix it, align the versions:
 
-1. Run `aspire --version` and confirm it is **13.4.x**, matching `sdk.version` in `aspire.config.json`. Install or update the CLI if needed.
+1. Run `aspire --version` and confirm it is **13.5.3**, matching `sdk.version` in `aspire.config.json`. Install or update the CLI if needed.
 2. Run `aspire run` from a clean checkout — it regenerates `.aspire/modules/aspire_app.py` to match your CLI. If you previously ran `aspire update`, restore the pinned versions first: `git checkout -- aspire.config.json .aspire/`.
 
 **"Failed to install the Python dependencies":** you do not need to `pip install` anything to use `aspire run` — the app's dependencies are installed in the container image, not in your shell. Just run `aspire run` from the sample root.

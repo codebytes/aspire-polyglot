@@ -129,9 +129,9 @@ public class ContainerResource extends ResourceBuilderBase {
     }
 
     /** Causes Aspire to build the specified container image from a Dockerfile. */
-    public ContainerResource withDockerfile(String contextPath, WithDockerfileOptions options) {
-        var dockerfilePath = options == null ? null : options.getDockerfilePath();
-        var stage = options == null ? null : options.getStage();
+    public ContainerResource withDockerfile(String contextPath, WithDockerfileOptions optionsBag) {
+        var dockerfilePath = optionsBag == null ? null : optionsBag.getDockerfilePath();
+        var stage = optionsBag == null ? null : optionsBag.getStage();
         return withDockerfileImpl(contextPath, dockerfilePath, stage);
     }
 
@@ -215,10 +215,10 @@ public class ContainerResource extends ResourceBuilderBase {
     }
 
     /** Adds container certificate path overrides used for certificate trust at run time. */
-    public ContainerResource withContainerCertificatePaths(WithContainerCertificatePathsOptions options) {
-        var customCertificatesDestination = options == null ? null : options.getCustomCertificatesDestination();
-        var defaultCertificateBundlePaths = options == null ? null : options.getDefaultCertificateBundlePaths();
-        var defaultCertificateDirectoryPaths = options == null ? null : options.getDefaultCertificateDirectoryPaths();
+    public ContainerResource withContainerCertificatePaths(WithContainerCertificatePathsOptions optionsBag) {
+        var customCertificatesDestination = optionsBag == null ? null : optionsBag.getCustomCertificatesDestination();
+        var defaultCertificateBundlePaths = optionsBag == null ? null : optionsBag.getDefaultCertificateBundlePaths();
+        var defaultCertificateDirectoryPaths = optionsBag == null ? null : optionsBag.getDefaultCertificateDirectoryPaths();
         return withContainerCertificatePathsImpl(customCertificatesDestination, defaultCertificateBundlePaths, defaultCertificateDirectoryPaths);
     }
 
@@ -240,6 +240,47 @@ public class ContainerResource extends ResourceBuilderBase {
             reqArgs.put("defaultCertificateDirectoryPaths", AspireClient.serializeValue(defaultCertificateDirectoryPaths));
         }
         getClient().invokeCapability("Aspire.Hosting/withContainerCertificatePaths", reqArgs);
+        return this;
+    }
+
+    public ContainerResource withContainerFiles(String destinationPath, String sourcePath) {
+        return withContainerFiles(destinationPath, sourcePath, null);
+    }
+
+    /** Creates or updates files and folders in a container by copying them from a source path on the host. */
+    public ContainerResource withContainerFiles(String destinationPath, String sourcePath, ContainerFilesOptions options) {
+        Map<String, Object> reqArgs = new HashMap<>();
+        reqArgs.put("builder", AspireClient.serializeValue(getHandle()));
+        reqArgs.put("destinationPath", AspireClient.serializeValue(destinationPath));
+        reqArgs.put("sourcePath", AspireClient.serializeValue(sourcePath));
+        if (options != null) {
+            reqArgs.put("options", AspireClient.serializeValue(options));
+        }
+        getClient().invokeCapability("Aspire.Hosting/withContainerFiles", reqArgs);
+        return this;
+    }
+
+    public ContainerResource withContainerFilesCallback(String destinationPath, AspireFunc2<ContainerFileSystemCallbackContext, CancellationToken, ContainerFileSystemItem[]> callback) {
+        return withContainerFilesCallback(destinationPath, callback, null);
+    }
+
+    /** Creates or updates files and/or folders at the destination path in the container using entries produced by a callback. */
+    public ContainerResource withContainerFilesCallback(String destinationPath, AspireFunc2<ContainerFileSystemCallbackContext, CancellationToken, ContainerFileSystemItem[]> callback, ContainerFilesOptions options) {
+        Map<String, Object> reqArgs = new HashMap<>();
+        reqArgs.put("builder", AspireClient.serializeValue(getHandle()));
+        reqArgs.put("destinationPath", AspireClient.serializeValue(destinationPath));
+        var callbackId = getClient().registerCallback(args -> {
+            var arg1 = (ContainerFileSystemCallbackContext) args[0];
+            var arg2 = CancellationToken.fromValue(args[1]);
+            return AspireClient.awaitValue(callback.invoke(arg1, arg2));
+        });
+        if (callbackId != null) {
+            reqArgs.put("callback", callbackId);
+        }
+        if (options != null) {
+            reqArgs.put("options", AspireClient.serializeValue(options));
+        }
+        getClient().invokeCapability("Aspire.Hosting/withContainerFilesCallback", reqArgs);
         return this;
     }
 
@@ -268,9 +309,9 @@ public class ContainerResource extends ResourceBuilderBase {
     }
 
     /** Configures custom base images for generated Dockerfiles. */
-    public ContainerResource withDockerfileBaseImage(WithDockerfileBaseImageOptions options) {
-        var buildImage = options == null ? null : options.getBuildImage();
-        var runtimeImage = options == null ? null : options.getRuntimeImage();
+    public ContainerResource withDockerfileBaseImage(WithDockerfileBaseImageOptions optionsBag) {
+        var buildImage = optionsBag == null ? null : optionsBag.getBuildImage();
+        var runtimeImage = optionsBag == null ? null : optionsBag.getRuntimeImage();
         return withDockerfileBaseImageImpl(buildImage, runtimeImage);
     }
 
@@ -302,9 +343,9 @@ public class ContainerResource extends ResourceBuilderBase {
     }
 
     /** Marks the resource as hosting a Model Context Protocol (MCP) server on the specified endpoint. */
-    public ContainerResource withMcpServer(WithMcpServerOptions options) {
-        var path = options == null ? null : options.getPath();
-        var endpointName = options == null ? null : options.getEndpointName();
+    public ContainerResource withMcpServer(WithMcpServerOptions optionsBag) {
+        var path = optionsBag == null ? null : optionsBag.getPath();
+        var endpointName = optionsBag == null ? null : optionsBag.getEndpointName();
         return withMcpServerImpl(path, endpointName);
     }
 
@@ -362,6 +403,29 @@ public class ContainerResource extends ResourceBuilderBase {
             reqArgs.put("helpLink", AspireClient.serializeValue(helpLink));
         }
         getClient().invokeCapability("Aspire.Hosting/withRequiredCommand", reqArgs);
+        return this;
+    }
+
+    public ContainerResource withRequiredCommandValidation(String command, AspireFunc1<RequiredCommandValidationContext, RequiredCommandValidationResult> validationCallback) {
+        return withRequiredCommandValidation(command, validationCallback, null);
+    }
+
+    /** Declares that a resource requires a specific command/executable to be available on the local machine PATH before it can start, with custom validation logic. */
+    public ContainerResource withRequiredCommandValidation(String command, AspireFunc1<RequiredCommandValidationContext, RequiredCommandValidationResult> validationCallback, String helpLink) {
+        Map<String, Object> reqArgs = new HashMap<>();
+        reqArgs.put("builder", AspireClient.serializeValue(getHandle()));
+        reqArgs.put("command", AspireClient.serializeValue(command));
+        var validationCallbackId = getClient().registerCallback(args -> {
+            var arg = (RequiredCommandValidationContext) args[0];
+            return AspireClient.awaitValue(validationCallback.invoke(arg));
+        });
+        if (validationCallbackId != null) {
+            reqArgs.put("validationCallback", validationCallbackId);
+        }
+        if (helpLink != null) {
+            reqArgs.put("helpLink", AspireClient.serializeValue(helpLink));
+        }
+        getClient().invokeCapability("Aspire.Hosting/withRequiredCommandValidation", reqArgs);
         return this;
     }
 
@@ -528,10 +592,10 @@ public class ContainerResource extends ResourceBuilderBase {
     }
 
     /** Adds a reference to another resource */
-    public ContainerResource withReference(AspireUnion source, WithReferenceOptions options) {
-        var connectionName = options == null ? null : options.getConnectionName();
-        var optional = options == null ? null : options.getOptional();
-        var name = options == null ? null : options.getName();
+    public ContainerResource withReference(AspireUnion source, WithReferenceOptions optionsBag) {
+        var connectionName = optionsBag == null ? null : optionsBag.getConnectionName();
+        var optional = optionsBag == null ? null : optionsBag.getOptional();
+        var name = optionsBag == null ? null : optionsBag.getName();
         return withReferenceImpl(source, connectionName, optional, name);
     }
 
@@ -582,9 +646,9 @@ public class ContainerResource extends ResourceBuilderBase {
     }
 
     /** Updates an HTTP endpoint via callback */
-    public ContainerResource withHttpEndpointCallback(AspireAction1<EndpointUpdateContext> callback, WithHttpEndpointCallbackOptions options) {
-        var name = options == null ? null : options.getName();
-        var createIfNotExists = options == null ? null : options.getCreateIfNotExists();
+    public ContainerResource withHttpEndpointCallback(AspireAction1<EndpointUpdateContext> callback, WithHttpEndpointCallbackOptions optionsBag) {
+        var name = optionsBag == null ? null : optionsBag.getName();
+        var createIfNotExists = optionsBag == null ? null : optionsBag.getCreateIfNotExists();
         return withHttpEndpointCallbackImpl(callback, name, createIfNotExists);
     }
 
@@ -615,9 +679,9 @@ public class ContainerResource extends ResourceBuilderBase {
     }
 
     /** Updates an HTTPS endpoint via callback */
-    public ContainerResource withHttpsEndpointCallback(AspireAction1<EndpointUpdateContext> callback, WithHttpsEndpointCallbackOptions options) {
-        var name = options == null ? null : options.getName();
-        var createIfNotExists = options == null ? null : options.getCreateIfNotExists();
+    public ContainerResource withHttpsEndpointCallback(AspireAction1<EndpointUpdateContext> callback, WithHttpsEndpointCallbackOptions optionsBag) {
+        var name = optionsBag == null ? null : optionsBag.getName();
+        var createIfNotExists = optionsBag == null ? null : optionsBag.getCreateIfNotExists();
         return withHttpsEndpointCallbackImpl(callback, name, createIfNotExists);
     }
 
@@ -648,15 +712,15 @@ public class ContainerResource extends ResourceBuilderBase {
     }
 
     /** Adds a network endpoint */
-    public ContainerResource withEndpoint(WithEndpointOptions options) {
-        var port = options == null ? null : options.getPort();
-        var targetPort = options == null ? null : options.getTargetPort();
-        var scheme = options == null ? null : options.getScheme();
-        var name = options == null ? null : options.getName();
-        var env = options == null ? null : options.getEnv();
-        var isProxied = options == null ? null : options.isProxied();
-        var isExternal = options == null ? null : options.isExternal();
-        var protocol = options == null ? null : options.getProtocol();
+    public ContainerResource withEndpoint(WithEndpointOptions optionsBag) {
+        var port = optionsBag == null ? null : optionsBag.getPort();
+        var targetPort = optionsBag == null ? null : optionsBag.getTargetPort();
+        var scheme = optionsBag == null ? null : optionsBag.getScheme();
+        var name = optionsBag == null ? null : optionsBag.getName();
+        var env = optionsBag == null ? null : optionsBag.getEnv();
+        var isProxied = optionsBag == null ? null : optionsBag.isProxied();
+        var isExternal = optionsBag == null ? null : optionsBag.isExternal();
+        var protocol = optionsBag == null ? null : optionsBag.getProtocol();
         return withEndpointImpl(port, targetPort, scheme, name, env, isProxied, isExternal, protocol);
     }
 
@@ -706,12 +770,12 @@ public class ContainerResource extends ResourceBuilderBase {
     }
 
     /** Adds an HTTP endpoint */
-    public ContainerResource withHttpEndpoint(WithHttpEndpointOptions options) {
-        var port = options == null ? null : options.getPort();
-        var targetPort = options == null ? null : options.getTargetPort();
-        var name = options == null ? null : options.getName();
-        var env = options == null ? null : options.getEnv();
-        var isProxied = options == null ? null : options.isProxied();
+    public ContainerResource withHttpEndpoint(WithHttpEndpointOptions optionsBag) {
+        var port = optionsBag == null ? null : optionsBag.getPort();
+        var targetPort = optionsBag == null ? null : optionsBag.getTargetPort();
+        var name = optionsBag == null ? null : optionsBag.getName();
+        var env = optionsBag == null ? null : optionsBag.getEnv();
+        var isProxied = optionsBag == null ? null : optionsBag.isProxied();
         return withHttpEndpointImpl(port, targetPort, name, env, isProxied);
     }
 
@@ -743,12 +807,12 @@ public class ContainerResource extends ResourceBuilderBase {
     }
 
     /** Adds an HTTPS endpoint */
-    public ContainerResource withHttpsEndpoint(WithHttpsEndpointOptions options) {
-        var port = options == null ? null : options.getPort();
-        var targetPort = options == null ? null : options.getTargetPort();
-        var name = options == null ? null : options.getName();
-        var env = options == null ? null : options.getEnv();
-        var isProxied = options == null ? null : options.isProxied();
+    public ContainerResource withHttpsEndpoint(WithHttpsEndpointOptions optionsBag) {
+        var port = optionsBag == null ? null : optionsBag.getPort();
+        var targetPort = optionsBag == null ? null : optionsBag.getTargetPort();
+        var name = optionsBag == null ? null : optionsBag.getName();
+        var env = optionsBag == null ? null : optionsBag.getEnv();
+        var isProxied = optionsBag == null ? null : optionsBag.isProxied();
         return withHttpsEndpointImpl(port, targetPort, name, env, isProxied);
     }
 
@@ -959,10 +1023,10 @@ public class ContainerResource extends ResourceBuilderBase {
     }
 
     /** Adds a health check to the resource which is mapped to a specific endpoint. */
-    public ContainerResource withHttpHealthCheck(WithHttpHealthCheckOptions options) {
-        var path = options == null ? null : options.getPath();
-        var statusCode = options == null ? null : options.getStatusCode();
-        var endpointName = options == null ? null : options.getEndpointName();
+    public ContainerResource withHttpHealthCheck(WithHttpHealthCheckOptions optionsBag) {
+        var path = optionsBag == null ? null : optionsBag.getPath();
+        var statusCode = optionsBag == null ? null : optionsBag.getStatusCode();
+        var endpointName = optionsBag == null ? null : optionsBag.getEndpointName();
         return withHttpHealthCheckImpl(path, statusCode, endpointName);
     }
 
@@ -1104,6 +1168,38 @@ public class ContainerResource extends ResourceBuilderBase {
         return this;
     }
 
+    /** Adds a callback that allows configuring the resource to use a specific HTTPS/TLS certificate key pair for server authentication. */
+    public ContainerResource withHttpsCertificateConfiguration(AspireAction1<HttpsCertificateConfigurationCallbackAnnotationContext> callback) {
+        Map<String, Object> reqArgs = new HashMap<>();
+        reqArgs.put("builder", AspireClient.serializeValue(getHandle()));
+        var callbackId = getClient().registerCallback(args -> {
+            var arg = (HttpsCertificateConfigurationCallbackAnnotationContext) args[0];
+            callback.invoke(arg);
+            return null;
+        });
+        if (callbackId != null) {
+            reqArgs.put("callback", callbackId);
+        }
+        getClient().invokeCapability("Aspire.Hosting/withHttpsCertificateConfiguration", reqArgs);
+        return this;
+    }
+
+    /** Subscribes to the `BeforeStartEvent` and invokes the specified callback when an HTTPS certificate is determined to be available for the resource. This is used to conditionally update endpoint URI schemes or perform other HTTPS-related configuration at startup. */
+    public ContainerResource subscribeHttpsEndpointsUpdate(AspireAction1<HttpsEndpointUpdateCallbackContext> callback) {
+        Map<String, Object> reqArgs = new HashMap<>();
+        reqArgs.put("builder", AspireClient.serializeValue(getHandle()));
+        var callbackId = getClient().registerCallback(args -> {
+            var obj = (HttpsEndpointUpdateCallbackContext) args[0];
+            callback.invoke(obj);
+            return null;
+        });
+        if (callbackId != null) {
+            reqArgs.put("callback", callbackId);
+        }
+        getClient().invokeCapability("Aspire.Hosting/subscribeHttpsEndpointsUpdate", reqArgs);
+        return this;
+    }
+
     /** Adds a relationship to another resource using its builder. */
     public ContainerResource withRelationship(IResource resourceBuilder, String type) {
         Map<String, Object> reqArgs = new HashMap<>();
@@ -1174,14 +1270,14 @@ public class ContainerResource extends ResourceBuilderBase {
     }
 
     /** Adds an HTTP health probe to the resource */
-    public ContainerResource withHttpProbe(ProbeType probeType, WithHttpProbeOptions options) {
-        var path = options == null ? null : options.getPath();
-        var initialDelaySeconds = options == null ? null : options.getInitialDelaySeconds();
-        var periodSeconds = options == null ? null : options.getPeriodSeconds();
-        var timeoutSeconds = options == null ? null : options.getTimeoutSeconds();
-        var failureThreshold = options == null ? null : options.getFailureThreshold();
-        var successThreshold = options == null ? null : options.getSuccessThreshold();
-        var endpointName = options == null ? null : options.getEndpointName();
+    public ContainerResource withHttpProbe(ProbeType probeType, WithHttpProbeOptions optionsBag) {
+        var path = optionsBag == null ? null : optionsBag.getPath();
+        var initialDelaySeconds = optionsBag == null ? null : optionsBag.getInitialDelaySeconds();
+        var periodSeconds = optionsBag == null ? null : optionsBag.getPeriodSeconds();
+        var timeoutSeconds = optionsBag == null ? null : optionsBag.getTimeoutSeconds();
+        var failureThreshold = optionsBag == null ? null : optionsBag.getFailureThreshold();
+        var successThreshold = optionsBag == null ? null : optionsBag.getSuccessThreshold();
+        var endpointName = optionsBag == null ? null : optionsBag.getEndpointName();
         return withHttpProbeImpl(probeType, path, initialDelaySeconds, periodSeconds, timeoutSeconds, failureThreshold, successThreshold, endpointName);
     }
 
@@ -1236,9 +1332,9 @@ public class ContainerResource extends ResourceBuilderBase {
     }
 
     /** Hides the resource from default resource lists after successful completion */
-    public ContainerResource withHiddenOnCompletion(WithHiddenOnCompletionOptions options) {
-        var exitCode = options == null ? null : options.getExitCode();
-        var exitCodes = options == null ? null : options.getExitCodes();
+    public ContainerResource withHiddenOnCompletion(WithHiddenOnCompletionOptions optionsBag) {
+        var exitCode = optionsBag == null ? null : optionsBag.getExitCode();
+        var exitCodes = optionsBag == null ? null : optionsBag.getExitCodes();
         return withHiddenOnCompletionImpl(exitCode, exitCodes);
     }
 
@@ -1294,12 +1390,20 @@ public class ContainerResource extends ResourceBuilderBase {
         return this;
     }
 
+    /** Adds an interactive terminal session to a resource using the default terminal options. */
+    public ContainerResource withTerminal() {
+        Map<String, Object> reqArgs = new HashMap<>();
+        reqArgs.put("builder", AspireClient.serializeValue(getHandle()));
+        getClient().invokeCapability("Aspire.Hosting/withTerminal", reqArgs);
+        return this;
+    }
+
     /** Adds a pipeline step to the resource that will be executed during deployment. */
-    public ContainerResource withPipelineStepFactory(String stepName, AspireAction1<PipelineStepContext> callback, WithPipelineStepFactoryOptions options) {
-        var dependsOn = options == null ? null : options.getDependsOn();
-        var requiredBy = options == null ? null : options.getRequiredBy();
-        var tags = options == null ? null : options.getTags();
-        var description = options == null ? null : options.getDescription();
+    public ContainerResource withPipelineStepFactory(String stepName, AspireAction1<PipelineStepContext> callback, WithPipelineStepFactoryOptions optionsBag) {
+        var dependsOn = optionsBag == null ? null : optionsBag.getDependsOn();
+        var requiredBy = optionsBag == null ? null : optionsBag.getRequiredBy();
+        var tags = optionsBag == null ? null : optionsBag.getTags();
+        var description = optionsBag == null ? null : optionsBag.getDescription();
         return withPipelineStepFactoryImpl(stepName, callback, dependsOn, requiredBy, tags, description);
     }
 
@@ -1353,9 +1457,9 @@ public class ContainerResource extends ResourceBuilderBase {
     }
 
     /** Adds a volume to a container resource. */
-    public ContainerResource withVolume(String target, WithVolumeOptions options) {
-        var name = options == null ? null : options.getName();
-        var isReadOnly = options == null ? null : options.isReadOnly();
+    public ContainerResource withVolume(String target, WithVolumeOptions optionsBag) {
+        var name = optionsBag == null ? null : optionsBag.getName();
+        var isReadOnly = optionsBag == null ? null : optionsBag.isReadOnly();
         return withVolumeImpl(target, name, isReadOnly);
     }
 
@@ -1472,6 +1576,22 @@ public class ContainerResource extends ResourceBuilderBase {
         reqArgs.put("resource", AspireClient.serializeValue(getHandle()));
         var result = getClient().invokeCapability("Aspire.Hosting/createExecutionConfiguration", reqArgs);
         return (IExecutionConfigurationBuilder) result;
+    }
+
+    /** Configures container build options for a compute resource using an async callback. */
+    public ContainerResource withContainerBuildOptions(AspireAction1<ContainerBuildOptionsCallbackContext> callback) {
+        Map<String, Object> reqArgs = new HashMap<>();
+        reqArgs.put("builder", AspireClient.serializeValue(getHandle()));
+        var callbackId = getClient().registerCallback(args -> {
+            var arg = (ContainerBuildOptionsCallbackContext) args[0];
+            callback.invoke(arg);
+            return null;
+        });
+        if (callbackId != null) {
+            reqArgs.put("callback", callbackId);
+        }
+        getClient().invokeCapability("Aspire.Hosting/withContainerBuildOptions", reqArgs);
+        return this;
     }
 
 }

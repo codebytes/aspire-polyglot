@@ -19,4 +19,34 @@ public class InteractionInputCollection extends HandleWrapperBase {
         return (InteractionInput[]) result;
     }
 
+    /** Gets the input with the specified name, or null if no input matches. */
+    public InteractionInput get(String name) {
+        for (var input : toArray()) {
+            if (input.getName() != null && input.getName().equalsIgnoreCase(name)) {
+                return input;
+            }
+        }
+        return null;
+    }
+
+    /** Gets the input with the specified name, or throws if no input matches. */
+    public InteractionInput required(String name) {
+        var input = get(name);
+        if (input == null) {
+            throw new IllegalArgumentException("no input with name '" + name + "' was found");
+        }
+        return input;
+    }
+
+    /** Gets the value of the input with the specified name, or an empty string if no input matches or it has no value. */
+    public String value(String name) {
+        var input = get(name);
+        return input == null || input.getValue() == null ? "" : input.getValue();
+    }
+
+    /** Gets the value of the input with the specified name, or throws if no input matches. */
+    public String requiredValue(String name) {
+        return required(name).getValue();
+    }
+
 }

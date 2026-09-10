@@ -25,7 +25,7 @@ public class AppHost {
             // Enforce startup ordering: api waits for pg to be healthy before starting.
             // This prevents Spring Boot/Hibernate from attempting to connect to Postgres
             // before the database is ready, which would cause HikariCP to fail and crash the app.
-            // Environment variable wiring alone does not order startup in Aspire 13.4.6 polyglot.
+            // Environment variable wiring alone does not order startup in Aspire polyglot apps.
             api.waitFor(pg);
 
             DistributedApplication app = builder.build();

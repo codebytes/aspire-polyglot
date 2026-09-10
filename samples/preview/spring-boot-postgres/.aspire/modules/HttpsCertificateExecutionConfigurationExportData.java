@@ -12,6 +12,7 @@ public class HttpsCertificateExecutionConfigurationExportData implements JsonSer
     private String keyPathExpression;
     private String pfxPathExpression;
     private boolean isKeyPathReferenced;
+    private boolean isCertificateWithKeyPathReferenced;
     private boolean isPfxPathReferenced;
     private String password;
 
@@ -25,6 +26,8 @@ public class HttpsCertificateExecutionConfigurationExportData implements JsonSer
     public void setPfxPathExpression(String value) { this.pfxPathExpression = value; }
     public boolean getIsKeyPathReferenced() { return isKeyPathReferenced; }
     public void setIsKeyPathReferenced(boolean value) { this.isKeyPathReferenced = value; }
+    public boolean getIsCertificateWithKeyPathReferenced() { return isCertificateWithKeyPathReferenced; }
+    public void setIsCertificateWithKeyPathReferenced(boolean value) { this.isCertificateWithKeyPathReferenced = value; }
     public boolean getIsPfxPathReferenced() { return isPfxPathReferenced; }
     public void setIsPfxPathReferenced(boolean value) { this.isPfxPathReferenced = value; }
     public String getPassword() { return password; }
@@ -43,6 +46,8 @@ public class HttpsCertificateExecutionConfigurationExportData implements JsonSer
         value.setPfxPathExpression((String) pfxPathExpressionValue);
         var isKeyPathReferencedValue = map.get("IsKeyPathReferenced");
         value.setIsKeyPathReferenced((Boolean) isKeyPathReferencedValue);
+        var isCertificateWithKeyPathReferencedValue = map.get("IsCertificateWithKeyPathReferenced");
+        value.setIsCertificateWithKeyPathReferenced((Boolean) isCertificateWithKeyPathReferencedValue);
         var isPfxPathReferencedValue = map.get("IsPfxPathReferenced");
         value.setIsPfxPathReferenced((Boolean) isPfxPathReferencedValue);
         var passwordValue = map.get("Password");
@@ -57,6 +62,7 @@ public class HttpsCertificateExecutionConfigurationExportData implements JsonSer
         map.put("KeyPathExpression", AspireClient.serializeValue(keyPathExpression));
         map.put("PfxPathExpression", AspireClient.serializeValue(pfxPathExpression));
         map.put("IsKeyPathReferenced", AspireClient.serializeValue(isKeyPathReferenced));
+        map.put("IsCertificateWithKeyPathReferenced", AspireClient.serializeValue(isCertificateWithKeyPathReferenced));
         map.put("IsPfxPathReferenced", AspireClient.serializeValue(isPfxPathReferenced));
         map.put("Password", AspireClient.serializeValue(password));
         return map;

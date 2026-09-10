@@ -1,13 +1,13 @@
 # Hono + Redis URL Shortener (single-file TypeScript AppHost)
 
 A URL shortener orchestrated by a **single-file TypeScript AppHost** — the entire
-dev-time orchestrator is one `apphost.ts`, with no C# project in sight.
+dev-time orchestrator is one `apphost.mts`, with no C# project in sight.
 
 ## Tech Stack
 - **Backend**: [Hono](https://hono.dev/) (Node + TypeScript) API, containerized via a Dockerfile
 - **Store**: Redis (container) holding short-code → URL mappings and click counts
 - **Frontend**: Vite + vanilla TypeScript, containerized via a Dockerfile
-- **AppHost**: single-file `apphost.ts` using the Aspire JavaScript SDK (`./.modules`)
+- **AppHost**: single-file `apphost.mts` using the Aspire JavaScript SDK (`./.aspire/modules`)
 
 ## Running
 
@@ -23,7 +23,7 @@ Aspire builds the API and web images, starts Redis, and opens the dashboard. Ope
 a short link redirects and bumps its click counter.
 
 ## What It Demonstrates
-- A **single-file `apphost.ts`** that wires three resources with a fluent builder and
+- A **single-file `apphost.mts`** that wires three resources with a fluent builder and
   no scaffolding project.
 - `addContainer("cache", "redis:latest")` for a backing service, plus `addDockerfile`
   for the API and web apps so they share a network — the API reaches Redis by the
@@ -38,9 +38,9 @@ a short link redirects and bumps its click counter.
 ## Project Layout
 
 ```
-apphost.ts            single-file TypeScript AppHost (the orchestrator)
-.modules/             Aspire JavaScript SDK (imported by apphost.ts)
-aspire.config.json    points aspire at apphost.ts
+apphost.mts           single-file TypeScript AppHost (the orchestrator)
+.aspire/modules/      generated Aspire TypeScript SDK (imported by apphost.mts)
+aspire.config.json    points Aspire at apphost.mts
 apphost.run.json      launch profiles (dashboard/OTLP ports)
 src/api/              Hono API + Dockerfile (Redis-backed shortener)
 src/web/              Vite vanilla-TS frontend + Dockerfile

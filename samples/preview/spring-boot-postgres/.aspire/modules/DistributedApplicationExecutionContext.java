@@ -36,11 +36,27 @@ public class DistributedApplicationExecutionContext extends HandleWrapperBase {
         return DistributedApplicationOperation.fromValue((String) result);
     }
 
+    /** Describes how the AppHost is being run. Only meaningful when `Operation` is `Run`; otherwise every aspect holds its default value. */
+    public RunConfiguration runConfiguration() {
+        Map<String, Object> reqArgs = new HashMap<>();
+        reqArgs.put("context", AspireClient.serializeValue(getHandle()));
+        var result = getClient().invokeCapability("Aspire.Hosting/DistributedApplicationExecutionContext.runConfiguration", reqArgs);
+        return RunConfiguration.fromMap((Map<String, Object>) result);
+    }
+
     /** The `IServiceProvider` for the AppHost. */
     public IServiceProvider serviceProvider() {
         Map<String, Object> reqArgs = new HashMap<>();
         reqArgs.put("context", AspireClient.serializeValue(getHandle()));
         var result = getClient().invokeCapability("Aspire.Hosting/DistributedApplicationExecutionContext.serviceProvider", reqArgs);
+        return (IServiceProvider) result;
+    }
+
+    /** The `IServiceProvider` for the AppHost. */
+    public IServiceProvider services() {
+        Map<String, Object> reqArgs = new HashMap<>();
+        reqArgs.put("context", AspireClient.serializeValue(getHandle()));
+        var result = getClient().invokeCapability("Aspire.Hosting/DistributedApplicationExecutionContext.services", reqArgs);
         return (IServiceProvider) result;
     }
 

@@ -39,7 +39,7 @@ func main() {
 	})
 	api.WithExternalHttpEndpoints()
 	// Ensure API waits for Postgres to be healthy before starting — env var wiring
-	// alone does NOT order startup in Aspire 13.4.6 polyglot. Without this WaitFor,
+	// alone does NOT order startup in Aspire polyglot apps. Without this WaitFor,
 	// on a cold start (uncached postgres:16 image), the API can start first, fail
 	// its Postgres Ping, and silently fall back to the in-memory store.
 	api.WaitFor(pg)

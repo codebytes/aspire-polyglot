@@ -12,9 +12,9 @@ public class IExecutionConfigurationBuilder extends HandleWrapperBase {
     }
 
     /** Builds the execution configuration for the specified builder. */
-    public IExecutionConfigurationResult build(DistributedApplicationExecutionContext executionContext, BuildOptions options) {
-        var resourceLogger = options == null ? null : options.getResourceLogger();
-        var cancellationToken = options == null ? null : options.getCancellationToken();
+    public IExecutionConfigurationResult build(DistributedApplicationExecutionContext executionContext, BuildOptions optionsBag) {
+        var resourceLogger = optionsBag == null ? null : optionsBag.getResourceLogger();
+        var cancellationToken = optionsBag == null ? null : optionsBag.getCancellationToken();
         return buildImpl(executionContext, resourceLogger, cancellationToken);
     }
 

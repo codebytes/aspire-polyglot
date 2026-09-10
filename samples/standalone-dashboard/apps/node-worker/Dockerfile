@@ -2,6 +2,7 @@
 FROM node:22-alpine
 WORKDIR /app
 COPY package.json ./
+ARG NPM_CONFIG_REGISTRY=https://registry.npmjs.org/
 RUN npm install --omit=dev --no-audit --no-fund
 COPY worker.js ./
 CMD ["node", "worker.js"]

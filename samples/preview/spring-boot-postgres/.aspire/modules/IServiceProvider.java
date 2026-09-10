@@ -11,12 +11,28 @@ public class IServiceProvider extends HandleWrapperBase {
         super(handle, client);
     }
 
+    /** Gets the Aspire store from the service provider. */
+    public IAspireStore getAspireStore() {
+        Map<String, Object> reqArgs = new HashMap<>();
+        reqArgs.put("serviceProvider", AspireClient.serializeValue(getHandle()));
+        var result = getClient().invokeCapability("Aspire.Hosting/getAspireStore", reqArgs);
+        return (IAspireStore) result;
+    }
+
     /** Gets the distributed application eventing service from the service provider. */
     public IDistributedApplicationEventing getEventing() {
         Map<String, Object> reqArgs = new HashMap<>();
         reqArgs.put("serviceProvider", AspireClient.serializeValue(getHandle()));
         var result = getClient().invokeCapability("Aspire.Hosting/getEventing", reqArgs);
         return (IDistributedApplicationEventing) result;
+    }
+
+    /** Gets the interaction service from the service provider. */
+    public IInteractionService getInteractionService() {
+        Map<String, Object> reqArgs = new HashMap<>();
+        reqArgs.put("serviceProvider", AspireClient.serializeValue(getHandle()));
+        var result = getClient().invokeCapability("Aspire.Hosting/getInteractionService", reqArgs);
+        return (IInteractionService) result;
     }
 
     /** Gets the logger factory from the service provider. */
@@ -57,14 +73,6 @@ public class IServiceProvider extends HandleWrapperBase {
         reqArgs.put("serviceProvider", AspireClient.serializeValue(getHandle()));
         var result = getClient().invokeCapability("Aspire.Hosting/getResourceCommandService", reqArgs);
         return (ResourceCommandService) result;
-    }
-
-    /** Gets the Aspire store from the service provider. */
-    public IAspireStore getAspireStore() {
-        Map<String, Object> reqArgs = new HashMap<>();
-        reqArgs.put("serviceProvider", AspireClient.serializeValue(getHandle()));
-        var result = getClient().invokeCapability("Aspire.Hosting/getAspireStore", reqArgs);
-        return (IAspireStore) result;
     }
 
     /** Gets the user secrets manager from the service provider. */
