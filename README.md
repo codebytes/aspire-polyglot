@@ -11,7 +11,7 @@ The [Pages workflow](./.github/workflows/marp-pages.yml) generates and deploys b
 
 **Quick Start:** `cd samples/<sample> && aspire run`
 
-**Prerequisites:** [Aspire CLI](https://aspire.dev/get-started/install-cli/), [Docker](https://docs.docker.com/get-docker/)
+**Prerequisites:** [Aspire CLI](https://aspire.dev/get-started/install-cli/), [Docker](https://docs.docker.com/get-docker/) for container-based samples. Individual sample READMEs list the required language runtimes.
 
 ## Samples
 
@@ -31,6 +31,12 @@ The whole dev-time orchestrator is a single file — no AppHost project, no `Pro
 |--------|---------|-------------|
 | [dotnet-react-postgres](./samples/dotnet-react-postgres) | `apphost.cs` | **C#** single-file AppHost — ASP.NET Core Minimal API + PostgreSQL + Vite React quotes board |
 | [hono-redis-urls](./samples/hono-redis-urls) | `apphost.mts` | **TypeScript** single-file AppHost — Hono API + Redis + Vite URL shortener |
+
+### Interactive terminals (experimental)
+
+| Sample | AppHost | Description |
+|--------|---------|-------------|
+| [terminal-demo](./samples/terminal-demo) | `apphost.cs` | **C#** — local shell + Node.js REPL, interactive in the dashboard or CLI via `WithTerminal()`; no Docker required |
 
 ### Containers, Compose & publishing
 
@@ -83,7 +89,7 @@ The orchestrator itself can be written in several languages. C# and TypeScript a
 
 | AppHost language | File | Status | Sample(s) |
 |------------------|------|--------|-----------|
-| **C#** | `apphost.cs` (single-file) or `AppHost.csproj` | GA | [dotnet-react-postgres](./samples/dotnet-react-postgres), [postgres-adminer](./samples/postgres-adminer), [go-redis-compose](./samples/go-redis-compose), [python-fastapi-docker](./samples/python-fastapi-docker), [java-javalin-redis](./samples/java-javalin-redis), [dotnet-angular-cosmos](./samples/dotnet-angular-cosmos), [polyglot-event-stream](./samples/polyglot-event-stream) |
+| **C#** | `apphost.cs` (single-file) or `AppHost.csproj` | GA | [dotnet-react-postgres](./samples/dotnet-react-postgres), [terminal-demo](./samples/terminal-demo), [postgres-adminer](./samples/postgres-adminer), [go-redis-compose](./samples/go-redis-compose), [python-fastapi-docker](./samples/python-fastapi-docker), [java-javalin-redis](./samples/java-javalin-redis), [dotnet-angular-cosmos](./samples/dotnet-angular-cosmos), [polyglot-event-stream](./samples/polyglot-event-stream) |
 | **TypeScript** | `apphost.mts` | GA (13.4) | [hono-redis-urls](./samples/hono-redis-urls), [vite-react-api](./samples/vite-react-api), [ts-starter](./samples/ts-starter) |
 | **Python** | `apphost.py` | Preview | [flask-markdown-wiki](./samples/preview/flask-markdown-wiki), [django-htmx-polls](./samples/preview/django-htmx-polls) |
 | **Go** | `apphost.go` | Preview | [svelte-go-bookmarks](./samples/preview/svelte-go-bookmarks) |
@@ -110,7 +116,7 @@ Inside the AppHost, each service is added with an `Add*` method. Some are langua
 | `AddSpringApp()` — Community Toolkit | A Java Spring Boot app | _discussed — [spring-boot-postgres](./samples/preview/spring-boot-postgres) orchestrates Spring via `AddDockerfile`_ |
 | **`AddDockerfile()`** | **Any language** built from a Dockerfile | [go-redis-compose](./samples/go-redis-compose) (Go), [java-javalin-redis](./samples/java-javalin-redis) (Java), [hono-redis-urls](./samples/hono-redis-urls) & [vite-react-api](./samples/vite-react-api) (Node/Python) |
 | **`AddContainer()`** | **Any prebuilt public image** | [postgres-adminer](./samples/postgres-adminer), and Redis in [java-javalin-redis](./samples/java-javalin-redis) / [hono-redis-urls](./samples/hono-redis-urls) |
-| **`AddExecutable()`** | **Any process/CLI** | [svelte-go-bookmarks](./samples/preview/svelte-go-bookmarks) (runs `npm` for the Svelte dev server) |
+| **`AddExecutable()`** | **Any process/CLI** | [terminal-demo](./samples/terminal-demo) (interactive local shell + Node.js REPL), [svelte-go-bookmarks](./samples/preview/svelte-go-bookmarks) (runs `npm` for the Svelte dev server) |
 
 ### 3. The polyglot glue (works in every language, no SDK required)
 
