@@ -26,12 +26,18 @@ app.MapDefaultEndpoints();
 
 // Initialize Cosmos DB container and seed data
 var cosmosClient = app.Services.GetRequiredService<CosmosClient>();
-var database = await cosmosClient.CreateDatabaseIfNotExistsAsync("recipesdb");
-var container = await database.Database.CreateContainerIfNotExistsAsync("recipes", "/id");
+if (app.Environment.IsDevelopment())
+{
+    var database = await cosmosClient.CreateDatabaseIfNotExistsAsync("recipesdb");
+    await database.Database.CreateContainerIfNotExistsAsync("recipes", "/id");
+}
+
+// Azure schema comes from the AppHost/Bicep; the managed identity only needs data-plane access.
+var container = cosmosClient.GetContainer("recipesdb", "recipes");
 
 // Seed sample recipes if container is empty
 var query = new QueryDefinition("SELECT VALUE COUNT(1) FROM c");
-var iterator = container.Container.GetItemQueryIterator<int>(query);
+var iterator = container.GetItemQueryIterator<int>(query);
 var count = 0;
 if (iterator.HasMoreResults)
 {
@@ -108,7 +114,7 @@ if (count == 0)
 
     foreach (var recipe in sampleRecipes)
     {
-        await container.Container.CreateItemAsync(recipe, new PartitionKey(recipe.Id));
+        await container.CreateItemAsync(recipe, new PartitionKey(recipe.Id));
     }
 }
 

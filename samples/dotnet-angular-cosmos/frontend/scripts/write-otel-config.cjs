@@ -1,8 +1,9 @@
 const fs = require('node:fs');
 const path = require('node:path');
 
+const production = process.argv.includes('--production');
 const explicitEndpoint = process.env.OTEL_EXPORTER_OTLP_ENDPOINT_HTTP;
-const endpoint = explicitEndpoint ||
+const endpoint = production ? undefined : explicitEndpoint ||
   (process.env.OTEL_EXPORTER_OTLP_PROTOCOL === 'http/protobuf'
     ? process.env.OTEL_EXPORTER_OTLP_ENDPOINT
     : undefined);
@@ -10,7 +11,7 @@ const endpoint = explicitEndpoint ||
 if (endpoint) new URL(endpoint);
 
 const headers = {};
-for (const entry of (process.env.OTEL_EXPORTER_OTLP_HEADERS || '').split(',')) {
+for (const entry of (production ? '' : process.env.OTEL_EXPORTER_OTLP_HEADERS || '').split(',')) {
   if (!entry.trim()) continue;
   const separator = entry.indexOf('=');
   if (separator <= 0) throw new Error('Invalid OTEL_EXPORTER_OTLP_HEADERS entry');

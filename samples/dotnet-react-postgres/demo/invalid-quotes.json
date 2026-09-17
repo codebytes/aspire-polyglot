@@ -1,0 +1,9 @@
+[
+  {
+    "text": "This valid row must not be imported when a later row is invalid.",
+    "author": "Validation Demo"
+  },
+  {
+    "text": "This row is missing its author."
+  }
+]

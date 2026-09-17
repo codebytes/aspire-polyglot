@@ -16,6 +16,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
 
   async function load() {
+    setLoading(true);
     try {
       const res = await fetch('/api/quotes');
       if (!res.ok) throw new Error(`GET /api/quotes -> ${res.status}`);
@@ -71,7 +72,18 @@ export default function App() {
         <button type="submit">Add</button>
       </form>
 
-      {error && <p className="error">{error}</p>}
+      <div className="board-toolbar">
+        <span aria-live="polite">{quotes.length} quotes</span>
+        <button type="button" onClick={load} disabled={loading}>
+          Refresh quotes
+        </button>
+      </div>
+      <p className="command-hint">
+        Try <strong>Seed quotes</strong> or <strong>Import quotes</strong> on the API
+        resource in the Aspire dashboard, then refresh this board.
+      </p>
+
+      {error && <p className="error" role="alert">{error}</p>}
       {loading ? (
         <p>Loading…</p>
       ) : (

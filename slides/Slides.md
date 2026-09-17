@@ -568,11 +568,12 @@ Repeatable workflows. Familiar tools. Agents with live context.
 
 **Define a workflow once. Use it from the dashboard or CLI.**
 
-After registering a custom `seed` command:
+**Quotes Board:** one custom `seed` command, two interfaces.
 
 ```bash
+cd samples/dotnet-react-postgres
 aspire resource api seed --help
-aspire resource api seed --count 100
+aspire resource api seed --count 5
 ```
 
 <div class="command-row">
@@ -584,7 +585,7 @@ aspire resource api seed --count 100
 
 <!--
 Connect this to the 15-step README problem: an integration author can make import, seed, or reset actions part of the resource model.
-The seed command is illustrative, not built in or implemented by these samples. It assumes an api resource with a custom seed command and a count argument.
+This is implemented in samples/dotnet-react-postgres/apphost.cs, not a built-in Aspire command. Start that AppHost first. The command appends 1-100 demo quotes through the API; the default count is 5. A count of 0 fails before any database write.
 Declare CommandOptions.Arguments and read ExecuteCommandContext.Arguments; TypeScript has the corresponding ATS exports. The dashboard collects inputs while the CLI accepts named options and reports missing required values. If an argument collides with an Aspire option, separate command options with --.
 Pause on the shared workflow before introducing richer input. Sources: https://aspire.dev/fundamentals/custom-resource-commands/ and https://aspire.dev/reference/cli/commands/aspire-resource/
 -->
@@ -600,9 +601,9 @@ Pause on the shared workflow before introducing richer input. Sources: https://a
 
 ## A guided import
 
-- Choose the file
-- Validate type and size
-- Run the resource command
+- Choose `quotes.json`
+- Validate content and size
+- Import the whole batch
 
 **Stable:** file inputs.<br>**Experimental:** progress dialogs.
 
@@ -610,18 +611,50 @@ Pause on the shared workflow before introducing richer input. Sources: https://a
 <div>
 
 <figure class="release-screenshot">
-<img src="./img/aspire-file-upload-13-5.png" alt="Aspire resource command prompting for a JSON or YAML configuration file">
-<figcaption>Cropped from the <a href="https://devblogs.microsoft.com/aspire/whats-new-aspire-13-5/">Microsoft Aspire 13.5 announcement</a></figcaption>
+<img src="./img/quotes-file-import.png" alt="Quotes Board Import quotes dialog with quotes.json selected and a 128 KiB file limit">
+<figcaption>Live Quotes Board sample · Aspire dashboard</figcaption>
 </figure>
 
 </div>
 </div>
 
 <!--
-Use the screenshot to tell one concrete story: import a configuration file without a magic folder or an extra README command. File inputs support allowed types and maximum size; the AppHost receives uploaded content through its language-specific API.
+This is the actual Quotes Board file picker, not an illustrative release screenshot. Import quotes uses PromptInputAsync with InputType.File, a .json filter, and a 128 KiB maximum. The AppHost validates uploaded bytes and calls the API's development-only batch endpoint. The entire batch is validated before a PostgreSQL transaction writes it.
+File imports are dashboard-only in this sample; seed supports both the CLI and dashboard. Canceling before confirmation adds nothing, and demo/invalid-quotes.json demonstrates whole-batch rejection.
 File inputs and core prompts are stable. Progress dialogs with optional cancellation remain experimental (ASPIREINTERACTION001); they are a dashboard interaction, not a prerequisite for a CLI command.
 Source: https://aspire.dev/whats-new/aspire-13-5/
-Image: https://devblogs.microsoft.com/aspire/wp-content/uploads/sites/90/2026/08/interaction-file-upload.webp (cropped to the file picker).
+Image: captured from samples/dotnet-react-postgres using Aspire 13.5.3.
+-->
+
+---
+
+<!-- _class: paced -->
+
+# Demo: Quotes Board Commands
+
+<div class="chips"><span class="host">C# AppHost</span><span>React</span><span>PostgreSQL</span></div>
+
+**Seed from the terminal. Import from the dashboard.**
+
+```bash
+aspire resource api seed --count 5
+```
+
+<div class="command-row">
+<div><strong>Seed quotes</strong><span>one named count argument</span></div>
+<div><strong>Import quotes</strong><span>choose demo/quotes.json</span></div>
+</div>
+
+Click **Refresh quotes** → see new entries and the updated count.
+
+**Same application. Two repeatable workflows.**
+
+<!--
+Stop the previous demo's AppHost first. From samples/dotnet-react-postgres run aspire start --apphost apphost.cs --isolated, then aspire wait api --apphost apphost.cs --status healthy. Open the dashboard and the web resource in separate tabs.
+Run aspire resource api seed --count 5. Show the added count and IDs, then Refresh quotes in the board. Alternatively choose api > Actions > Seed quotes to show the same named argument in a dialog.
+Next choose api > Actions > Import quotes, select demo/quotes.json, and click OK. The JSON result reports added: 3. Refresh the board and point to the three fixture authors.
+If time permits, import demo/invalid-quotes.json and show the failed operation and unchanged count. Both commands append; this is not a reset or deduplicating import. No bespoke admin UI was needed.
+The source stays file-based: TreatProjectReferencesAsResources=false shares API validation as a normal assembly reference, while AddProject registers the API by path. Stop with aspire stop --apphost apphost.cs; preserve the data volume.
 -->
 
 ---
@@ -762,10 +795,10 @@ Open your configured coding agent; it launches MCP on demand.
 
 # <!--fit--> More Polyglot Demos
 
-From the starter to mixed-language services: three demos from **16 verified samples**
+From the starter to mixed-language workflows: **16 verified samples**
 
 <!--
-The starter has already shown the workflow. Now increase complexity with Python/Redis, then Kafka and multiple consumers. These are the other two examples in the three-demo progression.
+The starter showed the basic workflow, and the Quotes Board made resource commands concrete. Now increase complexity with Python/Redis, then Kafka and multiple consumers; artifact publishing follows later.
 The samples in this branch align the AppHost SDK, core packages, and every Aspire.Hosting.* integration on 13.5.3. Mixing 13.4.6 integrations with 13.5 can cause MissingMethodException or TypeLoadException, including Go, JavaScript, and Python hosting integrations.
 The screenshots are official reference captures; the repository demos exercise the same resource model across C#, TypeScript, Python, Go, and Java AppHosts.
 Open the dashboard explicitly if VS Code does not auto-launch it. Use aspire describe to inspect resources and ordinary aspire stop to preserve persistent demo data.
@@ -994,6 +1027,37 @@ This is the tested publish handoff, not an Azure deployment transcript or a timi
 Validation used a session-specific Compose project name and a separate localhost-only port override; the generated Compose file was not edited. Redis retained the counter across an API restart. Redis data persistence across its own recreation is a separate storage choice.
 The host port is dynamic and can change on restart: rediscover it with docker compose port api 8080. Tear down with API_IMAGE=hitcounter-api:local docker compose down. Add --volumes only when intentionally deleting the demo's volume data.
 aspire deploy is the alternative target-driven build/apply path after the required target configuration; it does not consume the files from this publish handoff. No cloud deployment or elapsed-time claim is being made.
+-->
+
+---
+
+<!-- _class: code-reference -->
+
+# Demo: AppHost to Azure Bicep
+
+<div class="chips"><span class="host">C# AppHost</span><span>Angular + .NET</span><span>Container Apps</span><span>Cosmos DB</span></div>
+
+```bash
+cd samples/dotnet-angular-cosmos
+aspire publish --apphost AppHost/AppHost.csproj \
+  -o aspire-output/bicep --non-interactive
+```
+
+<div class="command-row">
+<div><strong>Inspect</strong><span>infrastructure + app modules</span></div>
+<div><strong>Compile</strong><span>8 Bicep templates → ARM JSON</span></div>
+</div>
+
+**Publish is not deploy.** No Azure resources are created.
+
+<!--
+Use the existing recipe manager, not a new sample. Stop the previous running demo first; the recipe AppHost does not need to be running to publish artifacts.
+Show AddAzureContainerAppEnvironment("aca"), the Cosmos database/container, and the Angular static publishing configuration in AppHost/Program.cs. The normal development path still uses the local Cosmos emulator.
+Run aspire publish --apphost AppHost/AppHost.csproj --list-steps -o aspire-output/bicep --non-interactive, then the publish command shown. This is artifact generation without an Azure login or subscription selection, not a deployment.
+Open main.bicep to show the resource group and five infrastructure modules. Then inspect cosmos/cosmos.bicep, api/api.bicep, and frontend/frontend.bicep: Cosmos schema and managed-identity access, an internal API, and the public Angular/YARP frontend.
+Important boundary: main.bicep references infrastructure modules only. The API and frontend compute templates are separate stages; this is not a one-file application deployment. Image references and deployment parameters still need values.
+Compile with az bicep build --file aspire-output/bicep/main.bicep, then for module in aspire-output/bicep/*/*.bicep; do az bicep build --file "$module" || exit 1; done. All eight generated templates compiled locally with Bicep 0.42.1; unused-parameter warnings are nonblocking. Generation and compilation do not prove Azure deployment or production readiness.
+The sample README contains the complete walkthrough and generated-file map. Do not run aspire deploy during this demo: it is a separate action that would create billable resources.
 -->
 
 ---
