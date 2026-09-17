@@ -95,23 +95,30 @@
   align-items: center;
 }
 
-section.code-focus pre code {
-  font-size: 0.74em;
-  line-height: 1.25;
+section[data-theme="custom-default"] pre {
+  font-size: 22px;
+  line-height: 1.3;
 }
 
-section.compact pre code {
-  font-size: 0.64em;
-  line-height: 1.18;
-}
-
-section.release-slide pre code {
-  font-size: 0.7em;
-  line-height: 1.2;
+section[data-theme="custom-default"] pre code {
+  font-size: 22px;
+  line-height: 1.3;
 }
 
 section.code-focus .columns > div {
   height: 100%;
+}
+
+.chart .bar.before {
+  color: var(--aspire-black);
+}
+
+.pillars .pillar .pdesc {
+  font-size: 20px;
+}
+
+section.paced li {
+  margin-bottom: 0.55em;
 }
 
 section.purple footer {
