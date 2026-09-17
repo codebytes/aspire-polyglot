@@ -23,13 +23,28 @@ h1 {
   border: 1px solid #ccc;
   border-radius: 6px;
 }
-.new-quote button {
+.new-quote button,
+.board-toolbar button {
   padding: 0.5rem 1rem;
   border: 0;
   border-radius: 6px;
   background: #512bd4;
   color: #fff;
   cursor: pointer;
+}
+.board-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+.board-toolbar button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+.command-hint {
+  color: #666;
+  font-size: 0.9rem;
 }
 .quotes {
   list-style: none;

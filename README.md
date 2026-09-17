@@ -29,7 +29,7 @@ The whole dev-time orchestrator is a single file — no AppHost project, no `Pro
 
 | Sample | AppHost | Description |
 |--------|---------|-------------|
-| [dotnet-react-postgres](./samples/dotnet-react-postgres) | `apphost.cs` | **C#** single-file AppHost — ASP.NET Core Minimal API + PostgreSQL + Vite React quotes board |
+| [dotnet-react-postgres](./samples/dotnet-react-postgres) | `apphost.cs` | **C#** single-file AppHost — ASP.NET Core + PostgreSQL + React quotes board, with CLI/dashboard seed commands and JSON file import |
 | [hono-redis-urls](./samples/hono-redis-urls) | `apphost.mts` | **TypeScript** single-file AppHost — Hono API + Redis + Vite URL shortener |
 
 ### Interactive terminals (experimental)
@@ -60,7 +60,7 @@ Single-file AppHosts focused on Docker images, `aspire publish`, and polyglot se
 
 | Sample | AppHost | Description |
 |--------|---------|-------------|
-| [dotnet-angular-cosmos](./samples/dotnet-angular-cosmos) | `AppHost/` | ASP.NET Core + Angular 22 + CosmosDB preview emulator — recipe manager |
+| [dotnet-angular-cosmos](./samples/dotnet-angular-cosmos) | `AppHost/` | ASP.NET Core + Angular 22 + CosmosDB preview emulator — recipe manager; `aspire publish` generates Azure Container Apps and Cosmos DB Bicep |
 
 ### Mixed / Polyglot
 
@@ -105,7 +105,7 @@ Inside the AppHost, each service is added with an `Add*` method. Some are langua
 
 | Mechanism | Adds | Demonstrated in |
 |-----------|------|-----------------|
-| `AddProject<T>()` | A .NET project | [dotnet-react-postgres](./samples/dotnet-react-postgres), [dotnet-angular-cosmos](./samples/dotnet-angular-cosmos), [polyglot-event-stream](./samples/polyglot-event-stream) |
+| `AddProject<T>()` / `AddProject(name, path)` | A .NET project | [dotnet-react-postgres](./samples/dotnet-react-postgres), [dotnet-angular-cosmos](./samples/dotnet-angular-cosmos), [polyglot-event-stream](./samples/polyglot-event-stream) |
 | `AddViteApp()` | Vite frontends (React, Vue, Svelte, Angular 17+, Astro) | [dotnet-react-postgres](./samples/dotnet-react-postgres), [ts-starter](./samples/ts-starter) |
 | `AddNodeApp()` | A Node.js entry file | [ts-starter](./samples/ts-starter) |
 | `AddJavaScriptApp()` + `.WithYarn()` / `.WithPnpm()` / `.WithBun()` | Any JS/TS app, auto-detecting the package manager | _discussed — see [JavaScript apps in the AppHost](https://aspire.dev/integrations/frameworks/javascript/)_ |
@@ -126,7 +126,7 @@ These wire the services together regardless of language — every runtime reads 
 - **Service discovery** — Aspire injects `services__<name>__<protocol>__<index>` into each service.
 - **Connection strings** — resources publish `ConnectionStrings__<resource>` to their consumers (`WithReference`).
 - **OpenTelemetry** — any app that speaks OTLP shows up in the dashboard; the [standalone dashboard](https://aspire.dev/dashboard/standalone/) needs no AppHost at all.
-- **Publishing** — `aspire publish` targets Docker Compose (`AddDockerComposeEnvironment`), Kubernetes, or bakes SPAs into a container (`PublishWithContainerFiles`), independent of workload language.
+- **Publishing** — `aspire publish` emits target artifacts such as Docker Compose or Azure Bicep, independent of workload language. `PublishWithContainerFiles` can place SPA assets in a backend image. The [recipe manager's Bicep demo](./samples/dotnet-angular-cosmos#publish-bicep--artifact-only-live-demo) generates and compiles templates without deploying Azure resources.
 
 ## Agent tooling
 

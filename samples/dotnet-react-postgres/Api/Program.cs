@@ -55,7 +55,7 @@ app.MapGet("/api/quotes", async (NpgsqlDataSource db) =>
 {
     var quotes = new List<Quote>();
     await using var cmd = db.CreateCommand(
-        "SELECT id, text, author, created_at FROM quotes ORDER BY created_at DESC;");
+        "SELECT id, text, author, created_at FROM quotes ORDER BY created_at DESC, id DESC;");
     await using var reader = await cmd.ExecuteReaderAsync();
     while (await reader.ReadAsync())
     {
@@ -68,27 +68,46 @@ app.MapGet("/api/quotes", async (NpgsqlDataSource db) =>
     return Results.Ok(quotes);
 });
 
-app.MapPost("/api/quotes", async (NpgsqlDataSource db, NewQuote input) =>
+app.MapPost("/api/quotes", async (NpgsqlDataSource db, NewQuote input, CancellationToken cancellationToken) =>
 {
     if (string.IsNullOrWhiteSpace(input.Text) || string.IsNullOrWhiteSpace(input.Author))
     {
         return Results.BadRequest(new { error = "text and author are required" });
     }
 
-    await using var cmd = db.CreateCommand(
-        "INSERT INTO quotes (text, author) VALUES (@text, @author) RETURNING id, text, author, created_at;");
-    cmd.Parameters.AddWithValue("text", input.Text.Trim());
-    cmd.Parameters.AddWithValue("author", input.Author.Trim());
-
-    await using var reader = await cmd.ExecuteReaderAsync();
-    await reader.ReadAsync();
-    var created = new Quote(
-        reader.GetInt32(0),
-        reader.GetString(1),
-        reader.GetString(2),
-        reader.GetFieldValue<DateTimeOffset>(3));
-
+    var created = await QuoteStore.CreateAsync(db, input, cancellationToken);
     return Results.Created($"/api/quotes/{created.Id}", created);
 });
+
+// The batch endpoint supports local resource-command demos, not production administration.
+if (app.Environment.IsDevelopment())
+{
+    app.MapPost("/api/quotes/import", async (
+        HttpRequest request, NpgsqlDataSource db, ILogger<Program> logger,
+        CancellationToken cancellationToken) =>
+    {
+        if (!request.HasJsonContentType())
+        {
+            logger.LogWarning("Quote import rejected: Content-Type must be application/json");
+            return Results.BadRequest(new { error = "Content-Type must be application/json." });
+        }
+
+        NewQuote[] quotes;
+        try
+        {
+            var payload = await QuoteImports.ReadPayloadAsync(request.Body, cancellationToken);
+            quotes = QuoteImports.Parse(payload);
+        }
+        catch (InvalidDataException exception)
+        {
+            logger.LogWarning("Quote import rejected: {Reason}", exception.Message);
+            return Results.BadRequest(new { error = exception.Message });
+        }
+
+        var result = await QuoteStore.ImportAsync(db, quotes, cancellationToken);
+        logger.LogInformation("Imported {Count} quotes in one transaction", result.Added);
+        return Results.Ok(result);
+    });
+}
 
 app.Run();

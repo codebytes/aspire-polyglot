@@ -4,7 +4,7 @@
   "scripts": {
     "prestart": "node scripts/write-otel-config.cjs",
     "start": "ng serve --port ${PORT:-4200} --host 0.0.0.0",
-    "prebuild": "node scripts/write-otel-config.cjs",
+    "prebuild": "node scripts/write-otel-config.cjs --production",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
