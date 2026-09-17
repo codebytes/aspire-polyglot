@@ -30,6 +30,7 @@ A minimal starter sample scaffolded from the **official Aspire TypeScript templa
 ## Prerequisites
 
 - [.NET Aspire CLI](https://learn.microsoft.com/dotnet/aspire/) (`aspire` command)
+- .NET 10 SDK
 - [Node.js](https://nodejs.org/) 20.19+ or 22.13+ or 24+
 - npm
 
@@ -49,6 +50,30 @@ aspire run
 ```
 
 The Aspire dashboard URL will appear in the terminal. Open it to see the API and frontend resources, their logs, and distributed traces.
+
+For a worktree, use `aspire start --apphost apphost.mts --isolated`.
+Open `frontend`, refresh the five-day forecast, and switch between Fahrenheit
+and Celsius. Stop the sample with `aspire stop --apphost apphost.mts`.
+
+The launch profiles configure a separate, dynamically allocated OTLP/HTTP
+listener for browser tracing. The API continues to use gRPC; these listeners
+are not interchangeable.
+
+## Build checks
+
+After installing dependencies in all three directories:
+
+```bash
+npm run build
+npm run typecheck:api
+npm --prefix frontend run build
+npm --prefix frontend run lint
+```
+
+The API executes TypeScript through the Node/tsx runtime, so its type-check
+configuration allows `.ts` imports without emitting JavaScript. The initial
+weather request is canceled on component cleanup; only the refresh button
+starts a synchronous loading-state transition.
 
 ## Project Structure
 
@@ -97,7 +122,7 @@ const frontend = await builder
 - **AppHost:** TypeScript + Aspire SDK
 - **API:** Express, OpenTelemetry
 - **Frontend:** React 19, Vite, TypeScript
-- **Tooling:** tsx, ESLint, TypeScript 5.9
+- **Tooling:** tsx, ESLint, TypeScript 6
 
 ## Learn More
 

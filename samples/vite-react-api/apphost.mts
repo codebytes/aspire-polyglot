@@ -24,8 +24,8 @@ const api = builder.addDockerfile("api", "./src/api")
 // We OPT INTO HTTP/protobuf for OTel here so that the SAME endpoint URL the
 // container uses for server-side telemetry can also be re-exposed to client
 // code (the browser cannot speak gRPC). vite.config.ts re-exports the OTEL_*
-// env vars as VITE_OTEL_* and rewrites host.docker.internal -> localhost so
-// the running SPA can POST traces to the dashboard from the user's machine.
+// env vars as VITE_OTEL_* and maps container-only collector hostnames to
+// localhost so the SPA can POST traces from the user's machine.
 //
 // The dashboard's HTTP/protobuf listener must be enabled before this works.
 // `apphost.run.json` sets ASPIRE_DASHBOARD_OTLP_HTTP_ENDPOINT_URL on both

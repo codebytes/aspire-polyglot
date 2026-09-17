@@ -11,12 +11,16 @@ var producer = builder.AddProject<Projects.EventProducer>("producer")
 
 var consumer = builder.AddPythonApp("consumer", "../python-consumer", "main.py")
     .WithReference(kafka)
-    .WaitFor(kafka);
+    .WaitFor(kafka)
+    .WithHttpEndpoint(env: "PORT")
+    .WithHttpHealthCheck("/health")
+    .WithExternalHttpEndpoints();
 
 var dashboard = builder.AddJavaScriptApp("dashboard", "../node-dashboard", "start")
     .WithReference(kafka)
     .WaitFor(kafka)
     .WithHttpEndpoint(env: "PORT")
+    .WithHttpHealthCheck("/health")
     .WithExternalHttpEndpoints();
 
 builder.Build().Run();

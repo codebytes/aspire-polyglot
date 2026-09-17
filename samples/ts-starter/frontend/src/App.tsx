@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import aspireLogo from '/Aspire.png';
 import './App.css';
 
@@ -9,36 +9,50 @@ interface WeatherForecast {
   summary: string;
 }
 
+async function requestForecast(signal?: AbortSignal): Promise<WeatherForecast[]> {
+  const response = await fetch('/api/weatherforecast', { signal });
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+  return response.json();
+}
+
 function App() {
   const [weatherData, setWeatherData] = useState<WeatherForecast[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [useCelsius, setUseCelsius] = useState(false);
 
-  const fetchWeatherForecast = async () => {
+  const receiveForecast = useCallback((data: WeatherForecast[]) => {
+    setWeatherData(data);
+    setError(null);
+    setLoading(false);
+  }, []);
+
+  const receiveError = useCallback((err: unknown) => {
+    setError(err instanceof Error ? err.message : 'Failed to fetch weather data');
+    setLoading(false);
+    console.error('Error fetching weather forecast:', err);
+  }, []);
+
+  const refreshWeatherForecast = () => {
     setLoading(true);
     setError(null);
-    
-    try {
-      const response = await fetch('/api/weatherforecast');
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data: WeatherForecast[] = await response.json();
-      setWeatherData(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch weather data');
-      console.error('Error fetching weather forecast:', err);
-    } finally {
-      setLoading(false);
-    }
+    void requestForecast().then(receiveForecast, receiveError);
   };
 
   useEffect(() => {
-    fetchWeatherForecast();
-  }, []);
+    const controller = new AbortController();
+    void requestForecast(controller.signal).then(
+      data => {
+        if (!controller.signal.aborted) receiveForecast(data);
+      },
+      err => {
+        if (!controller.signal.aborted) receiveError(err);
+      },
+    );
+    return () => controller.abort();
+  }, [receiveForecast, receiveError]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString(undefined, { 
@@ -93,7 +107,7 @@ function App() {
                 </fieldset>
                 <button 
                   className="refresh-button"
-                  onClick={fetchWeatherForecast} 
+                  onClick={refreshWeatherForecast}
                   disabled={loading}
                   aria-label={loading ? 'Loading weather forecast' : 'Refresh weather forecast'}
                   type="button"

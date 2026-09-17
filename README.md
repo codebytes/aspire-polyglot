@@ -54,12 +54,13 @@ Single-file AppHosts focused on Docker images, `aspire publish`, and polyglot se
 | Sample | AppHost | Description |
 |--------|---------|-------------|
 | [vite-react-api](./samples/vite-react-api) | `apphost.mts` | Vite + React + FastAPI + Redis — TODO app with caching |
+| [ts-starter](./samples/ts-starter) | `apphost.mts` | Express + React weather forecast — native TypeScript services and browser tracing |
 
 ### C# / .NET
 
 | Sample | AppHost | Description |
 |--------|---------|-------------|
-| [dotnet-angular-cosmos](./samples/dotnet-angular-cosmos) | `AppHost/` | ASP.NET Core + Angular 19 + CosmosDB emulator — recipe manager |
+| [dotnet-angular-cosmos](./samples/dotnet-angular-cosmos) | `AppHost/` | ASP.NET Core + Angular 22 + CosmosDB preview emulator — recipe manager |
 
 ### Mixed / Polyglot
 
@@ -77,7 +78,7 @@ Single-file AppHosts focused on Docker images, `aspire publish`, and polyglot se
 | [flask-markdown-wiki](./samples/preview/flask-markdown-wiki) | `apphost.py` | Flask + SQLite — Markdown wiki with create/edit/render pages |
 | [django-htmx-polls](./samples/preview/django-htmx-polls) | `apphost.py` | Django + HTMX — interactive voting polls with real-time bar charts |
 | [svelte-go-bookmarks](./samples/preview/svelte-go-bookmarks) | `apphost.go` | Svelte SPA + Go API via `AddDockerfile` — bookmark manager with tagging |
-| [spring-boot-postgres](./samples/preview/spring-boot-postgres) | `AppHost.java` | Spring Boot + PostgreSQL + pgAdmin — notes REST API via `AddDockerfile` |
+| [spring-boot-postgres](./samples/preview/spring-boot-postgres) | `AppHost.java` | Spring Boot + PostgreSQL — notes REST API via `AddDockerfile` |
 
 ## Ways to use multiple languages with Aspire
 

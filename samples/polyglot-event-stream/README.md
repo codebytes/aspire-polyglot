@@ -9,16 +9,6 @@ This sample demonstrates **event streaming** using Kafka with a polyglot archite
 - **Node.js Dashboard** (`node-dashboard`): Real-time IoT monitoring dashboard consuming events from Kafka
 - **Kafka + KafkaUI**: Message broker with web-based management UI
 
-## Key Differences from polyglot-task-queue
-
-| Feature | polyglot-task-queue | polyglot-event-stream |
-|---------|---------------------|----------------------|
-| **Messaging** | RabbitMQ (task queue) | Kafka (event streaming) |
-| **Paradigm** | Work queue - each task consumed once | Event stream - multiple consumers, replay capability |
-| **Pattern** | Task distribution | Event sourcing / pub-sub |
-| **Use Case** | Distribute work among workers | Real-time analytics, monitoring, event processing |
-| **Aspire API** | `AddRabbitMQ()` | `AddKafka()` + `WithKafkaUI()` |
-
 ## Components
 
 ### EventProducer (.NET)
@@ -55,28 +45,33 @@ This sample demonstrates **event streaming** using Kafka with a polyglot archite
 
 ### Prerequisites
 
-- .NET 9.0 SDK
-- Python 3.8+
-- Node.js 18+
+- Aspire CLI 13.5.3 and .NET 10 SDK
+- Python 3.12+
+- Node.js 22+
 - Docker (for Kafka)
 
 ### Quick Start
 
-1. **Navigate to the AppHost directory:**
+1. **Navigate to this sample directory:**
    ```bash
-   cd AppHost
+   cd samples/polyglot-event-stream
    ```
 
 2. **Run with Aspire:**
    ```bash
-   dotnet run
+   aspire run --apphost AppHost/AppHost.csproj
    ```
 
 3. **Access the applications:**
-   - **Aspire Dashboard**: http://localhost:15888 (check console for actual URL)
+   - **Aspire Dashboard**: Use the authenticated URL printed by Aspire
    - **Node.js Dashboard**: Check Aspire dashboard for the `dashboard` endpoint
    - **KafkaUI**: Check Aspire dashboard for the `messaging-kafkaui` endpoint
    - **Producer API**: Check Aspire dashboard for the `producer` endpoint
+   - **Consumer API**: Check the `consumer` endpoint for `/api/aggregates` and `/api/alerts`
+
+Ports are assigned by Aspire, including the Python consumer's HTTP server.
+For worktrees, use `aspire start --apphost AppHost/AppHost.csproj --isolated`.
+Stop this sample with `aspire stop --apphost AppHost/AppHost.csproj`.
 
 ### Manual Event Publishing
 
@@ -85,13 +80,7 @@ Send a custom sensor event:
 ```bash
 curl -X POST http://localhost:<producer-port>/api/events \
   -H "Content-Type: application/json" \
-  -d '{
-    "sensorId": "sensor-test",
-    "temperature": 42.5,
-    "humidity": 95,
-    "location": "Test Area",
-    "timestamp": "2024-01-01T12:00:00Z"
-  }'
+  -d "{\"sensorId\":\"sensor-test\",\"temperature\":42.5,\"humidity\":95,\"location\":\"Test Area\",\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}"
 ```
 
 ## Event Streaming Concepts
@@ -193,11 +182,6 @@ Integrate with Kafka Streams or Apache Flink for complex event processing:
 - Windowed aggregations
 - Joins across streams
 - Stateful processing
-
-## Related Samples
-
-- **polyglot-task-queue**: Task distribution with RabbitMQ (different paradigm)
-- **polyglot-streaming**: Similar event streaming concepts with different tech stack
 
 ## Learn More
 

@@ -45,7 +45,7 @@ Falls back to SQLite when running standalone (no Aspire).
 - 🗳️ **Vote in Real-Time** with HTMX-powered partial updates
 - 📈 **Animated Bar Charts** showing vote percentages
 - 🎨 **Beautiful UI** with gradient backgrounds and smooth animations
-- 🚀 **Zero JavaScript** written — all interactivity via HTMX attributes
+- 🚀 **Small client surface** — voting and dynamic choice fields use HTMX attributes
 
 ## Getting Started
 
@@ -53,7 +53,7 @@ Falls back to SQLite when running standalone (no Aspire).
 
 - [Aspire CLI](https://aspire.dev/get-started/install-cli/) **13.5.3** — must match the SDK this sample is pinned to (`13.5.3`, see `sdk.version` in `aspire.config.json`). Check yours with `aspire --version`. A mismatch causes the errors in [Troubleshooting](#troubleshooting).
 - [Docker](https://docs.docker.com/get-docker/) — runs the PostgreSQL container and builds the Django image.
-- Python 3.11+ — only needed for the **Standalone** path below. The Aspire path builds and runs the app inside a container, so no local Python setup is required.
+- .NET 10 SDK, Python 3.12+, and [uv](https://docs.astral.sh/uv/) for the preview Python AppHost. Django itself runs in a container.
 
 ### Run with Aspire (recommended)
 
@@ -62,6 +62,9 @@ From the **sample root** (not `src/`):
 ```bash
 aspire run
 ```
+
+For worktrees, use `aspire start --apphost apphost.py --isolated`.
+Stop only this sample with `aspire stop --apphost apphost.py`.
 
 That's all — there is no local `pip install` step. The Django app is built from `src/Dockerfile` and its dependencies are installed during the image build. `aspire run` starts PostgreSQL, builds and starts the app, injects the `pollsdb` connection string, and runs database migrations on startup.
 
@@ -74,6 +77,7 @@ With no Aspire-provided connection string, the app falls back to SQLite:
 ```bash
 cd src
 pip install -r requirements.txt
+python manage.py migrate
 python manage.py seed   # optional: load sample polls
 python run.py
 ```
@@ -89,7 +93,7 @@ Both mean your Aspire CLI version does not match the SDK this sample is pinned t
 To fix it, align the versions:
 
 1. Run `aspire --version` and confirm it is **13.5.3**, matching `sdk.version` in `aspire.config.json`. Install or update the CLI if needed.
-2. Run `aspire run` from a clean checkout — it regenerates `.aspire/modules/aspire_app.py` to match your CLI. If you previously ran `aspire update`, restore the pinned versions first: `git checkout -- aspire.config.json .aspire/`.
+2. Run `aspire restore --apphost apphost.py` to regenerate the Python bindings using the configured SDK and packages. Do not edit `.aspire/modules/` manually or discard unrelated working-tree changes.
 
 **"Failed to install the Python dependencies":** you do not need to `pip install` anything to use `aspire run` — the app's dependencies are installed in the container image, not in your shell. Just run `aspire run` from the sample root.
 
@@ -111,15 +115,22 @@ When you click a vote button, here's what happens:
 2. **Django View** increments vote count and returns HTML:
    ```python
    def vote(request, poll_id, choice_id):
-       choice.votes += 1
-       choice.save()
+       Choice.objects.filter(pk=choice.pk).update(votes=F('votes') + 1)
        return render(request, 'results_partial.html', {...})
    ```
 
 3. **HTMX** replaces `#results` div with the server's HTML response
 4. **CSS Transitions** animate the bar chart changes
 
-No JSON, no JavaScript fetch, no state management — just HTML over the wire!
+No JSON API or client-side state management is needed. Both a full detail-page
+load and an HTMX vote response render the same results context, so vote counts
+remain visible after a refresh. Vote increments are atomic in PostgreSQL.
+Repeated **Add Another Choice** clicks assign unique field names; all submitted
+choices are retained, including the tenth and later choices.
+
+Run `python manage.py test polls` inside the `polls` container to check rendering,
+validation, choice creation, and concurrent voting against a separate test
+database. The concurrency test is skipped for standalone SQLite.
 
 ## Project Structure
 
@@ -177,7 +188,7 @@ The poll detail page uses HTMX attributes:
 
 ## Technologies
 
-- **Backend:** Django 5.0, Python 3.11+
+- **Backend:** Django 6, Python 3.12+
 - **Frontend:** HTMX 2.0, vanilla CSS
 - **Server:** Waitress WSGI server
 - **Database:** PostgreSQL (via Aspire) with SQLite fallback

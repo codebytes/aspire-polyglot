@@ -15,6 +15,8 @@ const cache = builder.addContainer("cache", "redis:latest");
 const api = builder.addDockerfile("api", "./src/api")
   .withBuildArg("NPM_CONFIG_REGISTRY", npmRegistry)
   .withOtlpExporter()
+  // Use Aspire's SSL_CERT_DIR instead of Node's bundled certificate store.
+  .withEnvironment("NODE_OPTIONS", "--use-openssl-ca")
   .withEnvironment("REDIS_HOST", "cache")
   .withEnvironment("REDIS_PORT", "6379")
   .withHttpEndpoint({ targetPort: 8080, env: "PORT" })

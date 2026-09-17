@@ -5,7 +5,7 @@
 //
 // The OTLP/HTTP endpoint is read from VITE_OTEL_EXPORTER_OTLP_ENDPOINT, which
 // vite.config.js forwards from the Aspire-injected OTEL_EXPORTER_OTLP_ENDPOINT
-// (rewriting any gRPC scheme to plain http for /v1/traces). When unset, the
+// configured with HttpProtobuf for the frontend. When unset, the
 // SDK is skipped entirely so the SPA still runs standalone.
 //
 // Trace correlation with the Go backend works because @opentelemetry/instrumentation-fetch
@@ -29,16 +29,7 @@ const serviceName = import.meta.env.VITE_OTEL_SERVICE_NAME || 'svelte-bookmarks-
 
 function normalizeEndpoint(endpoint) {
   if (!endpoint) return '';
-  // Aspire injects the gRPC OTLP URL (e.g. https://localhost:21146). Browsers
-  // can't speak gRPC, so we strip the scheme/host/port if a Vite proxy is used,
-  // or rewrite to the OTLP/HTTP traces path. Production deployments should set
-  // VITE_OTEL_EXPORTER_OTLP_ENDPOINT directly to the http endpoint.
-  try {
-    const u = new URL(endpoint);
-    return `${u.origin}/v1/traces`;
-  } catch {
-    return endpoint;
-  }
+  return `${endpoint.replace(/\/+$/, '')}/v1/traces`;
 }
 
 const tracesEndpoint = normalizeEndpoint(rawEndpoint);

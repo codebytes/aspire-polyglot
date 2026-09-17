@@ -1,117 +1,86 @@
-# Bookmark Manager - Go + Svelte + Aspire
+# Bookmark Manager - Go AppHost + Go API + Svelte
 
-A full-stack bookmark manager demonstrating how **Aspire can orchestrate ANY executable** - not just .NET apps!
+A preview **Go-authored Aspire AppHost** orchestrating a Go HTTP API, a Svelte 5
+frontend, and PostgreSQL. It demonstrates `AddContainer`, `AddDockerfile`, and
+`AddExecutable` without a C# AppHost.
 
-## Architecture
+## Prerequisites
 
-- **Backend**: Go HTTP server with PostgreSQL persistence (falls back to in-memory without Aspire)
-- **Frontend**: Svelte 4 SPA with Vite
-- **Database**: PostgreSQL managed by Aspire via `AddPostgres`
-- **Orchestration**: Aspire using standalone `apphost.go` with `AddDockerfile`, `AddNpmApp`, and `AddPostgres`
+- Aspire CLI 13.5.3 and the .NET 10 SDK.
+- Go 1.26.1 or later for `apphost.go`.
+- Node.js 22.12+ and npm for the Vite 8/Svelte 5 frontend.
+- Docker with Linux containers.
 
-This sample proves that Aspire is a **polyglot orchestration platform** - it can manage Go, Node.js, Python, Ruby, or any containerized application, **including real infrastructure like PostgreSQL**.
+The Go AppHost is experimental. Its SDK and feature flags are configured in
+`aspire.config.json`; use the CLI to regenerate `.aspire/modules/`, not manual edits.
 
-## Features
+## Run
 
-- ✅ Add bookmarks with URL, title, and tags
-- 🔍 Real-time search by title, tags, or URL
-- 🏷️ Tag-based organization with colored badges
-- 🗑️ Delete bookmarks
-- 🐘 PostgreSQL persistence via Aspire-managed infrastructure
-- 💾 Graceful in-memory fallback when running without Aspire
-- 🎨 Modern, responsive card-based UI
-
-## Project Structure
-
-```
-svelte-go-bookmarks/
-├── apphost.go            # Standalone Aspire orchestration (Go)
-├── go-api/               # Go backend
-│   ├── main.go           # HTTP server with CRUD endpoints + PostgreSQL
-│   ├── go.mod
-│   └── Dockerfile        # Multi-stage build
-└── frontend/             # Svelte SPA
-    ├── src/
-    │   ├── App.svelte    # Main bookmark UI
-    │   ├── main.js
-    │   └── app.css
-    ├── index.html
-    ├── vite.config.js    # Proxies /api to backend
-    └── package.json
-```
-
-## Key Aspire Patterns
-
-### AddPostgres + WithReference
-
-Aspire manages a PostgreSQL container and injects the connection string into the Go API automatically:
-
-```go
-pg, _ := builder.AddPostgres("pg")
-db, _ := pg.AddDatabase("bookmarksdb")
-
-api, _ := builder.AddDockerfile("api", "./go-api")
-api.WithReference(db)
-api.WithHttpEndpoint(8080, "http")
-api.WithExternalHttpEndpoints()
-```
-
-The Go API reads `CONNECTIONSTRINGS__bookmarksdb` from the environment — no hardcoded connection strings needed.
-
-### AddDockerfile
-
-Since Aspire doesn't have `AddGoApp`, we use **`AddDockerfile`** to orchestrate the Go API. This pattern works for **any language** that can be containerized!
-
-## API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/bookmarks` | Get all bookmarks |
-| POST | `/api/bookmarks` | Create bookmark |
-| DELETE | `/api/bookmarks/{id}` | Delete bookmark |
-| GET | `/api/bookmarks/search?q=` | Search bookmarks |
-| GET | `/health` | Health check |
-
-## Running
-
-Prerequisites:
-- .NET 9 SDK with Aspire workload
-- Docker Desktop
-- Node.js 18+
+From this sample directory:
 
 ```bash
-aspire run
+aspire run --apphost apphost.go
 ```
 
-Aspire will:
-1. Build the Go API Docker image
-2. Run the container on port 8080
-3. Install npm dependencies for frontend
-4. Start Vite dev server with proxy to Go API
-5. Open the Aspire dashboard
+Aspire starts PostgreSQL, builds the API image, runs `npm ci` as
+`frontend-install`, then starts Vite after installation and API startup.
+Open **frontend** in the Aspire dashboard. The frontend port and API proxy target
+are assigned by Aspire, rather than reserving port 5173.
 
-## Why This Matters
+For a worktree background run:
 
-This sample demonstrates:
+```bash
+aspire start --apphost apphost.go --isolated
+aspire wait frontend --apphost apphost.go --status up
+aspire describe --apphost apphost.go
+```
 
-- 🌍 **Polyglot orchestration** - Aspire isn't .NET-only!
-- 🐳 **AddDockerfile pattern** - Universal integration for any language
-- 🐘 **AddPostgres pattern** - Aspire manages real infrastructure for non-.NET apps
-- 🔗 **Service references** - Frontend gets `services__api__http__0`, API gets `CONNECTIONSTRINGS__bookmarksdb` automatically
-- 📊 **Unified observability** - Logs, metrics, traces in Aspire dashboard
-- 🚀 **Local-to-cloud** - Same orchestration in dev and production
+Stop only this sample with `aspire stop --apphost apphost.go`.
 
-**The lesson**: Aspire isn't just for .NET — it orchestrates containers, databases, and frontends across any tech stack. If it runs in Docker, Aspire can orchestrate it and wire up infrastructure automatically.
+## Demo
 
-## Technologies
+- View the three seeded bookmarks.
+- Create a bookmark with a URL, title, and comma-separated tags.
+- Search by title, tag, or URL.
+- Reload to confirm database storage, then delete the test bookmark.
+- Inspect correlated browser, Go HTTP, and PostgreSQL spans in Aspire.
 
-- [Aspire](https://learn.microsoft.com/dotnet/aspire/)
-- [Go 1.22](https://go.dev/)
-- [PostgreSQL](https://www.postgresql.org/)
-- [Svelte 4](https://svelte.dev/)
-- [Vite 5](https://vitejs.dev/)
-- Docker
+## Wiring
 
----
+`pg` is a raw `postgres:16` container, not the `AddPostgres` integration. Its
+endpoint is TCP. The AppHost supplies `PG_HOST`, `PG_USER`, `PG_PASSWORD`, and
+`PG_DB` to the API explicitly; `buildPgConnString` converts the endpoint into a
+PostgreSQL DSN. `WaitFor(pg)` orders container startup.
 
-**Part of the aspire-polyglot sample collection** - showcasing Aspire's ability to orchestrate diverse tech stacks.
+The API's standalone mode can use in-memory storage; a failed PostgreSQL
+connection is logged before falling back. For the database demo, confirm
+**Connected to PostgreSQL** in the API's logs. This sample has no named database
+volume: recreating PostgreSQL resets its data.
+
+The frontend references the API endpoint through `services__api__http__0`.
+Its browser tracing uses the dashboard's HTTP collector; the Go API uses gRPC.
+Application telemetry labels inherit the SDK's schema instead of pinning a
+conflicting schema version.
+
+## API and checks
+
+| Method | Endpoint | Purpose |
+|--------|----------|---------|
+| GET | `/api/bookmarks` | List bookmarks |
+| POST | `/api/bookmarks` | Create a bookmark |
+| DELETE | `/api/bookmarks/{id}` | Delete a bookmark |
+| GET | `/api/bookmarks/search?q=go` | Search titles, tags, and URLs |
+| GET | `/health` | Process health |
+
+```bash
+go build .
+cd go-api
+go test ./...
+go vet ./...
+cd ../frontend
+npm ci
+npm run build
+```
+
+`go-api/Dockerfile` builds the API on Go 1.25 and runs it in Alpine.
+`frontend/` contains the Svelte application and Vite configuration.

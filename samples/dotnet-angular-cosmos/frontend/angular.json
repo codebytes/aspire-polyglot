@@ -22,8 +22,8 @@
             "tsConfig": "tsconfig.json",
             "assets": [
               {
-                "glob": "**/*",
-                "input": "src/assets",
+                "glob": "otel-config.js",
+                "input": ".generated",
                 "output": "/assets"
               }
             ],

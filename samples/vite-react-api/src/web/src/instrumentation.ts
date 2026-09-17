@@ -2,12 +2,12 @@
  * Browser-side OpenTelemetry instrumentation for the Vite + React SPA.
  *
  * Wiring:
- *   - The Aspire AppHost calls withOtlpExporter() + withOtlpExporterProtocol(HttpProtobuf)
+ *   - The Aspire AppHost calls withOtlpExporter({ protocol: OtlpProtocol.HttpProtobuf })
  *     on the web resource so the dashboard's OTLP/HTTP listener URL is injected
  *     as OTEL_EXPORTER_OTLP_ENDPOINT inside the container.
- *   - vite.config.ts reads those env vars (rewriting host.docker.internal -> localhost
- *     so the browser can reach them) and re-exports them as VITE_OTEL_* so they
- *     are visible to client code via import.meta.env.
+ *   - vite.config.ts maps aspire.dev.internal and the legacy host.docker.internal
+ *     hostname to localhost, then re-exports the env vars as VITE_OTEL_* so the
+ *     browser can reach the collector through import.meta.env.
  *   - This module gates on VITE_OTEL_EXPORTER_OTLP_ENDPOINT — without it the SPA
  *     runs unchanged with no export attempts.
  *

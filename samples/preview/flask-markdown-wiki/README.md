@@ -38,21 +38,25 @@ A simple Markdown-based wiki application built with Flask, SQLite, and Redis cac
 
 ```
 flask-markdown-wiki/
-├── apphost.py              # Aspire AppHost configuration
-├── .aspire/
-│   └── settings.json       # Aspire settings
+├── apphost.py              # Preview Python AppHost
+├── aspire.config.json     # SDK version and preview feature flags
+├── .aspire/modules/       # CLI-generated Python hosting bindings
 ├── src/
 │   ├── main.py             # Flask application
+│   ├── Dockerfile          # Containerized Flask workload
 │   └── requirements.txt    # Python dependencies
 └── README.md
 ```
 
 ## Prerequisites
 
-- .NET 9.0 SDK
-- Python 3.8+
-- Aspire workload
-- Docker (for Redis container)
+- Aspire CLI 13.5.3 and .NET 10 SDK
+- Python 3.12+ and [uv](https://docs.astral.sh/uv/)
+- Docker (for Flask and Redis containers)
+
+The Python AppHost is experimental; its feature flags are local to
+`aspire.config.json`. Let the Aspire CLI restore `.aspire/modules/` rather than
+editing generated bindings.
 
 ## Running the Application
 
@@ -60,12 +64,15 @@ flask-markdown-wiki/
 
 1. From the sample root directory, run:
    ```bash
-   aspire run
+   aspire run --apphost apphost.py
    ```
 
 2. Open the Aspire dashboard (URL will be displayed in the terminal)
 
 3. Access the wiki application through the Aspire dashboard or directly at the assigned port
+
+For worktrees use `aspire start --apphost apphost.py --isolated`. Stop this sample
+with `aspire stop --apphost apphost.py`.
 
 ### Standalone (Development)
 
@@ -127,6 +134,10 @@ CREATE TABLE pages (
 ```
 
 The database is automatically initialized on startup with a default "Home" page.
+In the Aspire run, `wiki.db` lives in the Flask container. This demo does not mount
+a persistent SQLite volume, so recreating the container resets its pages.
+Creating or editing a page invalidates cached HTML for its slug, including cache
+entries that survived an earlier Flask container.
 
 ## Dependencies
 
@@ -164,6 +175,9 @@ To modify the application:
 2. HTML templates are defined inline using `render_template_string`
 3. Styling is embedded in the base template
 4. Database is automatically managed (SQLite file: `wiki.db`)
+
+Run the SQLite/cache regression tests with `python -m unittest -v test_wiki`
+from `src/` after installing its requirements.
 
 ## License
 

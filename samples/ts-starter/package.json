@@ -8,6 +8,7 @@
     "dev": "aspire run",
     "prebuild": "npm run lint",
     "build": "tsc -p tsconfig.apphost.json",
+    "typecheck:api": "tsc -p api/tsconfig.json",
     "watch": "tsc --watch -p tsconfig.apphost.json"
   },
   "dependencies": {
