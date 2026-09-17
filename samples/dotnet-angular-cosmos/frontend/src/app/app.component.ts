@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RecipeService, Recipe } from './recipe.service';
@@ -6,6 +6,7 @@ import { RecipeService, Recipe } from './recipe.service';
 @Component({
   selector: 'app-root',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.Default,
   imports: [CommonModule, FormsModule],
   template: `
     <div class="container">
@@ -31,7 +32,7 @@ import { RecipeService, Recipe } from './recipe.service';
           <option value="Other">Other</option>
         </select>
         
-        <button (click)="showAddForm = !showAddForm" class="btn-primary">
+        <button (click)="toggleForm()" class="btn-primary">
           {{ showAddForm ? 'Cancel' : '+ Add Recipe' }}
         </button>
       </div>
@@ -66,7 +67,7 @@ import { RecipeService, Recipe } from './recipe.service';
           
           <div class="form-group">
             <label>Ingredients</label>
-            <div *ngFor="let ingredient of currentRecipe.ingredients; let i = index" class="ingredient-row">
+            <div *ngFor="let ingredient of currentRecipe.ingredients; let i = index; trackBy: trackIngredient" class="ingredient-row">
               <input type="text" [(ngModel)]="currentRecipe.ingredients[i]" [name]="'ingredient-' + i" class="form-control" />
               <button type="button" (click)="removeIngredient(i)" class="btn-remove">✕</button>
             </div>
@@ -403,11 +404,12 @@ export class AppComponent implements OnInit {
   }
 
   applyFilters() {
+    const search = this.searchQuery.trim().toLowerCase();
     this.filteredRecipes = this.recipes.filter(recipe => {
       const matchesCategory = !this.filterCategory || recipe.category === this.filterCategory;
-      const matchesSearch = !this.searchQuery || 
-        recipe.title.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        recipe.ingredients.some(i => i.toLowerCase().includes(this.searchQuery.toLowerCase()));
+      const matchesSearch = !search ||
+        recipe.title.toLowerCase().includes(search) ||
+        recipe.ingredients.some(i => i.toLowerCase().includes(search));
       return matchesCategory && matchesSearch;
     });
   }
@@ -476,8 +478,18 @@ export class AppComponent implements OnInit {
     this.showAddForm = false;
   }
 
+  toggleForm() {
+    const open = !this.showAddForm;
+    this.cancelEdit();
+    this.showAddForm = open;
+  }
+
   addIngredient() {
     this.currentRecipe.ingredients.push('');
+  }
+
+  trackIngredient(index: number) {
+    return index;
   }
 
   removeIngredient(index: number) {

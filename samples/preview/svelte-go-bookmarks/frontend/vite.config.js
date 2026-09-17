@@ -5,7 +5,12 @@ const apiUrl = process.env.services__api__http__0 || 'http://localhost:8080';
 
 function rewriteHostDockerInternal(value) {
   if (!value) return value;
-  return value.replace(/host\.docker\.internal/g, 'localhost');
+  const endpoint = new URL(value);
+  if (endpoint.hostname === 'aspire.dev.internal' || endpoint.hostname === 'host.docker.internal') {
+    endpoint.hostname = 'localhost';
+    return endpoint.toString();
+  }
+  return value;
 }
 
 const otlpEndpoint = rewriteHostDockerInternal(process.env.OTEL_EXPORTER_OTLP_ENDPOINT);

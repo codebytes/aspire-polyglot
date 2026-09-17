@@ -244,6 +244,8 @@ BASE_TEMPLATE = """
 <html>
 <head>
     <title>{{ title }} - Markdown Wiki</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='5' y='3' width='22' height='26' rx='3' fill='%230078d4'/%3E%3Cpath d='M10 10h12M10 16h12M10 22h8' stroke='white' stroke-width='2'/%3E%3C/svg%3E">
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
@@ -519,6 +521,7 @@ def create_page():
         return f"A page with slug '{slug}' already exists", 400
     
     conn.close()
+    invalidate_cache(slug)
     return redirect(url_for("view_page", slug=slug))
 
 @app.route("/health")

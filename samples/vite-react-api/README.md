@@ -22,3 +22,11 @@ aspire run
 - `addContainer` for Redis caching layer
 - Environment variable wiring between services
 - HTTP endpoint configuration with external access
+
+## Browser telemetry
+
+The `web` resource exports browser traces through the dashboard's OTLP/HTTP
+listener. Aspire supplies a container-network URL; Vite maps `aspire.dev.internal`
+and the legacy `host.docker.internal` hostname to `localhost` for the browser.
+The collector's scheme, port, and path are preserved, and HTTPS certificate
+validation remains enabled.

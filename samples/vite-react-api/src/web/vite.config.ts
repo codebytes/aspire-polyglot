@@ -3,17 +3,18 @@ import react from '@vitejs/plugin-react'
 
 const apiUrl = process.env.services__api__https__0 || process.env.services__api__http__0 || 'http://localhost:8000';
 
-// The Vite SPA runs in a Docker container; Aspire injects OTLP env vars
-// using `host.docker.internal` so the container can reach the dashboard.
-// The browser, however, lives on the user's machine and reaches the
-// dashboard via `localhost`. Rewrite the value baked into the SPA so the
-// browser actually has a usable URL.
-function rewriteHostDockerInternal(value: string | undefined): string | undefined {
+// Map Aspire's container-only collector hostnames to the browser's loopback host.
+function toBrowserEndpoint(value: string | undefined): string | undefined {
   if (!value) return value;
-  return value.replace(/host\.docker\.internal/g, 'localhost');
+  const endpoint = new URL(value);
+  if (endpoint.hostname === 'aspire.dev.internal' || endpoint.hostname === 'host.docker.internal') {
+    endpoint.hostname = 'localhost';
+    return endpoint.toString();
+  }
+  return value;
 }
 
-const otlpEndpoint = rewriteHostDockerInternal(process.env.OTEL_EXPORTER_OTLP_ENDPOINT);
+const otlpEndpoint = toBrowserEndpoint(process.env.OTEL_EXPORTER_OTLP_ENDPOINT);
 const otlpHeaders = process.env.OTEL_EXPORTER_OTLP_HEADERS;
 const otelServiceName = process.env.OTEL_SERVICE_NAME;
 const otelResourceAttrs = process.env.OTEL_RESOURCE_ATTRIBUTES;

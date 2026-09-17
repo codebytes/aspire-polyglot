@@ -4,6 +4,7 @@
 
 {% block content %}
 <h1>Create a New Poll</h1>
+{% if error %}<p role="alert">{{ error }}</p>{% endif %}
 
 <form method="post">
     {% csrf_token %}
@@ -46,10 +47,10 @@
         <button 
             type="button" 
             class="btn btn-small"
-            hx-get="{% url 'add_choice_input' %}?num=5"
+            hx-get="{% url 'add_choice_input' %}"
+            hx-vals='js:{num: document.querySelectorAll(".choice-input").length + 1}'
             hx-target="#choices-container"
             hx-swap="beforeend"
-            onclick="this.setAttribute('hx-get', '{% url 'add_choice_input' %}?num=' + (document.querySelectorAll('.choice-input').length + 1))"
         >
             ➕ Add Another Choice
         </button>

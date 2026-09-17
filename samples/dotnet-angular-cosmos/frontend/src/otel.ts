@@ -33,12 +33,12 @@ import { W3CTraceContextPropagator } from '@opentelemetry/core';
 
 interface RuntimeConfig {
   otlpEndpoint?: string;
+  headers?: Record<string, string>;
   serviceName?: string;
   serviceVersion?: string;
 }
 
-// Runtime config is injected into window by index.html (populated by AppHost).
-// Falls back to localhost:4318 for standalone runs.
+// Runtime config is generated at startup and excluded from source control.
 declare global {
   interface Window {
     __OTEL_CONFIG__?: RuntimeConfig;
@@ -46,8 +46,8 @@ declare global {
 }
 
 const cfg: RuntimeConfig = window.__OTEL_CONFIG__ ?? {};
-const otlpBase =
-  cfg.otlpEndpoint?.replace(/\/$/, '') ?? 'http://localhost:4318';
+const otlpBase = cfg.otlpEndpoint?.replace(/\/$/, '');
+const headers = cfg.headers;
 const serviceName = cfg.serviceName ?? 'frontend';
 const serviceVersion = cfg.serviceVersion ?? '1.0.0';
 
@@ -65,12 +65,12 @@ propagation.setGlobalPropagator(new W3CTraceContextPropagator());
 // ---- Traces ----
 const tracerProvider = new WebTracerProvider({
   resource,
-  spanProcessors: [
+  spanProcessors: otlpBase ? [
     new BatchSpanProcessor(
-      new OTLPTraceExporter({ url: `${otlpBase}/v1/traces` }),
+      new OTLPTraceExporter({ url: `${otlpBase}/v1/traces`, headers }),
       { scheduledDelayMillis: 1000 }
     ),
-  ],
+  ] : [],
 });
 tracerProvider.register({
   contextManager: new ZoneContextManager(),
@@ -79,23 +79,23 @@ tracerProvider.register({
 // ---- Logs ----
 const loggerProvider = new LoggerProvider({
   resource,
-  processors: [
+  processors: otlpBase ? [
     new BatchLogRecordProcessor({
-      exporter: new OTLPLogExporter({ url: `${otlpBase}/v1/logs` }),
+      exporter: new OTLPLogExporter({ url: `${otlpBase}/v1/logs`, headers }),
       scheduledDelayMillis: 1000,
     }),
-  ],
+  ] : [],
 });
 
 // ---- Metrics ----
 const meterProvider = new MeterProvider({
   resource,
-  readers: [
+  readers: otlpBase ? [
     new PeriodicExportingMetricReader({
-      exporter: new OTLPMetricExporter({ url: `${otlpBase}/v1/metrics` }),
+      exporter: new OTLPMetricExporter({ url: `${otlpBase}/v1/metrics`, headers }),
       exportIntervalMillis: 5000,
     }),
-  ],
+  ] : [],
 });
 
 // ---- Auto-instrumentations ----

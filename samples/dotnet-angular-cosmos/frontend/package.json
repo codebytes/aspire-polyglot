@@ -7,7 +7,8 @@
     "prebuild": "node scripts/write-otel-config.cjs",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "test:config": "node --test scripts/*.test.cjs"
   },
   "private": true,
   "dependencies": {

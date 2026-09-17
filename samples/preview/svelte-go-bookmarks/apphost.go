@@ -18,9 +18,10 @@ func main() {
 	pg.WithEnvironment("POSTGRES_PASSWORD", "postgres")
 	pg.WithEnvironment("POSTGRES_DB", "bookmarksdb")
 	pgPort := 5432.0
-	pg.WithHttpEndpoint(&aspire.WithHttpEndpointOptions{
+	pg.WithEndpoint(&aspire.WithEndpointOptions{
 		TargetPort: &pgPort,
 		Name:       aspire.StringPtr("tcp"),
+		Scheme:     aspire.StringPtr("tcp"),
 	})
 
 	// Go API via Dockerfile
@@ -38,29 +39,22 @@ func main() {
 		Name:       aspire.StringPtr("http"),
 	})
 	api.WithExternalHttpEndpoints()
-	// Ensure API waits for Postgres to be healthy before starting — env var wiring
-	// alone does NOT order startup in Aspire polyglot apps. Without this WaitFor,
-	// on a cold start (uncached postgres:16 image), the API can start first, fail
-	// its Postgres Ping, and silently fall back to the in-memory store.
+	// Raw container resources provide startup ordering, not database health checks.
 	api.WaitFor(pg)
 
-	// Svelte frontend via npm
+	installer := builder.AddExecutable("frontend-install", "npm", "./frontend", []string{"ci", "--no-audit", "--no-fund"})
 	frontend := builder.AddExecutable("frontend", "npm", "./frontend", []string{"run", "dev"})
+	frontend.WaitForCompletion(installer)
+	protocol := aspire.OtlpProtocolHttpProtobuf
+	frontend.WithOtlpExporter(&aspire.WithOtlpExporterOptions{Protocol: &protocol})
 	apiEndpoint := api.GetEndpoint("http")
 	frontend.WithEnvironment("services__api__http__0", apiEndpoint)
-	// Vite dev server defaults to 5173. We bind targetPort=5173 explicitly so
-	// Aspire knows where to proxy traffic, and inject env="PORT" so vite.config.js
-	// can also pull it from process.env.PORT (matching vite-react-api's pattern).
-	frontendPort := 5173.0
+	// Aspire assigns the Vite port and supplies it through PORT.
 	frontend.WithHttpEndpoint(&aspire.WithHttpEndpointOptions{
-		TargetPort: &frontendPort,
-		Name:       aspire.StringPtr("http"),
-		Env:        aspire.StringPtr("PORT"),
+		Name: aspire.StringPtr("http"),
+		Env:  aspire.StringPtr("PORT"),
 	})
 	frontend.WithExternalHttpEndpoints()
-	// WaitFor establishes both startup ordering and a Reference relationship
-	// visible on the dashboard. (Plain ContainerResources like api can't be
-	// used with WithReference — they don't expose a connection string.)
 	frontend.WaitFor(api)
 
 	app, err := builder.Build()

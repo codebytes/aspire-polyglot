@@ -364,26 +364,24 @@ func health(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"status": "healthy"})
 }
 
+func telemetryResource() (*sdkresource.Resource, error) {
+	// Application labels do not declare a competing schema version.
+	return sdkresource.Merge(
+		sdkresource.Default(),
+		sdkresource.NewSchemaless(
+			semconv.ServiceName(getServiceName()),
+			attribute.String("service.namespace", "svelte-go-bookmarks"),
+		),
+	)
+}
+
 func initOtel(ctx context.Context) (func(), error) {
 	endpoint := os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
 	if endpoint == "" {
 		return func() {}, nil
 	}
 
-	// Build a Resource shared by all three signals so the dashboard groups
-	// traces, metrics, and logs under the same service. resource.Default()
-	// already merges OTEL_SERVICE_NAME and OTEL_RESOURCE_ATTRIBUTES from env;
-	// we overlay an explicit service.namespace and use the SAME schema URL
-	// the SDK uses internally (semconv v1.40.0) to avoid "conflicting Schema URL"
-	// merge errors at startup.
-	res, err := sdkresource.Merge(
-		sdkresource.Default(),
-		sdkresource.NewWithAttributes(
-			semconv.SchemaURL,
-			semconv.ServiceName(getServiceName()),
-			attribute.String("service.namespace", "svelte-go-bookmarks"),
-		),
-	)
+	res, err := telemetryResource()
 	if err != nil {
 		return nil, err
 	}

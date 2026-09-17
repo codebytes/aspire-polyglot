@@ -22,6 +22,10 @@ Aspire builds the API and web images, starts Redis, and opens the dashboard. Ope
 `web` endpoint, paste a long URL, and it returns a short link backed by Redis. Following
 a short link redirects and bumps its click counter.
 
+The API container sets `NODE_OPTIONS=--use-openssl-ca` so Node's OTLP exporters trust
+Aspire's development certificate through the injected `SSL_CERT_DIR`. HTTPS
+certificate validation remains enabled.
+
 ## What It Demonstrates
 - A **single-file `apphost.mts`** that wires three resources with a fluent builder and
   no scaffolding project.

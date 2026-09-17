@@ -194,8 +194,15 @@ app.MapGet("/api/recipes/search", async (string? q, CosmosClient client) =>
 
     var container = client.GetContainer("recipesdb", "recipes");
     var query = new QueryDefinition(
-        "SELECT * FROM c WHERE CONTAINS(LOWER(c.Title), @searchTerm) OR ARRAY_CONTAINS(c.Ingredients, @searchTerm, true)")
-        .WithParameter("@searchTerm", q.ToLower());
+        """
+        SELECT * FROM c
+        WHERE CONTAINS(LOWER(c.Title), @searchTerm)
+        OR EXISTS (
+            SELECT VALUE ingredient FROM ingredient IN c.Ingredients
+            WHERE CONTAINS(LOWER(ingredient), @searchTerm)
+        )
+        """)
+        .WithParameter("@searchTerm", q.Trim().ToLowerInvariant());
     
     var iterator = container.GetItemQueryIterator<Recipe>(query);
     var recipes = new List<Recipe>();
@@ -208,8 +215,5 @@ app.MapGet("/api/recipes/search", async (string? q, CosmosClient client) =>
 
     return Results.Ok(recipes);
 });
-
-// GET /health - Health check
-app.MapGet("/health", () => Results.Ok(new { status = "healthy" }));
 
 app.Run();
