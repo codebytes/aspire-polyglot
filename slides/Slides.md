@@ -1,7 +1,7 @@
 ---
 marp: true
 theme: custom-default
-footer: '@Chris_L_Ayers - https://chris-ayers.com'
+footer: 'Chris Ayers - https://chris-ayers.com'
 ---
 
 <!-- _footer: 'https://github.com/codebytes/aspire-polyglot' -->
