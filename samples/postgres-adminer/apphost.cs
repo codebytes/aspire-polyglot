@@ -1,4 +1,4 @@
-#:sdk Aspire.AppHost.Sdk@13.5.3
+#:sdk Aspire.AppHost.Sdk@13.6.1
 #:property AspireUseCliBundle=true
 
 // Single-file C# AppHost that adds two PUBLIC Docker images directly — no

@@ -1,4 +1,4 @@
-#:sdk Aspire.AppHost.Sdk@13.5.3
+#:sdk Aspire.AppHost.Sdk@13.6.1
 #:property AspireUseCliBundle=true
 
 // This sample intentionally uses Aspire's experimental terminal API.

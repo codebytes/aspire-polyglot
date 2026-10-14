@@ -374,9 +374,12 @@ slides/package-lock.json
 **/aspire.run.log
 **/.modules/.codegen-hash
 **/.aspire/modules/.codegen-hash
+**/.modules/.codegen-manifest
+**/.aspire/modules/.codegen-manifest
 # Note: generated hosting bindings are tracked so 'aspire run' works out of the box.
-# TypeScript, Go, Python, and Java samples keep Aspire 13.5+ bindings in .aspire/modules/.
-# Do NOT ignore .modules/ or .aspire/modules/ themselves — only their .codegen-hash.
+# TypeScript, Go, Python, and Java samples keep Aspire 13.6+ bindings in .aspire/modules/.
+# Do NOT ignore .modules/ or .aspire/modules/ themselves — only their .codegen-hash and
+# .codegen-manifest (13.6+ list of generated files that 'aspire restore' recreates).
 
 # Aspire 13.4+ transient restore/package caches (per-sample integrations)
 **/.aspire/integrations/

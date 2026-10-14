@@ -8,12 +8,12 @@ or npm packages are needed.
 Inspired by the upstream [Aspire Terminals playground](https://github.com/microsoft/aspire/tree/main/playground/Terminals)
 and [TerminalsJs playground](https://github.com/microsoft/aspire/tree/main/playground/TerminalsJs).
 
-> **Experimental:** `WithTerminal()` is experimental in Aspire 13.5.3. The AppHost
+> **Experimental:** `WithTerminal()` is experimental in Aspire 13.6.1. The AppHost
 > explicitly acknowledges `ASPIRETERMINAL001`; the API may change in future releases.
 
 ## Prerequisites
 
-- [Aspire CLI](https://aspire.dev/get-started/install-cli/) 13.5.3 and .NET 10 SDK.
+- [Aspire CLI](https://aspire.dev/get-started/install-cli/) 13.6.1 and .NET 10 SDK.
 - [Node.js](https://nodejs.org/) 24 or later, available as `node` on `PATH`.
 - `/bin/bash` on macOS/Linux, or `cmd.exe` on Windows.
 
@@ -58,9 +58,9 @@ the shell instead:
 aspire terminal attach shell
 ```
 
-The sample's `aspire.config.json` enables `features.terminalCommandsEnabled`
-locally; no global feature-flag change is needed. The dashboard and CLI can
-attach to the same session at once and see the same input and output.
+Aspire CLI 13.6 runs the terminal commands without a feature flag; 13.5 required
+`features.terminalCommandsEnabled`. The dashboard and CLI can attach to the same
+session at once and see the same input and output.
 
 `exit` in the shell or `.exit` in Node ends that resource, not the AppHost. Use
 the resource's **Start** action in the dashboard to begin a new session. Stop the

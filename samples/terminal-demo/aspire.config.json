@@ -1,8 +1,5 @@
 {
   "appHost": {
     "path": "apphost.cs"
-  },
-  "features": {
-    "terminalCommandsEnabled": true
   }
 }

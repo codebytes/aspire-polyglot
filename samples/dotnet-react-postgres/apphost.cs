@@ -1,8 +1,8 @@
-#:sdk Aspire.AppHost.Sdk@13.5.3
+#:sdk Aspire.AppHost.Sdk@13.6.1
 #:property AspireUseCliBundle=true
 #:property TreatProjectReferencesAsResources=false
-#:package Aspire.Hosting.PostgreSQL@13.5.3
-#:package Aspire.Hosting.JavaScript@13.5.3
+#:package Aspire.Hosting.PostgreSQL@13.6.1
+#:package Aspire.Hosting.JavaScript@13.6.1
 #:project Api/Api.csproj
 
 using System.Net.Http.Headers;
@@ -94,7 +94,8 @@ api.WithCommand("import-quotes", "Import quotes", async context =>
         return CommandResults.Canceled();
     }
 
-    var files = result.Data?.Files;
+    // GetFiles() hands over the uploaded temp files; disposing the collection deletes them.
+    using var files = result.Data?.GetFiles();
     if (files is null || files.Count != 1)
     {
         context.Logger.LogWarning("Quote import rejected: select exactly one JSON file");
