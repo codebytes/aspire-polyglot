@@ -45,7 +45,7 @@ This sample demonstrates **event streaming** using Kafka with a polyglot archite
 
 ### Prerequisites
 
-- Aspire CLI 13.5.3 and .NET 10 SDK
+- Aspire CLI 13.6.1 and .NET 10 SDK
 - Python 3.12+
 - Node.js 22+
 - Docker (for Kafka)

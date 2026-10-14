@@ -6,7 +6,7 @@ frontend, and PostgreSQL. It demonstrates `AddContainer`, `AddDockerfile`, and
 
 ## Prerequisites
 
-- Aspire CLI 13.5.3 and the .NET 10 SDK.
+- Aspire CLI 13.6.1 and the .NET 10 SDK.
 - Go 1.26.1 or later for `apphost.go`.
 - Node.js 22.12+ and npm for the Vite 8/Svelte 5 frontend.
 - Docker with Linux containers.

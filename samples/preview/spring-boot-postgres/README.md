@@ -6,7 +6,7 @@ application in a separate Docker build stage.
 
 ## Prerequisites
 
-- Aspire CLI 13.5.3 and .NET 10 SDK.
+- Aspire CLI 13.6.1 and .NET 10 SDK.
 - A JDK on `PATH` to compile the preview AppHost (validated with Temurin 25).
 - Docker with Linux containers. No host Maven installation is needed.
 

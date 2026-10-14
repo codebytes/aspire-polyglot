@@ -1,13 +1,14 @@
 # Recipe Manager - ASP.NET Core + Angular + Cosmos DB
 
-A .NET 10 Minimal API and Angular 22 recipe manager backed by the **local Cosmos DB
-preview emulator**. No Azure subscription or separately installed emulator is needed.
+A .NET 10 Minimal API and Angular 22 recipe manager backed by the **local, Linux-based Cosmos DB
+vNext emulator** (`RunAsEmulator`, the Aspire 13.6 default). No Azure subscription or separately
+installed emulator is needed.
 The same AppHost can also **publish Azure Container Apps and Cosmos DB Bicep
 templates without deploying anything**.
 
 ## Prerequisites
 
-- [Aspire CLI](https://aspire.dev/get-started/install-cli/) 13.5.3 and the .NET 10 SDK.
+- [Aspire CLI](https://aspire.dev/get-started/install-cli/) 13.6.1 and the .NET 10 SDK.
 - [Docker](https://docs.docker.com/get-docker/) running Linux containers.
 - Node.js supported by Angular 22: `^22.22.3`, `^24.15.0`, or `>=26.0.0`.
 
@@ -19,9 +20,13 @@ From this sample directory:
 aspire run --apphost AppHost/AppHost.csproj
 ```
 
-Aspire starts the preview emulator, creates the database, seeds three recipes, and
+Aspire starts the vNext emulator, creates the database, seeds three recipes, and
 starts the API and Angular dev server. The first emulator startup can take a few
 minutes. Do not start a separate emulator on port 8081.
+
+On macOS, the first 13.6 run can open a keychain prompt so Aspire can use your
+ASP.NET Core developer certificate for the emulator's HTTPS endpoints. `cosmos`
+stays in **Starting** until you approve it, so do this once before a live demo.
 
 Open **frontend** in the Aspire dashboard. API and frontend ports are assigned by
 Aspire; the Angular `/api` proxy reads the API's service-discovery endpoint.
@@ -64,7 +69,7 @@ build or push container images, deploy, or create/update/delete Azure resources.
 You do not need a running AppHost, Docker, a Cosmos emulator, an Azure subscription,
 or Azure credentials to publish the templates. Leave other demos running.
 
-Publishing needs Aspire CLI **13.5.3** and the .NET 10 SDK; the matching
+Publishing needs Aspire CLI **13.6.1** and the .NET 10 SDK; the matching
 `Aspire.Hosting.Azure.AppContainers` package is already included. ARM compilation
 also needs Azure CLI with Bicep installed (`az bicep version`; verified with Bicep
 0.42.1). The optional assertions use Node.js, with no additional npm dependencies.
@@ -136,7 +141,7 @@ would create billable Azure resources and is **outside this demo**.
 
 ### Local versus published behavior
 
-- Local `aspire run`/`start` still uses the preview emulator, Angular `ng serve`,
+- Local `aspire run`/`start` still uses the vNext emulator, Angular `ng serve`,
   the existing development `/api` proxy, and browser telemetry.
 - At publish time, `PublishAsStaticWebsite("/api", api, ...)` replaces the dev server
   with YARP serving `dist/recipe-manager/browser`. It preserves the `/api` prefix,
@@ -150,7 +155,7 @@ would create billable Azure resources and is **outside this demo**.
   `.dockerignore` also excludes local `.generated/` files from the image context.
   Server-side API/YARP telemetry remains separate from browser exporters.
 
-The JavaScript publish API is experimental in Aspire 13.5.3 and its generated
+The JavaScript publish API is experimental in Aspire 13.6.1 and its generated
 YARP image is a preview image. Generated Azure APIs also include preview versions.
 Bicep compilation succeeds with nonblocking unused-parameter warnings; it does
 not prove Azure availability, permissions, image startup, or deployment success.

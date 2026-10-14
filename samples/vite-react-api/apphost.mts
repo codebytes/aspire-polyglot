@@ -8,10 +8,10 @@ const npmRegistry = process.env.NPM_CONFIG_REGISTRY ?? "https://registry.npmjs.o
 const pipIndexUrl = process.env.PIP_INDEX_URL ?? process.env.UV_DEFAULT_INDEX ?? "https://pypi.org/simple/";
 
 // Redis cache
-const cache = builder.addContainer("cache", "redis:latest");
+const cache = await builder.addContainer("cache", "redis:latest");
 
 // FastAPI backend (./src/api has a Dockerfile) — OTel via gRPC (default).
-const api = builder.addDockerfile("api", "./src/api")
+const api = await builder.addDockerfile("api", "./src/api")
   .withBuildArg("PIP_INDEX_URL", pipIndexUrl)
   .withOtlpExporter()
   .withEnvironment("REDIS_HOST", "cache")
@@ -31,7 +31,7 @@ const api = builder.addDockerfile("api", "./src/api")
 // `apphost.run.json` sets ASPIRE_DASHBOARD_OTLP_HTTP_ENDPOINT_URL on both
 // launch profiles so plain `aspire run` works out of the box. See
 // .squad/decisions/inbox/parker-vite-react-otel.md for the full design.
-const web = builder.addDockerfile("web", "./src/web")
+const web = await builder.addDockerfile("web", "./src/web")
   .withBuildArg("NPM_CONFIG_REGISTRY", npmRegistry)
   .withOtlpExporter({ protocol: OtlpProtocol.HttpProtobuf })
   .withReference(api.getEndpoint("http"))

@@ -1,11 +1,13 @@
-#pragma warning disable ASPIRECOSMOSDB001, ASPIREJAVASCRIPT001
+#pragma warning disable ASPIREJAVASCRIPT001
 
 var builder = DistributedApplication.CreateBuilder(args);
 
 builder.AddAzureContainerAppEnvironment("aca");
 
+// In 13.6, RunAsEmulator selects the Linux-based vNext emulator (formerly RunAsPreviewEmulator).
+// vNext disables the Data Explorer by default, so opt back in.
 var cosmos = builder.AddAzureCosmosDB("cosmos")
-    .RunAsPreviewEmulator(emulator =>
+    .RunAsEmulator(emulator =>
     {
         emulator.WithDataExplorer();
     });

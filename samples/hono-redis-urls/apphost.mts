@@ -8,11 +8,11 @@ const builder = await createBuilder();
 const npmRegistry = process.env.NPM_CONFIG_REGISTRY ?? "https://registry.npmjs.org/";
 
 // Redis stores the short-code -> URL mappings and click counts.
-const cache = builder.addContainer("cache", "redis:latest");
+const cache = await builder.addContainer("cache", "redis:latest");
 
 // Hono (Node/TS) API. `./src/api` has a Dockerfile, so it runs in a container
 // on the same network as Redis and reaches it by the container hostname "cache".
-const api = builder.addDockerfile("api", "./src/api")
+const api = await builder.addDockerfile("api", "./src/api")
   .withBuildArg("NPM_CONFIG_REGISTRY", npmRegistry)
   .withOtlpExporter()
   // Use Aspire's SSL_CERT_DIR instead of Node's bundled certificate store.
@@ -24,7 +24,7 @@ const api = builder.addDockerfile("api", "./src/api")
 
 // Vite vanilla-TS frontend. `./src/web` has a Dockerfile; vite.config.ts reads
 // the API endpoint Aspire injects (services__api__*) and proxies "/api" to it.
-builder.addDockerfile("web", "./src/web")
+await builder.addDockerfile("web", "./src/web")
   .withBuildArg("NPM_CONFIG_REGISTRY", npmRegistry)
   .withReference(api.getEndpoint("http"))
   .waitFor(api)

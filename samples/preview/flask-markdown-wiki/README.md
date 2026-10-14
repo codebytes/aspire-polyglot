@@ -50,7 +50,7 @@ flask-markdown-wiki/
 
 ## Prerequisites
 
-- Aspire CLI 13.5.3 and .NET 10 SDK
+- Aspire CLI 13.6.1 and .NET 10 SDK
 - Python 3.12+ and [uv](https://docs.astral.sh/uv/)
 - Docker (for Flask and Redis containers)
 
