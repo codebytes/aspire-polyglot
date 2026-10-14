@@ -14,6 +14,8 @@ transition: fade 350ms
 
 ## Chris Ayers
 
+### Principal Software Engineer · Microsoft
+
 ---
 
 ![bg left:40%](./img/portrait.png)

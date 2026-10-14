@@ -106,6 +106,12 @@ section.takeaways li {
   color: var(--aspire-primary);
 }
 
+/* Presenter title directly under the name on the cover */
+section.lead h2 + h3 {
+  margin-top: 0;
+  font-weight: 400;
+}
+
 .cover-logo {
   position: absolute;
   right: 3.5%;
