@@ -2,6 +2,32 @@
 /* @theme custom-default */
 
 @import 'custom-aspire-light';
+@import 'aspire-motion';
+
+/* ── Running section label: set with the `header` directive, shown opposite the footer ── */
+section > header {
+  top: auto;
+  bottom: 21px;
+  left: auto;
+  right: 30px;
+  color: var(--aspire-primary);
+  font-size: 0.55em;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+section.takeaways ul {
+  display: grid;
+  gap: 1.3em;
+  margin: 1.3em 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+section.takeaways li {
+  margin: 0;
+}
 
 .columns {
   display: grid;

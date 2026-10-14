@@ -1,0 +1,401 @@
+/* aspire-motion.css */
+/* @theme aspire-motion */
+
+/*
+ * Motion layer for the Polyglot Aspire deck. custom-default imports it.
+ *
+ * Selectors that start with
+ *   :marpit-container > svg.bespoke-marp-active > foreignObject > section
+ * match only the current slide of Marp's bespoke HTML presentation, so each
+ * animation replays whenever its slide becomes active. PDF, image, and PPTX
+ * exports and the VS Code preview never add that class: they render the
+ * complete final state. All motion also requires a no-preference
+ * reduced-motion setting.
+ */
+
+/* ── Chapter opening transition: `<!-- _transition: aspire-aperture -->` ── */
+@keyframes marp-incoming-transition-aspire-aperture {
+  from {
+    --marp-transition-duration: 700ms;
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+    clip-path: inset(0 50%);
+  }
+  to { clip-path: inset(0); }
+}
+
+@keyframes marp-outgoing-transition-aspire-aperture {
+  from { --marp-transition-duration: 700ms; opacity: 1; }
+  to { opacity: 1; }
+}
+
+@keyframes marp-outgoing-transition-backward-aspire-aperture {
+  from {
+    --marp-transition-duration: 450ms;
+    animation-timing-function: cubic-bezier(0.7, 0, 0.84, 0);
+    clip-path: inset(0);
+  }
+  to { clip-path: inset(0 50%); }
+}
+
+@keyframes marp-incoming-transition-backward-aspire-aperture {
+  from { --marp-transition-duration: 450ms; z-index: -1; }
+  to { z-index: -1; }
+}
+
+/* ── Stacking: keep connector arrows above the next card while cards animate or morph ── */
+section .polyglot-flow > .flow-panel:first-child { z-index: 2; }
+section .polyglot-flow > .flow-hub { z-index: 1; }
+
+/* ── Shared-element morphs (pair them with a non-fade transition to see the anchor) ── */
+section.apphost-morph > h1 { view-transition-name: aspire-apphost-title; }
+section.apphost-morph pre { view-transition-name: aspire-apphost-code; }
+section [data-morph="app-model"] { view-transition-name: aspire-app-model; }
+
+/* ── Click-to-reveal lists: write `*` bullets; the current item is highlighted ── */
+section [data-bespoke-marp-current-fragment="current"] {
+  border-radius: 0.3em;
+  background-color: rgba(116, 85, 221, 0.1);
+  box-shadow: 0 0 0 0.2em rgba(116, 85, 221, 0.1);
+}
+
+section li[data-bespoke-marp-current-fragment="current"]::marker {
+  color: var(--aspire-magenta);
+}
+
+/* ── Animated event stream (Demo: Polyglot Event Stream) ── */
+.es-stage {
+  max-width: 1120px;
+  margin: 0.35em auto 0;
+}
+
+.es-diagram {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.es-diagram text {
+  font-family: inherit;
+  text-anchor: middle;
+}
+
+.es-diagram .es-start { text-anchor: start; }
+
+.es-track {
+  fill: none;
+  stroke: var(--aspire-primary);
+  stroke-width: 3px;
+}
+
+.es-track-alert {
+  stroke: #864df5;
+  stroke-width: 2.5px;
+  stroke-dasharray: 8 8;
+}
+
+.es-node rect { stroke-width: 2.5px; }
+.es-producer rect { fill: #efe9ff; stroke: var(--aspire-purple); }
+.es-kafka rect { fill: #f4f4f6; stroke: #231f20; }
+.es-dashboard rect { fill: #edf8ef; stroke: #339933; }
+.es-consumer rect { fill: #eaf4ff; stroke: #3776ab; }
+.es-browser rect { fill: #f8f9fc; stroke: var(--aspire-gray-3); }
+
+.es-node-title {
+  fill: var(--aspire-black);
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.es-node-sub {
+  fill: var(--aspire-gray-4);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.es-label {
+  fill: var(--aspire-gray-4);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.es-diagram .es-label-alert { fill: #864df5; }
+
+.es-callout {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+}
+
+.es-callout rect {
+  fill: #fff4f5;
+  stroke: var(--aspire-flamingo);
+  stroke-width: 2px;
+}
+
+.es-anomaly-note rect { fill: var(--aspire-white); }
+
+.es-note-link {
+  fill: none;
+  stroke: var(--aspire-flamingo);
+  stroke-width: 2px;
+  stroke-dasharray: 4 4;
+}
+
+.es-diagram .es-mono {
+  fill: var(--aspire-gray-4);
+  font-family: 'Fira Code', monospace;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.es-note-value,
+.es-chip-text {
+  fill: var(--aspire-black);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.es-chip-text { font-size: 14px; }
+
+.es-detect-title {
+  fill: #c4314b;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.es-detect-rule {
+  fill: var(--aspire-gray-4);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.es-alert-icon circle { fill: var(--aspire-flamingo); }
+
+.es-alert-icon text {
+  fill: var(--aspire-white);
+  font-size: 15px;
+  font-weight: 800;
+}
+
+/* Packets stay hidden unless the slide is live, so exports show the clean diagram. */
+.es-pkt {
+  opacity: 0;
+  stroke: var(--aspire-white);
+  stroke-width: 2px;
+}
+
+.es-reading { fill: var(--aspire-purple); }
+.es-anomaly { fill: var(--aspire-purple); stroke: var(--aspire-flamingo); stroke-width: 3.5px; }
+.es-alert { fill: var(--aspire-flamingo); }
+.es-poll { fill: var(--aspire-gray-3); --dy: -136px; }
+.es-on-e1 { --dx: 192px; }
+.es-on-e2 { --dx: 172px; }
+.es-on-e3 { --dy: 132px; }
+.es-on-e4 { --dy: -132px; }
+
+.es-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.35em 1.8em;
+  margin-top: 0.3em;
+  color: var(--aspire-gray-4);
+  font-size: 0.68em;
+  font-weight: 500;
+}
+
+.es-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45em;
+}
+
+.es-key::before {
+  content: '';
+  width: 0.7em;
+  height: 0.7em;
+  border-radius: 50%;
+}
+
+.es-key-reading::before { background: var(--aspire-purple); }
+.es-key-alert::before { background: var(--aspire-flamingo); }
+.es-key-poll::before { background: var(--aspire-gray-3); }
+
+/* ── Keyframes ── */
+@keyframes aspire-fade-in { from { opacity: 0; } }
+@keyframes aspire-rise { from { opacity: 0; transform: translateY(28px); } }
+@keyframes aspire-land { from { opacity: 0; transform: translateY(-26px); } }
+@keyframes aspire-from-left { from { opacity: 0; transform: translateX(-32px); } }
+@keyframes aspire-from-right { from { opacity: 0; transform: translateX(32px); } }
+@keyframes aspire-hub-in { from { opacity: 0; transform: scale(0.88); } }
+@keyframes aspire-arrow-in { from { opacity: 0; transform: translate(-110%, -50%); } }
+
+/* The negative top/bottom insets keep the bar's drop shadow visible while it grows. */
+@keyframes aspire-bar-grow {
+  from { clip-path: inset(-4px 100% -4px 0 round 0 8px 8px 0); }
+  to { clip-path: inset(-4px -4px -4px 0 round 0 8px 8px 0); }
+}
+
+@keyframes es-hop-x {
+  0% { opacity: 0; transform: translateX(0); }
+  5%, 40% { opacity: 1; }
+  45%, 100% { opacity: 0; transform: translateX(var(--dx)); }
+}
+
+@keyframes es-hop-y {
+  0% { opacity: 0; transform: translateY(0); }
+  5%, 40% { opacity: 1; }
+  45%, 100% { opacity: 0; transform: translateY(var(--dy)); }
+}
+
+/* Request up to the dashboard, then the response back down. */
+@keyframes es-poll {
+  0% { opacity: 0; transform: translateY(0); fill: var(--aspire-gray-3); }
+  4% { opacity: 1; }
+  20% { transform: translateY(var(--dy)); fill: var(--aspire-gray-3); }
+  24% { transform: translateY(var(--dy)); fill: #339933; }
+  40% { opacity: 1; transform: translateY(0); }
+  44%, 100% { opacity: 0; transform: translateY(0); fill: #339933; }
+}
+
+@keyframes es-alarm {
+  15%, 60% { stroke: var(--aspire-flamingo); stroke-width: 4.5px; }
+}
+
+@keyframes es-pop { from { opacity: 0; transform: translateY(10px) scale(0.92); } }
+
+/* ── Live presentation only ── */
+@media screen and (prefers-reduced-motion: no-preference) {
+  /* Fragment reveal */
+  section [data-marpit-fragment] {
+    transition:
+      opacity 320ms cubic-bezier(0.16, 1, 0.3, 1),
+      transform 320ms cubic-bezier(0.16, 1, 0.3, 1),
+      background-color 250ms ease,
+      box-shadow 250ms ease;
+  }
+
+  section [data-bespoke-marp-fragment="inactive"] {
+    opacity: 0;
+    transform: translateY(0.45em);
+  }
+
+  /* Charts: bars grow in sequence; "after" bars follow the "before" bars */
+  section .chart .metric:nth-child(2) { --aspire-i: 1; }
+  section .chart .metric:nth-child(3) { --aspire-i: 2; }
+  section .chart .metric:nth-child(4) { --aspire-i: 3; }
+  section .chart .metric:nth-child(5) { --aspire-i: 4; }
+  section .chart .bar.after { --aspire-after: 1; }
+
+  :marpit-container > svg.bespoke-marp-active > foreignObject > section .chart .bar {
+    animation: aspire-bar-grow 700ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+    animation-delay: calc(150ms + var(--aspire-i, 0) * 110ms + var(--aspire-after, 0) * 450ms);
+  }
+
+  :marpit-container > svg.bespoke-marp-active > foreignObject > section .chart :is(.legend, .caption) {
+    animation: aspire-fade-in 500ms ease-out 900ms backwards;
+  }
+
+  /* Four pillars: columns rise, then the roof settles on top */
+  :marpit-container > svg.bespoke-marp-active > foreignObject > section .pillars .pillar {
+    animation: aspire-rise 650ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  }
+
+  :marpit-container > svg.bespoke-marp-active > foreignObject > section .pillars .pillar.p2 { animation-delay: 110ms; }
+  :marpit-container > svg.bespoke-marp-active > foreignObject > section .pillars .pillar.p3 { animation-delay: 220ms; }
+  :marpit-container > svg.bespoke-marp-active > foreignObject > section .pillars .pillar.p4 { animation-delay: 330ms; }
+
+  :marpit-container > svg.bespoke-marp-active > foreignObject > section .pillars .architrave {
+    animation: aspire-fade-in 300ms ease-out 560ms backwards;
+  }
+
+  :marpit-container > svg.bespoke-marp-active > foreignObject > section .pillars .entablature {
+    animation: aspire-land 600ms cubic-bezier(0.16, 1, 0.3, 1) 600ms backwards;
+  }
+
+  /* Flow diagrams: inputs, hub, then outputs. Morphing flows skip the entrance. */
+  :marpit-container > svg.bespoke-marp-active > foreignObject > section .polyglot-flow:not(:has([data-morph])) > .flow-panel:first-child {
+    animation: aspire-from-left 600ms cubic-bezier(0.16, 1, 0.3, 1) 100ms backwards;
+  }
+
+  :marpit-container > svg.bespoke-marp-active > foreignObject > section .polyglot-flow:not(:has([data-morph])) > .flow-hub {
+    animation: aspire-hub-in 600ms cubic-bezier(0.16, 1, 0.3, 1) 380ms backwards;
+  }
+
+  :marpit-container > svg.bespoke-marp-active > foreignObject > section .polyglot-flow:not(:has([data-morph])) > .flow-panel:last-child {
+    animation: aspire-from-right 600ms cubic-bezier(0.16, 1, 0.3, 1) 660ms backwards;
+  }
+
+  :marpit-container > svg.bespoke-marp-active > foreignObject > section .polyglot-flow:not(:has([data-morph])) > .flow-panel:first-child::after {
+    animation: aspire-arrow-in 400ms cubic-bezier(0.16, 1, 0.3, 1) 520ms backwards;
+  }
+
+  :marpit-container > svg.bespoke-marp-active > foreignObject > section .polyglot-flow:not(:has([data-morph])) > .flow-hub::after {
+    animation: aspire-arrow-in 400ms cubic-bezier(0.16, 1, 0.3, 1) 800ms backwards;
+  }
+
+  /* Event stream: readings every 2 s, browser polls every 5 s, one anomaly per visit */
+  :marpit-container > svg.bespoke-marp-active > foreignObject > section .es-reading.es-on-e1 {
+    animation: es-hop-x 2s linear infinite backwards;
+  }
+
+  :marpit-container > svg.bespoke-marp-active > foreignObject > section .es-reading.es-on-e2 {
+    animation: es-hop-x 2s linear 1s infinite backwards;
+  }
+
+  :marpit-container > svg.bespoke-marp-active > foreignObject > section .es-reading.es-on-e3 {
+    animation: es-hop-y 2s linear 1s infinite backwards;
+  }
+
+  :marpit-container > svg.bespoke-marp-active > foreignObject > section .es-poll {
+    animation: es-poll 5s ease-in-out 0.5s infinite backwards;
+  }
+
+  :marpit-container > svg.bespoke-marp-active > foreignObject > section .es-anomaly-note {
+    animation: es-pop 500ms cubic-bezier(0.16, 1, 0.3, 1) 2.5s backwards;
+  }
+
+  :marpit-container > svg.bespoke-marp-active > foreignObject > section .es-anomaly.es-on-e1 {
+    animation: es-hop-x 2s linear 2.8s both;
+  }
+
+  :marpit-container > svg.bespoke-marp-active > foreignObject > section .es-anomaly.es-on-e2 {
+    animation: es-hop-x 2s linear 3.9s both;
+  }
+
+  :marpit-container > svg.bespoke-marp-active > foreignObject > section .es-anomaly.es-on-e3 {
+    animation: es-hop-y 2s linear 3.9s both;
+  }
+
+  :marpit-container > svg.bespoke-marp-active > foreignObject > section .es-consumer rect {
+    animation: es-alarm 1.4s ease-out 4.8s;
+  }
+
+  :marpit-container > svg.bespoke-marp-active > foreignObject > section .es-detect {
+    animation: es-pop 500ms cubic-bezier(0.16, 1, 0.3, 1) 4.9s backwards;
+  }
+
+  :marpit-container > svg.bespoke-marp-active > foreignObject > section .es-alert.es-on-e4 {
+    animation: es-hop-y 2s linear 5.3s both;
+  }
+
+  :marpit-container > svg.bespoke-marp-active > foreignObject > section .es-alert.es-on-e2 {
+    animation: es-hop-x 2s linear 6.4s both;
+  }
+
+  :marpit-container > svg.bespoke-marp-active > foreignObject > section .es-dashboard rect {
+    animation: es-alarm 1.4s ease-out 7.3s;
+  }
+
+  :marpit-container > svg.bespoke-marp-active > foreignObject > section .es-alert-chip {
+    animation: es-pop 500ms cubic-bezier(0.16, 1, 0.3, 1) 7.4s backwards;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  section.apphost-morph > h1,
+  section.apphost-morph pre,
+  section [data-morph] {
+    view-transition-name: none;
+  }
+}

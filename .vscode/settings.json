@@ -7,6 +7,7 @@
 		"./slides/themes/custom-uncover.css",
 		"./slides/themes/custom-aspire-dark.css",
 		"./slides/themes/custom-aspire-light.css",
+		"./slides/themes/aspire-motion.css",
 		"./slides/themes/vsl.css"
 	]
 }
