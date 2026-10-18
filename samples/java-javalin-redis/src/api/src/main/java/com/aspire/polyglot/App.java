@@ -1,7 +1,8 @@
 package com.aspire.polyglot;
 
 import io.javalin.Javalin;
-import redis.clients.jedis.JedisPooled;
+import io.javalin.json.JavalinJackson3;
+import redis.clients.jedis.RedisClient;
 import redis.clients.jedis.resps.Tuple;
 
 import java.util.ArrayList;
@@ -24,34 +25,39 @@ public class App {
         String redisHost = env("REDIS_HOST", "localhost");
         int redisPort = Integer.parseInt(env("REDIS_PORT", "6379"));
 
-        JedisPooled redis = new JedisPooled(redisHost, redisPort);
+        RedisClient redis = RedisClient.builder().hostAndPort(redisHost, redisPort).build();
+        createApp(redis).start("0.0.0.0", port);
+    }
 
-        Javalin app = Javalin.create().start("0.0.0.0", port);
+    static Javalin createApp(RedisClient redis) {
+        return Javalin.create(config -> {
+            config.jsonMapper(new JavalinJackson3());
+            config.events.serverStopped(redis::close);
+            // Minimal leaderboard UI served straight from Javalin (no extra container).
+            config.routes.get("/", ctx -> ctx.html(PAGE));
 
-        // Minimal leaderboard UI served straight from Javalin (no extra container).
-        app.get("/", ctx -> ctx.html(PAGE));
+            config.routes.get("/health", ctx -> ctx.json(Map.of("status", "healthy")));
 
-        app.get("/health", ctx -> ctx.json(Map.of("status", "healthy")));
+            // Submit a score: adds/updates the player in the sorted set.
+            config.routes.post("/api/scores", ctx -> {
+                ScoreDto dto = ctx.bodyAsClass(ScoreDto.class);
+                redis.zadd(KEY, dto.score, dto.player);
+                ctx.status(201).json(dto);
+            });
 
-        // Submit a score: adds/updates the player in the sorted set.
-        app.post("/api/scores", ctx -> {
-            ScoreDto dto = ctx.bodyAsClass(ScoreDto.class);
-            redis.zadd(KEY, dto.score, dto.player);
-            ctx.status(201).json(dto);
-        });
-
-        // Top 10 players by score, highest first.
-        app.get("/api/leaderboard", ctx -> {
-            List<Tuple> top = redis.zrevrangeWithScores(KEY, 0, 9);
-            List<Map<String, Object>> board = new ArrayList<>();
-            int rank = 1;
-            for (Tuple t : top) {
-                board.add(Map.of(
-                        "rank", rank++,
-                        "player", t.getElement(),
-                        "score", (long) t.getScore()));
-            }
-            ctx.json(Map.of("leaderboard", board));
+            // Top 10 players by score, highest first.
+            config.routes.get("/api/leaderboard", ctx -> {
+                List<Tuple> top = redis.zrevrangeWithScores(KEY, 0, 9);
+                List<Map<String, Object>> board = new ArrayList<>();
+                int rank = 1;
+                for (Tuple t : top) {
+                    board.add(Map.of(
+                            "rank", rank++,
+                            "player", t.getElement(),
+                            "score", (long) t.getScore()));
+                }
+                ctx.json(Map.of("leaderboard", board));
+            });
         });
     }
 
@@ -114,9 +120,20 @@ public class App {
                   const res = await fetch('/api/leaderboard');
                   const data = await res.json();
                   const rows = data.leaderboard || [];
-                  board.innerHTML = rows.length
-                    ? rows.map(r => `<tr><td class="rank">${r.rank}</td><td>${r.player}</td><td class="score">${r.score}</td></tr>`).join('')
-                    : '<tr><td class="empty" colspan="3">No scores yet &mdash; submit one above.</td></tr>';
+                  if (rows.length === 0) {
+                    board.innerHTML = '<tr><td class="empty" colspan="3">No scores yet &mdash; submit one above.</td></tr>';
+                    return;
+                  }
+                  board.replaceChildren(...rows.map(r => {
+                    const row = document.createElement('tr');
+                    for (const [value, className] of [[r.rank, 'rank'], [r.player, ''], [r.score, 'score']]) {
+                      const cell = document.createElement('td');
+                      cell.className = className;
+                      cell.textContent = value;
+                      row.append(cell);
+                    }
+                    return row;
+                  }));
                 }
                 document.getElementById('form').addEventListener('submit', async (e) => {
                   e.preventDefault();

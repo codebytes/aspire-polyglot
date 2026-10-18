@@ -39,7 +39,9 @@ dashboard. Open the **adminer** endpoint and log in:
   at the hostname `db` (its resource name) — `ADMINER_DEFAULT_SERVER=db` — with no
   service-discovery code.
 - `WaitFor` to order startup so Adminer starts after the database.
-- Logs and container metrics for both images surfaced in the Aspire dashboard.
+- Resource state and console logs for both images surfaced in the Aspire dashboard.
+  These unmodified public images do not contain an OpenTelemetry SDK, so this
+  sample does not emit application OTLP traces or structured logs.
 
 ## Project Layout
 

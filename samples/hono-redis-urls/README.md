@@ -25,6 +25,8 @@ a short link redirects and bumps its click counter.
 The API container sets `NODE_OPTIONS=--use-openssl-ca` so Node's OTLP exporters trust
 Aspire's development certificate through the injected `SSL_CERT_DIR`. HTTPS
 certificate validation remains enabled.
+The API start script preloads instrumentation and registers the OpenTelemetry
+ESM loader hook so actual HTTP requests, not just startup activity, produce server spans.
 
 ## What It Demonstrates
 - A **single-file `apphost.mts`** that wires three resources with a fluent builder and

@@ -8,12 +8,12 @@ or npm packages are needed.
 Inspired by the upstream [Aspire Terminals playground](https://github.com/microsoft/aspire/tree/main/playground/Terminals)
 and [TerminalsJs playground](https://github.com/microsoft/aspire/tree/main/playground/TerminalsJs).
 
-> **Experimental:** `WithTerminal()` is experimental in Aspire 13.5.3. The AppHost
+> **Experimental:** `WithTerminal()` is experimental in Aspire 13.6.1. The AppHost
 > explicitly acknowledges `ASPIRETERMINAL001`; the API may change in future releases.
 
 ## Prerequisites
 
-- [Aspire CLI](https://aspire.dev/get-started/install-cli/) 13.5.3 and .NET 10 SDK.
+- [Aspire CLI](https://aspire.dev/get-started/install-cli/) 13.6.1 and .NET 10 SDK.
 - [Node.js](https://nodejs.org/) 24 or later, available as `node` on `PATH`.
 - `/bin/bash` on macOS/Linux, or `cmd.exe` on Windows.
 

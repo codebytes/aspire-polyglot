@@ -98,8 +98,9 @@ if os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT"):
 import logging
 import sqlite3
 from datetime import datetime
-from flask import Flask, request, redirect, url_for, render_template_string
+from flask import Flask, abort, request, redirect, url_for, render_template_string
 import markdown
+import nh3
 import re
 
 logger = logging.getLogger(__name__)
@@ -216,7 +217,8 @@ def init_db():
     
     # Seed with a Home page if it doesn't exist
     cursor.execute("SELECT COUNT(*) as count FROM pages WHERE slug = ?", ("home",))
-    if cursor.fetchone()["count"] == 0:
+    seed_home = cursor.fetchone()["count"] == 0
+    if seed_home:
         cursor.execute("""
             INSERT INTO pages (slug, title, content, updated_at)
             VALUES (?, ?, ?, ?)
@@ -229,6 +231,8 @@ def init_db():
     
     conn.commit()
     conn.close()
+    if seed_home:
+        invalidate_cache("home")
 
 def slugify(text):
     """Convert text to URL-safe slug."""
@@ -445,15 +449,37 @@ def view_page(slug):
     conn.close()
     
     if not page:
-        return f"Page not found: {slug}", 404
+        abort(404, description=f"Page not found: {slug}")
     
     # Check cache first, then render and store
     html_content = get_cached_html(slug)
     if html_content is None:
         html_content = markdown.markdown(page["content"], extensions=['extra', 'nl2br'])
+        html_content = sanitize_html(html_content)
         set_cached_html(slug, html_content)
+    else:
+        html_content = sanitize_html(html_content)
     
     return render_template_string(PAGE_TEMPLATE, title=page["title"], page=page, content=html_content)
+
+def sanitize_html(content):
+    return nh3.clean(
+        content,
+        tags={
+            "a", "abbr", "blockquote", "br", "code", "dd", "del", "div", "dl", "dt",
+            "em", "h1", "h2", "h3", "h4", "h5", "h6", "hr", "img", "li", "ol",
+            "p", "pre", "span", "strong", "sub", "sup", "table", "tbody", "td",
+            "th", "thead", "tr", "ul",
+        },
+        attributes={
+            "a": {"href", "title"},
+            "abbr": {"title"},
+            "img": {"src", "alt", "title"},
+            "td": {"colspan", "rowspan"},
+            "th": {"colspan", "rowspan"},
+        },
+        url_schemes={"http", "https", "mailto"},
+    )
 
 @app.route("/page/<slug>/edit")
 def edit_page(slug):
@@ -465,7 +491,7 @@ def edit_page(slug):
     conn.close()
     
     if not page:
-        return f"Page not found: {slug}", 404
+        abort(404, description=f"Page not found: {slug}")
     
     return render_template_string(EDIT_TEMPLATE, title=f"Edit {page['title']}", page=page)
 
@@ -530,11 +556,11 @@ def health():
     return {"status": "healthy", "service": "markdown-wiki"}, 200
 
 if __name__ == "__main__":
-    # Initialize database
-    init_db()
-    
     # Initialize Redis cache (optional — works without it)
     _init_redis()
+
+    # Initialize database after the cache so seeding invalidates stale HTML.
+    init_db()
     
     # Get port from environment variable
     port = int(os.environ.get("PORT", 8080))

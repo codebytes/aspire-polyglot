@@ -36,16 +36,24 @@ function render(urls: ShortUrl[]): void {
     list.innerHTML = '<li class="empty">No links yet — shorten one above.</li>';
     return;
   }
-  list.innerHTML = urls
-    .map(
-      (u) => `
-      <li>
-        <a class="code" href="/r/${u.code}" target="_blank" rel="noreferrer">${shortLink(u.code)}</a>
-        <span class="target" title="${u.url}">${u.url}</span>
-        <span class="clicks">${u.clicks} clicks</span>
-      </li>`
-    )
-    .join('');
+  list.replaceChildren(...urls.map((u) => {
+    const item = document.createElement('li');
+    const link = document.createElement('a');
+    link.className = 'code';
+    link.href = `/r/${encodeURIComponent(u.code)}`;
+    link.target = '_blank';
+    link.rel = 'noreferrer';
+    link.textContent = shortLink(u.code);
+    const target = document.createElement('span');
+    target.className = 'target';
+    target.title = u.url;
+    target.textContent = u.url;
+    const clicks = document.createElement('span');
+    clicks.className = 'clicks';
+    clicks.textContent = `${u.clicks} clicks`;
+    item.append(link, target, clicks);
+    return item;
+  }));
 }
 
 async function load(): Promise<void> {

@@ -1,7 +1,7 @@
-#:sdk Aspire.AppHost.Sdk@13.5.3
+#:sdk Aspire.AppHost.Sdk@13.6.1
 #:property AspireUseCliBundle=true
-#:package Aspire.Hosting.Python@13.5.3
-#:package Aspire.Hosting.Docker@13.5.3
+#:package Aspire.Hosting.Python@13.6.1
+#:package Aspire.Hosting.Docker@13.6.1
 
 // Single-file C# AppHost whose only service is a Python FastAPI app. In local
 // development the app runs NATIVELY: Aspire creates a virtual environment from
@@ -18,6 +18,7 @@ builder.AddDockerComposeEnvironment("compose");
 
 // FastAPI via uvicorn — runs on the host in dev, containerized on publish.
 builder.AddUvicornApp("api", "app", "main:app")
+    .WithOtlpExporter()
     .WithHttpEndpoint(env: "PORT")
     .WithHttpHealthCheck("/health")
     .WithExternalHttpEndpoints();

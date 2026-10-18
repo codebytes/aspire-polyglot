@@ -8,7 +8,7 @@ AppHost, Java API, Redis store.**
 
 ## Tech Stack
 - **AppHost**: single-file `apphost.cs`, base Aspire SDK
-- **API**: Java 21 + [Javalin](https://javalin.io/) + [Jedis](https://github.com/redis/jedis), built from a Dockerfile
+- **API**: Java 21 + [Javalin 7](https://javalin.io/) + [Jedis 8](https://github.com/redis/jedis) + Jackson 3, built from a Dockerfile
 - **Store**: `redis:7-alpine` (public image) — a sorted-set leaderboard
 
 ## Running
@@ -19,6 +19,11 @@ aspire run
 ```
 
 **Prerequisites:** [Aspire CLI](https://aspire.dev/get-started/install-cli/), [Docker](https://docs.docker.com/get-docker/).
+
+For a host-only Java build, use JDK 21+ and Maven 3.9+:
+`mvn -f src/api/pom.xml clean verify`. Tests exercise the HTTP API with a mocked
+Redis client; no Redis server or Docker is needed. Javalin 7 registers all routes
+before startup, and the app explicitly selects its Jackson 3 mapper.
 
 Aspire builds the Java image (Maven multi-stage build), starts Redis, and opens
 the dashboard. Try the API:
@@ -40,6 +45,9 @@ curl http://<api-endpoint>/api/leaderboard
 - `AddDockerfile` for the Java app + `AddContainer` for Redis, wired with
   **container-to-container networking by resource name** (`REDIS_HOST=cache`).
 - A real Redis data structure (a **sorted set**) driving the leaderboard ranking.
+- `WithOtlpExporter()` configures the OpenTelemetry Java agent to export HTTP and
+  Redis traces, runtime metrics, and Logback structured logs to the dashboard.
+  The entrypoint trusts Aspire's mounted development certificate without disabling TLS.
 - Because the API is already a Dockerfile, `aspire publish` ships it as a
   container image with no extra work.
 

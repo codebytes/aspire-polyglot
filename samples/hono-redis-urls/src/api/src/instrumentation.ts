@@ -5,8 +5,8 @@
  * configured by Aspire), this module initializes the OpenTelemetry Node.js SDK to
  * collect and export distributed traces, metrics, and logs to the Aspire dashboard.
  *
- * This file must be imported before any other modules to ensure all libraries
- * are automatically instrumented.
+ * The start script preloads this file with --import before loading the app,
+ * so HTTP instrumentation is registered before the server module is evaluated.
  *
  * @see https://opentelemetry.io/docs/languages/js/getting-started/nodejs/
  */

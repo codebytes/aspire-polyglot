@@ -14,7 +14,7 @@ dashboard.
 
 ```bash
 cd samples/standalone-dashboard
-docker compose up --build        # or:  ./run.sh   /   ./run.ps1
+docker compose up --build        # or:  bash ./run.sh   /   ./run.ps1
 ```
 
 Then open **<http://localhost:18888>** and watch the **Structured Logs**,
@@ -24,10 +24,11 @@ Then open **<http://localhost:18888>** and watch the **Structured Logs**,
 > **No Docker Compose?** You still only need one container for the dashboard:
 >
 > ```bash
-> docker run --rm -it -p 18888:18888 -p 4317:18889 -p 4318:18890 \
+> docker run --rm -it -p 127.0.0.1:18888:18888 \
+>   -p 127.0.0.1:4317:18889 -p 127.0.0.1:4318:18890 \
 >   -e DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS=true \
 >   -d --name aspire-dashboard \
->   mcr.microsoft.com/dotnet/aspire-dashboard:latest
+>   mcr.microsoft.com/dotnet/aspire-dashboard:13.6.1
 > ```
 >
 > Then point any OTEL app at `http://localhost:4317` (gRPC) or `4318` (HTTP).
@@ -62,6 +63,8 @@ Inside the Compose network the workers reach the dashboard's OTLP/gRPC listener 
 **and** the OTLP API key so the demo runs with zero auth setup. **Local demo only —
 never do this in production.** (Without it, the dashboard prints a login URL with a
 token in its container logs, and OTLP requires an API key.)
+The published ports bind only to IPv4 loopback so the anonymous demo is not
+exposed on the host's network interfaces.
 
 ## Wire your own app in 30 seconds
 

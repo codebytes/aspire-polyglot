@@ -34,8 +34,10 @@ async function startConsumers() {
         // Consumer for alerts
         await consumer.connect();
         await consumer.subscribe({ topic: 'sensor-alerts', fromBeginning: false });
+        await readingsConsumer.connect();
+        await readingsConsumer.subscribe({ topic: 'sensor-readings', fromBeginning: false });
         
-        consumer.run({
+        await consumer.run({
             eachMessage: async ({ topic, partition, message }) => {
                 try {
                     const alert = JSON.parse(message.value.toString());
@@ -51,10 +53,7 @@ async function startConsumers() {
         });
         
         // Consumer for readings
-        await readingsConsumer.connect();
-        await readingsConsumer.subscribe({ topic: 'sensor-readings', fromBeginning: false });
-        
-        readingsConsumer.run({
+        await readingsConsumer.run({
             eachMessage: async ({ topic, partition, message }) => {
                 try {
                     const reading = JSON.parse(message.value.toString());
@@ -97,6 +96,7 @@ async function startConsumers() {
         console.log('Kafka consumers started successfully');
     } catch (err) {
         console.error('Error starting consumers:', err);
+        await Promise.all([consumer.disconnect(), readingsConsumer.disconnect()]);
         // Retry after delay
         setTimeout(startConsumers, 5000);
     }

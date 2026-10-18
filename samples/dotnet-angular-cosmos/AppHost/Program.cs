@@ -5,7 +5,7 @@ var builder = DistributedApplication.CreateBuilder(args);
 builder.AddAzureContainerAppEnvironment("aca");
 
 var cosmos = builder.AddAzureCosmosDB("cosmos")
-    .RunAsPreviewEmulator(emulator =>
+    .RunAsEmulator(emulator =>
     {
         emulator.WithDataExplorer();
     });

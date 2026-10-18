@@ -1,0 +1,29 @@
+// InputType.java - GENERATED CODE - DO NOT EDIT
+
+package aspire;
+
+/** InputType enum. */
+@SuppressWarnings({"all", "unchecked", "serial"})
+public enum InputType implements WireValueEnum {
+    TEXT("Text"),
+    SECRET_TEXT("SecretText"),
+    CHOICE("Choice"),
+    BOOLEAN("Boolean"),
+    NUMBER("Number"),
+    FILE("File");
+
+    private final String value;
+
+    InputType(String value) {
+        this.value = value;
+    }
+
+    public String getValue() { return value; }
+
+    public static InputType fromValue(String value) {
+        for (InputType e : values()) {
+            if (e.value.equals(value)) return e;
+        }
+        throw new IllegalArgumentException("Unknown value: " + value);
+    }
+}

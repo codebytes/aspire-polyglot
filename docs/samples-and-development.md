@@ -11,6 +11,17 @@ root unless a sample's README says otherwise.
 
 **Prerequisites:** [Aspire CLI](https://aspire.dev/get-started/install-cli/), [Docker](https://docs.docker.com/get-docker/) for container-based samples. Individual sample READMEs list the required language runtimes.
 
+The samples pin Aspire SDK and integration packages to **13.6.1**. After changing
+an AppHost's integration versions, run `aspire restore --apphost <entry-point>`
+to regenerate its committed `.aspire/modules/` bindings; do not edit generated
+bindings by hand.
+
+AppHost launch profiles use dynamically allocated loopback ports for the dashboard,
+OTLP collectors, and resource service so multiple samples can run side by side.
+Use the URLs printed by Aspire rather than assuming a fixed dashboard port.
+The standalone dashboard is the exception: its documented ports are fixed and
+bound to IPv4 loopback because the local demo disables authentication.
+
 ## Samples
 
 ### No AppHost required 📊

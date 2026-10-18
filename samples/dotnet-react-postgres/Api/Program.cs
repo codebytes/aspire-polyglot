@@ -17,6 +17,8 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+app.UseDefaultFiles();
+app.UseStaticFiles();
 app.UseCors();
 app.MapDefaultEndpoints();
 

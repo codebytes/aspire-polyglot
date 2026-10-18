@@ -5,6 +5,9 @@ const builder = await createBuilder();
 // Run the Express API and expose its HTTP endpoint externally.
 const app = await builder
     .addNodeApp("app", "./api", "src/index.ts")
+    .withRunScript("start")
+    .withOtlpExporter({ protocol: OtlpProtocol.HttpProtobuf })
+    .publishAsPackageScript({ scriptName: "start" })
     .withHttpEndpoint({ env: "PORT" })
     .withExternalHttpEndpoints();
 

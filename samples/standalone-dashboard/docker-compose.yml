@@ -8,16 +8,16 @@ name: aspire-standalone-dashboard
 services:
   # The Aspire dashboard, straight from the public image.
   dashboard:
-    image: mcr.microsoft.com/dotnet/aspire-dashboard:latest
+    image: mcr.microsoft.com/dotnet/aspire-dashboard:13.6.1
     container_name: aspire-dashboard
     environment:
       # Local demo only: disable the browser login token AND the OTLP API key so
       # any app can push telemetry with zero auth setup. Do NOT do this in prod.
       - DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS=true
     ports:
-      - "18888:18888"   # Dashboard UI            -> http://localhost:18888
-      - "4317:18889"    # OTLP/gRPC ingestion      -> host localhost:4317
-      - "4318:18890"    # OTLP/HTTP ingestion      -> host localhost:4318
+      - "127.0.0.1:18888:18888"   # Dashboard UI       -> http://localhost:18888
+      - "127.0.0.1:4317:18889"    # OTLP/gRPC ingestion -> host localhost:4317
+      - "127.0.0.1:4318:18890"    # OTLP/HTTP ingestion -> host localhost:4318
     restart: unless-stopped
 
   # Node.js worker — traces + metrics + logs via the OpenTelemetry JS SDK.

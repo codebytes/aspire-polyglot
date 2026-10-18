@@ -22,6 +22,7 @@ public class AppHost {
             // the API is unreachable from the browser/host.
             api.withHttpEndpoint(new WithHttpEndpointOptions().targetPort(8080.0).name("http"));
             api.withExternalHttpEndpoints();
+            api.withHttpHealthCheck(new WithHttpHealthCheckOptions().path("/api/notes"));
             // Raw container resources provide startup ordering. Spring Boot then
             // establishes its datasource connection before serving requests.
             api.waitFor(pg);

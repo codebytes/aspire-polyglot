@@ -1,11 +1,15 @@
 import re
+import logging
 from collections import Counter
 
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
+from telemetry import configure_telemetry
 
 app = FastAPI(title="Aspire Python Text Analyzer")
+configure_telemetry(app)
+logger = logging.getLogger(__name__)
 
 # Words-per-minute used for the reading-time estimate.
 WPM = 200
@@ -41,6 +45,7 @@ def analyze(req: AnalyzeRequest):
     words = re.findall(r"\b\w+\b", text.lower())
     sentences = [s for s in re.split(r"[.!?]+", text) if s.strip()]
     top = Counter(words).most_common(5)
+    logger.info("Analyzed text: words=%d sentences=%d", len(words), len(sentences))
 
     return {
         "characters": len(text),
@@ -117,4 +122,3 @@ PAGE = """
 </body>
 </html>
 """
-

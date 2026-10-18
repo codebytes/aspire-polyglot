@@ -7,7 +7,7 @@ templates without deploying anything**.
 
 ## Prerequisites
 
-- [Aspire CLI](https://aspire.dev/get-started/install-cli/) 13.5.3 and the .NET 10 SDK.
+- [Aspire CLI](https://aspire.dev/get-started/install-cli/) 13.6.1 and the .NET 10 SDK.
 - [Docker](https://docs.docker.com/get-docker/) running Linux containers.
 - Node.js supported by Angular 22: `^22.22.3`, `^24.15.0`, or `>=26.0.0`.
 
@@ -25,6 +25,10 @@ minutes. Do not start a separate emulator on port 8081.
 
 Open **frontend** in the Aspire dashboard. API and frontend ports are assigned by
 Aspire; the Angular `/api` proxy reads the API's service-discovery endpoint.
+
+The frontend uses the lower-dependency `@angular/build` application and dev-server
+builders. Its Node launcher reads Aspire's `PORT` on Windows, macOS, and Linux
+without relying on shell-specific environment-variable expansion.
 The **Data Explorer** link on `cosmos` opens the emulator's database UI.
 
 For an isolated background run in a worktree:
@@ -64,7 +68,7 @@ build or push container images, deploy, or create/update/delete Azure resources.
 You do not need a running AppHost, Docker, a Cosmos emulator, an Azure subscription,
 or Azure credentials to publish the templates. Leave other demos running.
 
-Publishing needs Aspire CLI **13.5.3** and the .NET 10 SDK; the matching
+Publishing needs Aspire CLI **13.6.1** and the .NET 10 SDK; the matching
 `Aspire.Hosting.Azure.AppContainers` package is already included. ARM compilation
 also needs Azure CLI with Bicep installed (`az bicep version`; verified with Bicep
 0.42.1). The optional assertions use Node.js, with no additional npm dependencies.
@@ -150,7 +154,7 @@ would create billable Azure resources and is **outside this demo**.
   `.dockerignore` also excludes local `.generated/` files from the image context.
   Server-side API/YARP telemetry remains separate from browser exporters.
 
-The JavaScript publish API is experimental in Aspire 13.5.3 and its generated
+The JavaScript publish API is experimental in Aspire 13.6.1 and its generated
 YARP image is a preview image. Generated Azure APIs also include preview versions.
 Bicep compilation succeeds with nonblocking unused-parameter warnings; it does
 not prove Azure availability, permissions, image startup, or deployment success.

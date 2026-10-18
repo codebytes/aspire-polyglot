@@ -45,7 +45,7 @@ This sample demonstrates **event streaming** using Kafka with a polyglot archite
 
 ### Prerequisites
 
-- Aspire CLI 13.5.3 and .NET 10 SDK
+- Aspire CLI 13.6.1 and .NET 10 SDK
 - Python 3.12+
 - Node.js 22+
 - Docker (for Kafka)
@@ -140,6 +140,9 @@ var dashboard = builder.AddJavaScriptApp("dashboard", "../node-dashboard", "star
 ```
 
 Connection strings are automatically injected via `ConnectionStrings__messaging`.
+The dashboard subscribes both consumers before starting either one, and disconnects
+both before retrying a failed startup. This lets it recover when Kafka topic metadata
+is not ready yet. Run `node --test node-dashboard/app.test.js` to check that recovery.
 
 ## Monitoring
 
@@ -158,6 +161,9 @@ Monitor:
 - Distributed tracing
 - Metrics and resource usage
 - OpenTelemetry data
+
+The Node dashboard exports over HTTP/protobuf so it also works with Node 25's
+TLS restrictions on IP-address gRPC collectors; certificate validation stays enabled.
 
 ## Extending the Sample
 
