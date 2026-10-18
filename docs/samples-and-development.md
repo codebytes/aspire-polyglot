@@ -69,7 +69,7 @@ Single-file AppHosts focused on Docker images, `aspire publish`, and polyglot se
 
 | Sample | AppHost | Description |
 |--------|---------|-------------|
-| [dotnet-angular-cosmos](../samples/dotnet-angular-cosmos) | `AppHost/` | ASP.NET Core + Angular 22 + CosmosDB preview emulator — recipe manager; `aspire publish` generates Azure Container Apps and Cosmos DB Bicep |
+| [dotnet-angular-cosmos](../samples/dotnet-angular-cosmos) | `AppHost/` | ASP.NET Core + Angular 22 + Cosmos DB vNext emulator — recipe manager; `aspire publish` generates Azure Container Apps and Cosmos DB Bicep |
 
 ### Mixed / Polyglot
 
@@ -95,7 +95,7 @@ Aspire is polyglot on **two** independent axes: the language you **author the Ap
 
 ### 1. AppHost authoring languages
 
-The orchestrator itself can be written in several languages. C# and TypeScript are generally available; Python, Go, and Java are experimental preview (enabled via the `polyglotSupportEnabled` feature — see [`aspire.config.json`](../aspire.config.json)).
+The orchestrator itself can be written in several languages. C# and TypeScript are generally available; Python, Go, Java, and (since 13.6) Rust are experimental preview (enabled via the `polyglotSupportEnabled` feature — see [`aspire.config.json`](../aspire.config.json)).
 
 | AppHost language | File | Status | Sample(s) |
 |------------------|------|--------|-----------|
@@ -104,7 +104,7 @@ The orchestrator itself can be written in several languages. C# and TypeScript a
 | **Python** | `apphost.py` | Preview | [flask-markdown-wiki](../samples/preview/flask-markdown-wiki), [django-htmx-polls](../samples/preview/django-htmx-polls) |
 | **Go** | `apphost.go` | Preview | [svelte-go-bookmarks](../samples/preview/svelte-go-bookmarks) |
 | **Java** | `AppHost.java` | Preview | [spring-boot-postgres](../samples/preview/spring-boot-postgres) |
-| **Rust** | `apphost.rs` | Planned (SDK codegen groundwork exists) | — |
+| **Rust** | `apphost.rs` | Experimental (13.6, `experimentalPolyglot:rust` flag) | — |
 
 > The same `.NET` hosting integrations are surfaced to every AppHost language through the **Aspire Type System (ATS)**: the CLI auto-generates a typed SDK into `.aspire/modules/` so guest-language AppHosts call the same integrations without hand-written bindings.
 
@@ -121,9 +121,10 @@ Inside the AppHost, each service is added with an `Add*` method. Some are langua
 | `AddUvicornApp()` (+ `.WithUv()`) / `AddPythonApp()` | Python ASGI / script apps | [python-fastapi-docker](../samples/python-fastapi-docker) (`AddUvicornApp`), [polyglot-event-stream](../samples/polyglot-event-stream) (`AddPythonApp`) |
 | **`AddGoApp()`** — first-class `Aspire.Hosting.Go` (new in 13.4; Community Toolkit `Golang` deprecated) | A Go module (`go run`, auto-Dockerfile on publish) | _discussed — repo currently orchestrates Go via `AddDockerfile`/`AddExecutable`; see [Go apps in the AppHost](https://aspire.dev/integrations/frameworks/go/go-host/)_ |
 | **`AddBunApp()`** — `Aspire.Hosting.JavaScript` (now core in 13.4) | A Bun app/script | _discussed — see [Bun integration](https://aspire.dev/integrations/frameworks/bun-apps/)_ |
-| **`AddDenoApp()` / `AddDenoTask()`** — Community Toolkit | A Deno `run` script or `deno task` | _discussed — see [Deno apps in the AppHost](https://aspire.dev/integrations/frameworks/deno/deno-host/)_ |
+| **`AddDenoApp()`** — `Aspire.Hosting.JavaScript` (experimental in 13.6, `ASPIREDENO001`); the Community Toolkit integration also offers `AddDenoTask()` | A Deno script (task and serve modes) | _discussed — see [Deno apps in the AppHost](https://aspire.dev/integrations/frameworks/deno/deno-host/)_ |
 | **`AddBlazorWasmProject()` + `AddBlazorGateway()`** (13.4 preview) | Blazor WebAssembly + browser-facing gateway | _discussed — see [Blazor hosting](https://aspire.dev/integrations/dotnet/blazor-hosting/)_ |
-| `AddSpringApp()` — Community Toolkit | A Java Spring Boot app | _discussed — [spring-boot-postgres](../samples/preview/spring-boot-postgres) orchestrates Spring via `AddDockerfile`_ |
+| **`AddSpringBootApp()` / `AddQuarkusApp()` / `AddJavaApp()`** — `Aspire.Hosting.Java` (first-party preview in 13.6; replaces the Community Toolkit package) | Java apps through Maven or Gradle wrappers, or a prebuilt JAR | _discussed — [spring-boot-postgres](../samples/preview/spring-boot-postgres) and [java-javalin-redis](../samples/java-javalin-redis) orchestrate Java via `AddDockerfile`; see [Java apps in the AppHost](https://aspire.dev/integrations/frameworks/java/java-host/)_ |
+| **`AddRustApp()`** — `Aspire.Hosting.Rust` (first-party preview in 13.6) | A Cargo app | _discussed — see [Rust apps in the AppHost](https://aspire.dev/integrations/frameworks/rust/rust-host/)_ |
 | **`AddDockerfile()`** | **Any language** built from a Dockerfile | [go-redis-compose](../samples/go-redis-compose) (Go), [java-javalin-redis](../samples/java-javalin-redis) (Java), [hono-redis-urls](../samples/hono-redis-urls) & [vite-react-api](../samples/vite-react-api) (Node/Python) |
 | **`AddContainer()`** | **Any prebuilt public image** | [postgres-adminer](../samples/postgres-adminer), and Redis in [java-javalin-redis](../samples/java-javalin-redis) / [hono-redis-urls](../samples/hono-redis-urls) |
 | **`AddExecutable()`** | **Any process/CLI** | [terminal-demo](../samples/terminal-demo) (interactive local shell + Node.js REPL), [svelte-go-bookmarks](../samples/preview/svelte-go-bookmarks) (runs `npm` for the Svelte dev server) |
@@ -147,3 +148,12 @@ The repo-local Squad agent, skills, templates, and issue workflows have been ret
 
 The source deck for this presentation lives in [slides/](../slides/) and is built with [Marp](https://marp.app/).
 The [Pages workflow](../.github/workflows/marp-pages.yml) generates and deploys HTML and PDF on pushes to `main` or when run manually.
+
+Motion lives in [aspire-motion.css](../slides/themes/aspire-motion.css). It plays only in the HTML presentation, in browsers that support the View Transition API (best in Chrome or Edge). The PDF and the VS Code preview show each slide's complete, static state, and reduced-motion settings are respected. To author:
+
+- Write `*` bullets to reveal a list one click at a time.
+- Use `<!-- _transition: aspire-aperture -->` on the slide before a section divider.
+- Mark one element on each of two adjacent slides with the same `data-morph` value, mapped to a `view-transition-name` in `aspire-motion.css` (see `app-model`). Then give the first slide a non-fade transition to animate the element between slides.
+- Set a running section label with the `header` directive.
+
+Preview the motion with Marp's server mode, `npx @marp-team/marp-cli --server --html --theme-set slides/themes -I slides`, then open `http://localhost:8080/Slides.md`.

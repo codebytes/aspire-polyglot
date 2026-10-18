@@ -58,9 +58,9 @@ the shell instead:
 aspire terminal attach shell
 ```
 
-The sample's `aspire.config.json` enables `features.terminalCommandsEnabled`
-locally; no global feature-flag change is needed. The dashboard and CLI can
-attach to the same session at once and see the same input and output.
+Aspire CLI 13.6 runs the terminal commands without a feature flag; 13.5 required
+`features.terminalCommandsEnabled`. The dashboard and CLI can attach to the same
+session at once and see the same input and output.
 
 `exit` in the shell or `.exit` in Node ends that resource, not the AppHost. Use
 the resource's **Start** action in the dashboard to begin a new session. Stop the

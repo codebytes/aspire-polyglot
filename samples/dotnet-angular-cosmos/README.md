@@ -1,7 +1,8 @@
 # Recipe Manager - ASP.NET Core + Angular + Cosmos DB
 
-A .NET 10 Minimal API and Angular 22 recipe manager backed by the **local Cosmos DB
-preview emulator**. No Azure subscription or separately installed emulator is needed.
+A .NET 10 Minimal API and Angular 22 recipe manager backed by the **local, Linux-based Cosmos DB
+vNext emulator** (`RunAsEmulator`, the Aspire 13.6 default). No Azure subscription or separately
+installed emulator is needed.
 The same AppHost can also **publish Azure Container Apps and Cosmos DB Bicep
 templates without deploying anything**.
 
@@ -19,9 +20,13 @@ From this sample directory:
 aspire run --apphost AppHost/AppHost.csproj
 ```
 
-Aspire starts the preview emulator, creates the database, seeds three recipes, and
+Aspire starts the vNext emulator, creates the database, seeds three recipes, and
 starts the API and Angular dev server. The first emulator startup can take a few
 minutes. Do not start a separate emulator on port 8081.
+
+On macOS, the first 13.6 run can open a keychain prompt so Aspire can use your
+ASP.NET Core developer certificate for the emulator's HTTPS endpoints. `cosmos`
+stays in **Starting** until you approve it, so do this once before a live demo.
 
 Open **frontend** in the Aspire dashboard. API and frontend ports are assigned by
 Aspire; the Angular `/api` proxy reads the API's service-discovery endpoint.
@@ -140,7 +145,7 @@ would create billable Azure resources and is **outside this demo**.
 
 ### Local versus published behavior
 
-- Local `aspire run`/`start` still uses the preview emulator, Angular `ng serve`,
+- Local `aspire run`/`start` still uses the vNext emulator, Angular `ng serve`,
   the existing development `/api` proxy, and browser telemetry.
 - At publish time, `PublishAsStaticWebsite("/api", api, ...)` replaces the dev server
   with YARP serving `dist/recipe-manager/browser`. It preserves the `/api` prefix,
