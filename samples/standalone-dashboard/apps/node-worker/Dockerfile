@@ -1,5 +1,5 @@
 # Node.js OTEL emitter for the standalone Aspire dashboard demo.
-FROM node:22-alpine
+FROM node:24.22.0-alpine
 WORKDIR /app
 COPY package.json ./
 ARG NPM_CONFIG_REGISTRY=https://registry.npmjs.org/

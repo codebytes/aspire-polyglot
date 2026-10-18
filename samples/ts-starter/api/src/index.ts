@@ -1,9 +1,3 @@
-/**
- * Import the OpenTelemetry instrumentation setup first, before any other modules.
- * This ensures all subsequent imports are automatically instrumented for
- * distributed tracing, metrics, and logging in the Aspire dashboard.
- */
-import "./instrumentation.ts";
 import express from "express";
 import { existsSync } from "fs";
 import { join } from "path";

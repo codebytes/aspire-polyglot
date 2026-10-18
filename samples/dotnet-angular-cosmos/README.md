@@ -30,6 +30,10 @@ stays in **Starting** until you approve it, so do this once before a live demo.
 
 Open **frontend** in the Aspire dashboard. API and frontend ports are assigned by
 Aspire; the Angular `/api` proxy reads the API's service-discovery endpoint.
+
+The frontend uses the lower-dependency `@angular/build` application and dev-server
+builders. Its Node launcher reads Aspire's `PORT` on Windows, macOS, and Linux
+without relying on shell-specific environment-variable expansion.
 The **Data Explorer** link on `cosmos` opens the emulator's database UI.
 
 For an isolated background run in a worktree:

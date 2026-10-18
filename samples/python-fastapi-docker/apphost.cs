@@ -18,6 +18,7 @@ builder.AddDockerComposeEnvironment("compose");
 
 // FastAPI via uvicorn — runs on the host in dev, containerized on publish.
 builder.AddUvicornApp("api", "app", "main:app")
+    .WithOtlpExporter()
     .WithHttpEndpoint(env: "PORT")
     .WithHttpHealthCheck("/health")
     .WithExternalHttpEndpoints();

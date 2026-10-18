@@ -5,7 +5,7 @@
 // hosting-integration packages, no Dockerfiles, and no app projects. The whole
 // orchestrator is `AddContainer` calls for PostgreSQL and Adminer, wired
 // together on Aspire's container network. `aspire run` pulls the images and
-// starts everything, with logs, metrics, and traces in the dashboard.
+// starts everything, with resource status and console logs in the dashboard.
 
 var builder = DistributedApplication.CreateBuilder(args);
 

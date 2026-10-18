@@ -21,6 +21,8 @@ aspire run
 
 Aspire builds the Go image, starts Redis, and opens the dashboard. `GET /api/hits`
 increments a counter stored in Redis and returns the running total.
+The API exports HTTP traces, request metrics, and correlated structured logs
+to the Aspire dashboard through `WithOtlpExporter()`.
 
 ## Publish to Docker Compose
 

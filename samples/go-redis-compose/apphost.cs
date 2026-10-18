@@ -20,6 +20,7 @@ var cache = builder.AddContainer("cache", "redis", "7-alpine");
 // Go hit-counter API built from ./src/api — becomes a `build:` service in the
 // compose output. It reaches Redis by the container hostname "cache".
 builder.AddDockerfile("api", "src/api")
+    .WithOtlpExporter()
     .WithEnvironment("REDIS_HOST", "cache")
     .WithEnvironment("REDIS_PORT", "6379")
     .WithHttpEndpoint(targetPort: 8080, env: "PORT")

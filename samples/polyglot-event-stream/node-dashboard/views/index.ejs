@@ -272,6 +272,12 @@
     </div>
     
     <script>
+        function escapeHtml(value) {
+            const text = document.createElement('span');
+            text.textContent = value;
+            return text.innerHTML;
+        }
+
         function getStatusClass(temp, humidity) {
             if (temp > 35 || humidity > 90) return 'critical';
             if (temp > 30 || humidity > 80) return 'warning';
@@ -332,8 +338,8 @@
                         <div class="sensor-card status-${status}">
                             <div class="sensor-header">
                                 <div>
-                                    <div class="sensor-id">${sensor.sensorId}</div>
-                                    <div class="sensor-location">📍 ${sensor.location}</div>
+                                    <div class="sensor-id">${escapeHtml(sensor.sensorId)}</div>
+                                    <div class="sensor-location">📍 ${escapeHtml(sensor.location)}</div>
                                 </div>
                                 <span class="status-badge ${statusText}">${statusText}</span>
                             </div>
@@ -380,10 +386,10 @@
                     <div class="alert-item">
                         <div class="alert-info">
                             <div>
-                                <span class="alert-sensor">${alert.sensorId}</span>
-                                <span class="alert-location">@ ${alert.location}</span>
+                                <span class="alert-sensor">${escapeHtml(alert.sensorId)}</span>
+                                <span class="alert-location">@ ${escapeHtml(alert.location)}</span>
                             </div>
-                            <div class="alert-reason">${alert.reason}</div>
+                            <div class="alert-reason">${escapeHtml(alert.reason)}</div>
                         </div>
                         <div class="alert-time">${formatRelativeTime(alert.timestamp)}</div>
                     </div>

@@ -1,6 +1,6 @@
 # TypeScript Starter — Express + React with Aspire
 
-A minimal starter sample scaffolded from the **official Aspire TypeScript template** (`aspire-ts-starter`). The AppHost itself is TypeScript — not C#, not Python — and uses the generally available Aspire 13.5 AppHost layout.
+A minimal starter sample scaffolded from the **official Aspire TypeScript template** (`aspire-ts-starter`). The AppHost itself is TypeScript — not C#, not Python — and uses the generally available Aspire 13.6 AppHost layout.
 
 ## What It Demonstrates
 
@@ -55,9 +55,9 @@ For a worktree, use `aspire start --apphost apphost.mts --isolated`.
 Open `frontend`, refresh the five-day forecast, and switch between Fahrenheit
 and Celsius. Stop the sample with `aspire stop --apphost apphost.mts`.
 
-The launch profiles configure a separate, dynamically allocated OTLP/HTTP
-listener for browser tracing. The API continues to use gRPC; these listeners
-are not interchangeable.
+The API and browser tracing use the dynamically allocated OTLP/HTTP listener.
+The API preloads its instrumentation before Express starts. HTTP/protobuf also
+avoids the Node 25 gRPC TLS restriction on IP-address collector endpoints.
 
 ## Build checks
 
@@ -103,6 +103,9 @@ ts-starter/
 ```typescript
 const app = await builder
     .addNodeApp("app", "./api", "src/index.ts")
+    .withRunScript("start")
+    .withOtlpExporter({ protocol: OtlpProtocol.HttpProtobuf })
+    .publishAsPackageScript({ scriptName: "start" })
     .withHttpEndpoint({ env: "PORT" })
     .withExternalHttpEndpoints();
 
@@ -112,7 +115,8 @@ const frontend = await builder
     .waitFor(app);
 ```
 
-- `addNodeApp` — runs a Node.js app with `tsx`
+- `addNodeApp` + `withRunScript("start")` — runs the API's npm start script through `tsx`, including on Node 20
+- `publishAsPackageScript` — uses the same start script in the published container, with `tsx` installed as a runtime dependency
 - `addViteApp` — runs a Vite dev server
 - `withReference` — injects the API URL into the frontend
 - `waitFor` — ensures the API starts before the frontend

@@ -8,20 +8,19 @@
   },
   "dependencies": {
     "@opentelemetry/api": "^1.9.1",
-    "@opentelemetry/api-logs": "^0.221.0",
-    "@opentelemetry/auto-instrumentations-node": "^0.79.0",
-    "@opentelemetry/exporter-logs-otlp-grpc": "^0.221.0",
-    "@opentelemetry/exporter-metrics-otlp-grpc": "^0.221.0",
-    "@opentelemetry/exporter-trace-otlp-grpc": "^0.221.0",
-    "@opentelemetry/sdk-logs": "^0.221.0",
-    "@opentelemetry/sdk-metrics": "^2.10.0",
-    "@opentelemetry/sdk-node": "^0.221.0",
-    "express": "^5.2.1",
-    "kafkajs": "^2.2.4",
-    "ejs": "^6.0.1"
+    "@opentelemetry/api-logs": "^0.223.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.81.0",
+    "@opentelemetry/exporter-logs-otlp-http": "^0.223.0",
+    "@opentelemetry/exporter-metrics-otlp-http": "^0.223.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.223.0",
+    "@opentelemetry/sdk-logs": "^0.223.0",
+    "@opentelemetry/sdk-metrics": "^2.12.0",
+    "@opentelemetry/sdk-node": "^0.223.0",
+    "ejs": "^7.0.1",
+    "express": "^5.3.0",
+    "kafkajs": "^2.2.4"
   },
   "overrides": {
-    "@opentelemetry/core": "2.8.0",
     "protobufjs": "8.7.0"
   }
 }

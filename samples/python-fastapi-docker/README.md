@@ -24,8 +24,10 @@ Aspire creates `app/.venv`, installs `requirements.txt`, and starts `uvicorn`
 on the host. Try it:
 
 ```bash
-curl -k https://<api-endpoint>/api/info
-curl -k -X POST https://<api-endpoint>/api/analyze \
+# Copy the api resource's HTTP endpoint from the dashboard.
+API_URL=http://localhost:<api-port>
+curl "$API_URL/api/info"
+curl -X POST "$API_URL/api/analyze" \
   -H 'Content-Type: application/json' \
   -d '{"text":"Aspire makes polyglot apps easy. Easy!"}'
 ```
@@ -48,6 +50,8 @@ curl http://localhost:8080/api/info
 ## What It Demonstrates
 - `AddUvicornApp("api", "app", "main:app")` — a **native Python dev experience**
   (auto venv + `uvicorn`) with health checks and external endpoints.
+- `WithOtlpExporter()` and the Python SDK export FastAPI request traces and metrics,
+  plus structured analysis logs, to the Aspire dashboard.
 - **No hand-written Dockerfile**: `aspire publish` generates one tailored to the
   detected Python version and dependencies, then references it from a compose file.
 - One app model, two runtimes: native `uvicorn` for dev, a container image for

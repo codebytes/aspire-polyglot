@@ -22,6 +22,14 @@ aspire run
 - `addContainer` for Redis caching layer
 - Environment variable wiring between services
 - HTTP endpoint configuration with external access
+- Redis transactions retry concurrent TODO changes without overwriting other requests
+
+## Backend regression checks
+
+```bash
+cd src/api
+uv run --with-requirements requirements.txt python -B -m unittest -v test_todos
+```
 
 ## Browser telemetry
 

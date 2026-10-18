@@ -17,6 +17,7 @@ var consumer = builder.AddPythonApp("consumer", "../python-consumer", "main.py")
     .WithExternalHttpEndpoints();
 
 var dashboard = builder.AddJavaScriptApp("dashboard", "../node-dashboard", "start")
+    .WithOtlpExporter(OtlpProtocol.HttpProtobuf)
     .WithReference(kafka)
     .WaitFor(kafka)
     .WithHttpEndpoint(env: "PORT")

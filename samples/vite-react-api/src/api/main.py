@@ -133,8 +133,15 @@ def get_todos():
         return json.loads(cached)
     return []
 
-def save_todos(todos):
-    redis_client.set(TODOS_KEY, json.dumps(todos))
+def update_todos(update):
+    def mutate(pipe):
+        cached = pipe.get(TODOS_KEY)
+        todos = json.loads(cached) if cached else []
+        updated = update(todos)
+        pipe.multi()
+        pipe.set(TODOS_KEY, json.dumps(updated))
+
+    redis_client.transaction(mutate, TODOS_KEY)
 
 @app.get("/api/health")
 def health():
@@ -147,17 +154,13 @@ def list_todos():
 
 @app.post("/api/todos")
 def add_todo(todo: Todo):
-    todos = get_todos()
-    todos.append(todo.model_dump())
-    save_todos(todos)
+    update_todos(lambda todos: [*todos, todo.model_dump()])
     logger.info("Todo created: id=%d text='%s'", todo.id, todo.text)
     return {"todo": todo}
 
 @app.delete("/api/todos/{todo_id}")
 def delete_todo(todo_id: int):
-    todos = get_todos()
-    todos = [t for t in todos if t["id"] != todo_id]
-    save_todos(todos)
+    update_todos(lambda todos: [t for t in todos if t["id"] != todo_id])
     logger.info("Todo deleted: id=%d", todo_id)
     return {"success": True}
 

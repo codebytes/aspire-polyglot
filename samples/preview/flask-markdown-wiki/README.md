@@ -4,7 +4,7 @@ A simple Markdown-based wiki application built with Flask, SQLite, and Redis cac
 
 ## Features
 
-- **Markdown Editing**: Write and edit wiki pages using Markdown syntax
+- **Markdown Editing**: Write and edit wiki pages using Markdown syntax; rendered HTML is sanitized before display
 - **SQLite Backend**: Lightweight database for storing wiki pages
 - **Redis Cache**: Aspire-managed Redis caches rendered HTML for fast page loads
 - **Simple UI**: Clean, responsive interface for viewing and editing pages
@@ -137,12 +137,14 @@ The database is automatically initialized on startup with a default "Home" page.
 In the Aspire run, `wiki.db` lives in the Flask container. This demo does not mount
 a persistent SQLite volume, so recreating the container resets its pages.
 Creating or editing a page invalidates cached HTML for its slug, including cache
-entries that survived an earlier Flask container.
+entries that survived an earlier Flask container. Seeding a new database also
+invalidates the cached Home page without discarding an existing database's Home.
 
 ## Dependencies
 
 - **Flask**: Web framework
 - **markdown**: Markdown to HTML conversion
+- **nh3**: Allowlist-based HTML sanitization, including cached content
 - **waitress**: Production-ready WSGI server
 - **redis**: Redis client for caching rendered pages
 

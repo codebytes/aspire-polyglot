@@ -14,9 +14,11 @@ var cache = builder.AddContainer("cache", "redis", "7-alpine");
 // Java Javalin API built from ./src/api. It reaches Redis by the container
 // hostname "cache" on Aspire's network.
 builder.AddDockerfile("api", "src/api")
+    .WithOtlpExporter()
     .WithEnvironment("REDIS_HOST", "cache")
     .WithEnvironment("REDIS_PORT", "6379")
     .WithHttpEndpoint(targetPort: 8080, env: "PORT")
+    .WithHttpHealthCheck("/health")
     .WithExternalHttpEndpoints()
     .WaitFor(cache);
 

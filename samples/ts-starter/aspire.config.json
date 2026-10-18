@@ -8,21 +8,24 @@
   },
   "profiles": {
     "https": {
-      "applicationUrl": "https://localhost:17019;http://localhost:15174",
+      "applicationUrl": "https://127.0.0.1:0",
       "environmentVariables": {
-        "ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL": "https://localhost:21020",
+        "ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL": "https://127.0.0.1:0",
         "ASPIRE_DASHBOARD_OTLP_HTTP_ENDPOINT_URL": "https://127.0.0.1:0",
-        "ASPIRE_RESOURCE_SERVICE_ENDPOINT_URL": "https://localhost:22038"
+        "ASPIRE_RESOURCE_SERVICE_ENDPOINT_URL": "https://127.0.0.1:0"
       }
     },
     "http": {
-      "applicationUrl": "http://localhost:15174",
+      "applicationUrl": "http://127.0.0.1:0",
       "environmentVariables": {
-        "ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL": "http://localhost:19161",
+        "ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL": "http://127.0.0.1:0",
         "ASPIRE_DASHBOARD_OTLP_HTTP_ENDPOINT_URL": "http://127.0.0.1:0",
-        "ASPIRE_RESOURCE_SERVICE_ENDPOINT_URL": "http://localhost:20105",
+        "ASPIRE_RESOURCE_SERVICE_ENDPOINT_URL": "http://127.0.0.1:0",
         "ASPIRE_ALLOW_UNSECURED_TRANSPORT": "true"
       }
     }
+  },
+  "sdk": {
+    "version": "13.6.1"
   }
 }

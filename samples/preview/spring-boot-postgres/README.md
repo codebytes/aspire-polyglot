@@ -1,6 +1,6 @@
 # Spring Boot + PostgreSQL (Java AppHost preview)
 
-A Java-authored Aspire AppHost orchestrates a **Java 21 / Spring Boot 3.5** notes
+A Java-authored Aspire AppHost orchestrates a **Java 21 / Spring Boot 4.1** notes
 API and PostgreSQL. Both workloads run in containers; Maven builds the Spring
 application in a separate Docker build stage.
 
@@ -9,6 +9,12 @@ application in a separate Docker build stage.
 - Aspire CLI 13.6.1 and .NET 10 SDK.
 - A JDK on `PATH` to compile the preview AppHost (validated with Temurin 25).
 - Docker with Linux containers. No host Maven installation is needed.
+
+For a host-only workload build, use JDK 21+ and Maven 3.9+:
+`mvn -f src/pom.xml clean verify`. Tests use an in-memory H2 database in PostgreSQL
+compatibility mode; Docker and a running PostgreSQL server are not required.
+The workload uses Spring Boot 4's Web MVC starter and Boot-managed Spring,
+Hibernate, and Jackson 3 versions.
 
 Java AppHost support is experimental and enabled in `aspire.config.json`.
 The Aspire CLI restores `.aspire/modules/`; do not edit those generated bindings.
@@ -51,6 +57,8 @@ remains running.
 
 - `addContainer("pg", "postgres:16")` creates PostgreSQL with the local demo database.
 - `addDockerfile("api", "./src")` builds Spring Boot with Maven and runs the jar on a JRE.
+- An HTTP health check on `/api/notes` reports readiness only after Spring Boot can
+  serve requests and query PostgreSQL.
 - `NOTESDB_JDBCCONNECTIONSTRING`, `NOTESDB_USERNAME`, and `NOTESDB_PASSWORD` explicitly
   configure the datasource. This sample uses a raw container, not `AddPostgres`.
 - `withOtlpExporter()` sends Java telemetry to Aspire; the container entrypoint

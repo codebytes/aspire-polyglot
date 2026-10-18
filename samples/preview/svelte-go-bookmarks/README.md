@@ -7,7 +7,7 @@ frontend, and PostgreSQL. It demonstrates `AddContainer`, `AddDockerfile`, and
 ## Prerequisites
 
 - Aspire CLI 13.6.1 and the .NET 10 SDK.
-- Go 1.26.1 or later for `apphost.go`.
+- Go 1.27.2 or later for `apphost.go` and the API.
 - Node.js 22.12+ and npm for the Vite 8/Svelte 5 frontend.
 - Docker with Linux containers.
 
@@ -82,5 +82,5 @@ npm ci
 npm run build
 ```
 
-`go-api/Dockerfile` builds the API on Go 1.25 and runs it in Alpine.
+`go-api/Dockerfile` builds the API on Go 1.27.2 and runs it in Alpine.
 `frontend/` contains the Svelte application and Vite configuration.
