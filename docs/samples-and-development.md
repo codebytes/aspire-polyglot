@@ -22,6 +22,118 @@ Use the URLs printed by Aspire rather than assuming a fixed dashboard port.
 The standalone dashboard is the exception: its documented ports are fixed and
 bound to IPv4 loopback because the local demo disables authentication.
 
+## Validating Every Sample
+
+Run the runtime smoke suite from the repository root:
+
+```powershell
+.\scripts\Test-Samples.ps1
+```
+
+This validates all **16 samples**, including the four preview AppHosts and the
+standalone Compose stack. On Windows, 14 samples run natively; the original Go
+and Java preview AppHosts run inside an isolated Linux validation container.
+No C# fallback replaces those AppHosts. On Linux/macOS, the wrapper runs all
+samples natively. Native AppHosts run with `--isolated`; the Linux previews use
+their own per-run Docker daemon, network, and filesystem instead.
+the suite waits for their resources with `aspire wait`, discovers their assigned
+URLs with `aspire describe`, and exercises real HTTP requests, databases, and
+message delivery. A failed assertion, startup, or cleanup makes the command exit
+with a nonzero status; later samples still run.
+
+Install the prerequisites for the samples being tested: Aspire CLI **13.6.1**,
+.NET 10, Docker running Linux containers, Node.js **22.22.3+, 24.15+, or 26+**,
+Python 3.12+ with `uv`, Go 1.27.2+ (or automatic Go toolchain downloads), and a
+JDK for the Java preview AppHost (validated with JDK 25). Language packages and
+container images are restored by Aspire and Docker. The first run needs package
+feed and image-registry access and can take several minutes per sample.
+`--use-system-ca` includes the system certificate store. For the native Python
+service, the suite also exports the public .NET development certificate into a
+temporary directory and uses it explicitly for local HTTPS requests. This avoids
+conflicting older development certificates in Windows stores. No private key is
+exported, no machine trust settings are changed, and HTTPS verification remains
+enabled. Windows ARM64 also needs the x64 .NET 10 runtime for the Kafka sample.
+The Windows Linux-preview path supplies its own Go/JDK/Node toolchains; it needs
+Docker Compose and permission to run the documented privileged daemon.
+
+To list or rerun selected samples:
+
+```powershell
+node scripts\smoke-samples.mjs --list
+.\scripts\Test-Samples.ps1 -Sample go-redis-compose, preview/django-htmx-polls
+.\scripts\Test-Samples.ps1 -Sample preview/svelte-go-bookmarks, preview/spring-boot-postgres
+```
+
+### Linux validation for Windows preview hosts
+
+Aspire 13.6.1's generated Go and Java clients can hang during Windows named-pipe
+authentication. The Go failure also reproduces with `GOARCH=amd64`, so x64
+emulation does not fix it. See [microsoft/aspire#20056](https://github.com/microsoft/aspire/issues/20056).
+Linux uses Unix sockets instead. Do not hand-patch the generated SDK to hide the
+failure.
+
+On Windows, `Test-Samples.ps1` builds the pinned Aspire 13.6.1 Linux tool image
+from `scripts/linux-previews.Dockerfile`, with .NET 10, Go 1.27.2, JDK 25, Node 26,
+and Docker CLI. The dedicated Docker ignore file excludes Windows dependencies,
+build outputs, and unrelated repository files. The existing slide devcontainer
+is not changed.
+
+`scripts/linux-previews.compose.yml` starts a private Docker-in-Docker daemon
+and the validation runner in the same network namespace. It does not mount the
+host Docker socket or require Docker Desktop host networking. The daemon has a
+health check and exposes only a private Unix socket. A shared temporary volume
+lets the runner and daemon access Aspire's temporary files at the same path.
+
+The preview CLI does not accept `--launch-profile` for Go/Java, so the container
+sets the HTTP endpoint variables directly. Fixed internal ports are safe in this
+per-run namespace. The dashboard and resource service stay on loopback; the
+authenticated OTLP collectors listen on the private daemon's interfaces so
+workload containers can reach them. Aspire's extra container tunnel is disabled
+inside this already isolated network. No host ports are published.
+
+The Docker-in-Docker service is **privileged**: run only trusted code. Each run
+has a unique Compose project. The wrapper removes its containers and temporary
+volumes, including the nested daemon's images/data, after completion; only the
+outer tool image stays cached for reruns. The host's application containers and
+database volumes are not part of that project and are not removed.
+
+The lower-level `node --use-system-ca scripts\smoke-samples.mjs` command remains
+available for native runs. It reports unsupported Windows preview starts as
+failures rather than silently skipping them.
+
+| Sample | Runtime assertions |
+|--------|--------------------|
+| `terminal-demo` | Shell output, JavaScript evaluation, and a real Node pseudo-terminal |
+| `python-fastapi-docker` | Analyzer page, service identity, exact text statistics |
+| `ts-starter` | Frontend proxy, five forecasts, dates and temperature conversion |
+| `postgres-adminer` | Adminer page and a real PostgreSQL query |
+| `go-redis-compose` | Successive requests increment the Redis counter |
+| `java-javalin-redis` | Score submission and Redis leaderboard ordering |
+| `hono-redis-urls` | Frontend proxy, short-link redirect, click count, invalid URL rejection |
+| `vite-react-api` | Create, read, and delete a Redis-backed TODO through the frontend |
+| `dotnet-react-postgres` | Seed data, valid import, transactional invalid-import rejection |
+| `dotnet-angular-cosmos` | Seed data, create/read/update/delete, title and ingredient searches through Angular |
+| `polyglot-event-stream` | Publish an event; verify Python aggregation, Node readings, and anomaly delivery |
+| `preview/flask-markdown-wiki` | Create, render, edit, and invalidate cached Markdown |
+| `preview/django-htmx-polls` | CSRF-protected poll creation and voting, PostgreSQL selection, all poll regressions including concurrent votes |
+| `preview/svelte-go-bookmarks` | Create/search/delete through Svelte; verify the row actually reached PostgreSQL, not the in-memory fallback |
+| `preview/spring-boot-postgres` | Create/list/read/delete notes, then verify 404 |
+| `standalone-dashboard` | Dashboard HTTP response, four running containers, jobs processed by all three workers |
+
+The suite refuses to take over an already-running copy of a target AppHost or an
+existing `aspire-dashboard` container. Stop those explicitly first. It stops only
+the AppHosts and Compose project it starts, preserves named database volumes, and
+removes its temporary terminal tapes. Test records are deleted where the API
+supports deletion; the quotes test removes only its own inserted row using
+`psql`. Other test records live in the samples' disposable, non-volume-backed
+containers. The standalone sample still reserves its documented loopback ports.
+
+These are runtime smoke checks, not replacements for the focused unit tests,
+frontend production builds/lints, browser interaction checks, or publish-artifact
+checks documented in the individual sample READMEs. The standalone check proves
+the workers run; inspect the dashboard to verify received telemetry. The suite
+does not provision or deploy Azure resources.
+
 ## Samples
 
 ### No AppHost required 📊

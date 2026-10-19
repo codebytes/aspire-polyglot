@@ -50,6 +50,14 @@ This sample demonstrates **event streaming** using Kafka with a polyglot archite
 - Node.js 22+
 - Docker (for Kafka)
 
+On Windows, the AppHost and producer target `win-x64` because Confluent's
+`librdkafka` does not provide a Windows ARM64 native library. Windows ARM64
+machines also need the **x64 .NET 10 runtime** (alongside any ARM64 SDK install).
+Without an x64 runtime, the processes cannot start; without the explicit runtime
+target, the broker health check fails with `Failed to load the librdkafka native
+library` and dependent services wait indefinitely. Linux and macOS keep their
+native runtime targets.
+
 ### Quick Start
 
 1. **Navigate to this sample directory:**
@@ -65,7 +73,7 @@ This sample demonstrates **event streaming** using Kafka with a polyglot archite
 3. **Access the applications:**
    - **Aspire Dashboard**: Use the authenticated URL printed by Aspire
    - **Node.js Dashboard**: Check Aspire dashboard for the `dashboard` endpoint
-   - **KafkaUI**: Check Aspire dashboard for the `messaging-kafkaui` endpoint
+   - **KafkaUI**: Check Aspire dashboard for the `kafka-ui` endpoint
    - **Producer API**: Check Aspire dashboard for the `producer` endpoint
    - **Consumer API**: Check the `consumer` endpoint for `/api/aggregates` and `/api/alerts`
 

@@ -34,6 +34,13 @@ curl -X POST "$API_URL/api/analyze" \
 
 ## Publish as a Docker image
 
+Stop this sample first if it is running in the background, especially on Windows,
+where rebuilding a running file-based AppHost can fail with file-lock errors:
+
+```bash
+aspire stop --apphost apphost.cs
+```
+
 ```bash
 aspire publish -o ./compose-output
 ```

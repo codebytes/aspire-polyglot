@@ -2,9 +2,10 @@
 // For more information, see: https://aspire.dev
 
 import { createBuilder, OtlpProtocol } from './.aspire/modules/aspire.mjs';
+import { getNpmRegistry } from './npm-registry.mjs';
 
 const builder = await createBuilder();
-const npmRegistry = process.env.NPM_CONFIG_REGISTRY ?? "https://registry.npmjs.org/";
+const npmRegistry = getNpmRegistry(process.env, import.meta.dirname);
 const pipIndexUrl = process.env.PIP_INDEX_URL ?? process.env.UV_DEFAULT_INDEX ?? "https://pypi.org/simple/";
 
 // Redis cache

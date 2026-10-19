@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "aspire run",
     "build": "tsc",
+    "test": "node --import tsx --test npm-registry.test.mts",
     "watch": "tsc --watch"
   },
   "dependencies": {
