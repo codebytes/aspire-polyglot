@@ -26,6 +26,13 @@ to the Aspire dashboard through `WithOtlpExporter()`.
 
 ## Publish to Docker Compose
 
+If the sample is running in the background, stop it before publishing. This
+releases the file-based AppHost's build outputs on Windows:
+
+```bash
+aspire stop --apphost apphost.cs
+```
+
 ```bash
 aspire publish -o ./compose-output
 ```

@@ -19,6 +19,18 @@ Hibernate, and Jackson 3 versions.
 Java AppHost support is experimental and enabled in `aspire.config.json`.
 The Aspire CLI restores `.aspire/modules/`; do not edit those generated bindings.
 
+Aspire 13.6.1's generated Java client can hang during Windows named-pipe
+authentication. From the repository root, use the
+[Linux validation runner](../../../docs/samples-and-development.md#linux-validation-for-windows-preview-hosts)
+to test the original Java AppHost and its PostgreSQL-backed API:
+
+```powershell
+.\scripts\Test-Samples.ps1 -Sample preview/spring-boot-postgres
+```
+
+The native AppHost commands below are intended for Linux/macOS until the
+upstream Windows transport issue is resolved.
+
 ## Run
 
 ```bash

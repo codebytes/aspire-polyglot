@@ -11,6 +11,7 @@ JavaScript/TypeScript, Go, Java, and .NET applications with Aspire.
 
 - [Slide source](slides/Slides.md)
 - [Samples and development guide](docs/samples-and-development.md)
+- [Validate every sample](docs/samples-and-development.md#validating-every-sample)
 - [Aspire documentation](https://aspire.dev/docs/)
 - [Aspire VS Code extension](https://marketplace.visualstudio.com/items?itemName=microsoft-aspire.aspire-vscode)
 - [Aspire on GitHub](https://github.com/microsoft/aspire)

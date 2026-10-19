@@ -14,6 +14,19 @@ frontend, and PostgreSQL. It demonstrates `AddContainer`, `AddDockerfile`, and
 The Go AppHost is experimental. Its SDK and feature flags are configured in
 `aspire.config.json`; use the CLI to regenerate `.aspire/modules/`, not manual edits.
 
+On Windows, Aspire 13.6.1's generated Go named-pipe transport can hang during
+authentication, including under x64 emulation. Use the repository's
+[Linux validation runner](../../../docs/samples-and-development.md#linux-validation-for-windows-preview-hosts)
+to exercise this original Go AppHost and its real database/API/frontend without
+patching generated bindings:
+
+```powershell
+.\scripts\Test-Samples.ps1 -Sample preview/svelte-go-bookmarks
+```
+
+Run that command from the repository root. Native `aspire run` below is intended
+for Linux/macOS until the upstream Windows transport fix ships.
+
 ## Run
 
 From this sample directory:
