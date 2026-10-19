@@ -81,6 +81,26 @@ Choose [`demo/invalid-quotes.json`](demo/invalid-quotes.json) to show a failed i
 its second entry has no author, so **neither entry is inserted**. Canceling the file
 dialog before confirming also leaves the board unchanged.
 
+### 3. Inspect the database without copying credentials
+
+The PostgreSQL resource enables `.WithRepl()`. In the dashboard, open
+**postgres > Actions > REPL** to launch the container's authenticated `psql`
+client in the terminal dock. No local PostgreSQL client is needed.
+
+The shell initially connects to `postgres`. Switch to the application's database
+and inspect the quotes seeded or imported in the previous steps:
+
+```sql
+\connect quotesdb
+SELECT id, text, author FROM quotes ORDER BY id DESC LIMIT 5;
+\q
+```
+
+Exit with `\q` before closing the terminal tab; hiding the dock does not end the
+session. The REPL uses the resource's real credentials with write access, so share
+dashboard access only with trusted users. It is available during local runs,
+not publishing.
+
 ### Behavior and implementation
 
 - Both commands **append** data; they never clear existing quotes. Repeating an
@@ -133,6 +153,8 @@ and cancellation.
   and health checks from the injected `ConnectionStrings__quotesdb`.
 - Named resource-command arguments and dashboard file inputs using the same
   API-backed, transactional import operation.
+- An authenticated PostgreSQL shell in the dashboard terminal dock via
+  `.WithRepl()`, using the same database as the Quotes Board.
 
 ## Project Layout
 

@@ -26,6 +26,7 @@ builder.Services.AddHttpClient("quote-commands", client => client.Timeout = Time
 // PostgreSQL container with a persistent data volume and one database.
 var db = builder.AddPostgres("postgres")
     .WithDataVolume()
+    .WithRepl()
     .AddDatabase("quotesdb");
 
 // ASP.NET Core Minimal API. WithReference injects the connection string and
