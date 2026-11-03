@@ -7,6 +7,11 @@ JavaScript/TypeScript, Go, Java, and .NET applications with Aspire.
 
 [View HTML slides](https://chris-ayers.com/aspire-polyglot/) | [Download PDF](https://chris-ayers.com/aspire-polyglot/Slides.pdf)
 
+## Recordings
+
+- [Trondheim Developer Conference 2026](https://www.youtube.com/watch?v=gQFlhmBHArw)
+- [Capital Area .NET User Group](https://www.youtube.com/watch?v=y9e_K64rOuo)
+
 ## Resources
 
 - [Slide source](slides/Slides.md)
