@@ -1,170 +1,76 @@
-import os
+"""TODO API: FastAPI + Redis.
+
+Aspire runs this natively with uvicorn (addUvicornApp) and injects:
+  CACHE_URI  redis[s]://:password@host:port for the "cache" resource
+  OTEL_*     where to send traces, metrics, and logs
+"""
 import json
 import logging
-import glob as _glob
+import os
 
-logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 
-
-def _load_grpc_ssl_credentials():
-    """Build gRPC SSL credentials that trust the Aspire dev certificate.
-
-    The Python gRPC library ships its own root certificates and ignores
-    SSL_CERT_DIR. Aspire injects the dev-cert PEM via SSL_CERT_DIR.
-    We combine system CAs with the Aspire cert and return gRPC credentials.
-    Returns None when no Aspire certs are found.
-    """
-    ssl_cert_dirs = os.environ.get("SSL_CERT_DIR", "")
-    if not ssl_cert_dirs:
-        return None
-
-    aspire_pems: list[str] = []
-    for cert_dir in ssl_cert_dirs.split(":"):
-        if "aspire" in cert_dir.lower():
-            for pem_path in sorted(_glob.glob(os.path.join(cert_dir, "*.pem"))):
-                try:
-                    with open(pem_path) as fh:
-                        aspire_pems.append(fh.read())
-                except OSError:
-                    pass
-
-    if not aspire_pems:
-        return None
-
-    system_bundle = ""
-    for ca_path in ("/etc/ssl/certs/ca-certificates.crt", "/etc/ssl/cert.pem"):
-        if os.path.exists(ca_path):
-            with open(ca_path) as fh:
-                system_bundle = fh.read()
-            break
-
-    combined = system_bundle + "\n" + "\n".join(aspire_pems)
-
-    # Also set env var as a fallback for any other gRPC channels
-    combined_path = os.path.join(os.environ.get("HOME", "/app"), ".aspire-combined-ca.pem")
-    try:
-        with open(combined_path, "w") as out:
-            out.write(combined)
-        os.environ["GRPC_DEFAULT_SSL_ROOTS_FILE_PATH"] = combined_path
-    except OSError:
-        pass
-
-    import grpc
-    return grpc.ssl_channel_credentials(root_certificates=combined.encode("utf-8"))
-
-
-# --- OpenTelemetry setup (must run before FastAPI app creation) ---
+# The OpenTelemetry distro reads Aspire's OTEL_* settings, exports traces,
+# metrics, and logs, and instruments FastAPI and Redis. Run it before importing them.
 if os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT"):
-    _grpc_creds = _load_grpc_ssl_credentials()
+    from opentelemetry.instrumentation.auto_instrumentation import initialize
 
-    from opentelemetry import trace, metrics
-    from opentelemetry.sdk.trace import TracerProvider
-    from opentelemetry.sdk.trace.export import BatchSpanProcessor
-    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
-    from opentelemetry.sdk.resources import Resource
-    from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-    from opentelemetry.sdk.metrics import MeterProvider
-    from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
-    from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import OTLPMetricExporter
-    from opentelemetry.sdk._logs import LoggerProvider, LoggingHandler
-    from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
-    from opentelemetry.exporter.otlp.proto.grpc._log_exporter import OTLPLogExporter
-    import logging
+    initialize()
 
-    resource = Resource.create({
-        "service.name": os.environ.get("OTEL_SERVICE_NAME", "fastapi-api"),
-    })
+import redis  # noqa: E402
+from fastapi import FastAPI  # noqa: E402
+from pydantic import BaseModel  # noqa: E402
 
-    _exporter_kwargs = {"credentials": _grpc_creds} if _grpc_creds else {}
-
-    # Traces
-    trace_provider = TracerProvider(resource=resource)
-    trace_provider.add_span_processor(BatchSpanProcessor(OTLPSpanExporter(**_exporter_kwargs)))
-    trace.set_tracer_provider(trace_provider)
-
-    # Metrics
-    metric_reader = PeriodicExportingMetricReader(OTLPMetricExporter(**_exporter_kwargs))
-    meter_provider = MeterProvider(resource=resource, metric_readers=[metric_reader])
-    metrics.set_meter_provider(meter_provider)
-
-    # Logs
-    logger_provider = LoggerProvider(resource=resource)
-    logger_provider.add_log_record_processor(BatchLogRecordProcessor(OTLPLogExporter(**_exporter_kwargs)))
-    handler = LoggingHandler(logger_provider=logger_provider)
-    logging.getLogger().addHandler(handler)
-    logging.getLogger().setLevel(logging.INFO)
-
-
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-import redis
-import uvicorn
-
-app = FastAPI()
-
-# Instrument FastAPI app if OTel is enabled
-if os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT"):
-    FastAPIInstrumentor.instrument_app(app)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Connect to Redis using environment variables set by the Aspire AppHost
-redis_host = os.environ.get("REDIS_HOST", "localhost")
-redis_port = int(os.environ.get("REDIS_PORT", "6379"))
-redis_client = redis.Redis(host=redis_host, port=redis_port, decode_responses=True)
+app = FastAPI(title="TODO API")
+logger = logging.getLogger("todos")
+redis_client = redis.Redis.from_url(os.environ.get("CACHE_URI", "redis://localhost:6379"), decode_responses=True)
 
 TODOS_KEY = "todos"
+
 
 class Todo(BaseModel):
     id: int
     text: str
     completed: bool = False
 
+
 def get_todos():
     cached = redis_client.get(TODOS_KEY)
-    if cached:
-        return json.loads(cached)
-    return []
+    return json.loads(cached) if cached else []
+
 
 def update_todos(update):
+    """Read-modify-write under WATCH so concurrent requests never overwrite each other."""
+
     def mutate(pipe):
         cached = pipe.get(TODOS_KEY)
-        todos = json.loads(cached) if cached else []
-        updated = update(todos)
+        updated = update(json.loads(cached) if cached else [])
         pipe.multi()
         pipe.set(TODOS_KEY, json.dumps(updated))
 
     redis_client.transaction(mutate, TODOS_KEY)
 
+
 @app.get("/api/health")
 def health():
+    redis_client.ping()
     return {"status": "healthy"}
+
 
 @app.get("/api/todos")
 def list_todos():
-    todos = get_todos()
-    return {"todos": todos}
+    return {"todos": get_todos()}
+
 
 @app.post("/api/todos")
 def add_todo(todo: Todo):
     update_todos(lambda todos: [*todos, todo.model_dump()])
-    logger.info("Todo created: id=%d text='%s'", todo.id, todo.text)
+    logger.info("Created todo %d: %s", todo.id, todo.text)
     return {"todo": todo}
+
 
 @app.delete("/api/todos/{todo_id}")
 def delete_todo(todo_id: int):
     update_todos(lambda todos: [t for t in todos if t["id"] != todo_id])
-    logger.info("Todo deleted: id=%d", todo_id)
+    logger.info("Deleted todo %d", todo_id)
     return {"success": True}
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8000))
-    logger.info("Starting FastAPI server on port %d", port)
-    uvicorn.run(app, host="0.0.0.0", port=port)
