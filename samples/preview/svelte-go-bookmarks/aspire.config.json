@@ -4,10 +4,15 @@
     "language": "go"
   },
   "sdk": {
-    "version": "13.6.1"
+    "version": "13.6.4"
   },
   "features": {
     "polyglotSupportEnabled": true,
     "experimentalPolyglot:go": true
+  },
+  "packages": {
+    "Aspire.Hosting.Go": "13.6.4-preview.1.26523.11",
+    "Aspire.Hosting.JavaScript": "13.6.4",
+    "Aspire.Hosting.PostgreSQL": "13.6.4"
   }
 }

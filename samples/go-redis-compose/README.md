@@ -1,74 +1,63 @@
-# Go + Redis → Docker Compose (`aspire publish`)
+# Go + Redis: native in dev, Docker Compose on publish
 
-A single-file C# AppHost whose publish target is a **Docker Compose
-environment**. Run it locally with `aspire run`, then run **`aspire publish`** to
-turn the exact same app model into a `docker-compose.yaml` you can `docker
-compose up` anywhere. Polyglot: the AppHost is **C#**, the API is **Go**, the
-store is **Redis**.
+A single-file C# AppHost runs a **Go** hit-counter API **natively** (`go run .`)
+next to a Redis container. `aspire publish` turns the same model into a
+`docker-compose.yaml` and **generates the Go Dockerfile for you**.
 
-## Tech Stack
-- **AppHost**: single-file `apphost.cs` with `Aspire.Hosting.Docker`
-- **API**: Go (`net/http` + `go-redis`) built from a Dockerfile — a page-hit counter
-- **Store**: `redis:7-alpine` (public image)
-- **Publish target**: `AddDockerComposeEnvironment("compose")`
+| Resource | Runs as | Integration |
+|----------|---------|-------------|
+| `api` | native Go process | `AddGoApp` (`Aspire.Hosting.Go`, preview) |
+| `cache` | Redis container | `AddRedis` |
+| `compose` | publish target | `AddDockerComposeEnvironment` |
 
-## Run locally
+## Run
+
+Prerequisites: Aspire CLI 13.6.4, .NET 10 SDK, Go 1.26+, Docker.
 
 ```bash
 cd samples/go-redis-compose
 aspire run
 ```
 
-Aspire builds the Go image, starts Redis, and opens the dashboard. `GET /api/hits`
-increments a counter stored in Redis and returns the running total.
-The API exports HTTP traces, request metrics, and correlated structured logs
-to the Aspire dashboard through `WithOtlpExporter()`.
+Open the `api` URL and click **Count a hit**, or call `/api/hits` directly.
+In the dashboard you will see:
+
+- **Structured logs** from Go's `slog` (`hit counted hits=N`), correlated to traces.
+- **Traces** for each request with a child span for the Redis `INCR`.
+- **Metrics** for HTTP requests and the Redis connection pool.
+
+## How it is wired
+
+- `WithReference(cache)` injects `CACHE_URI` (`redis://:password@host:port`);
+  `redis.ParseURL` turns it into a client, so there is no hand-built connection string.
+- `WithHttpEndpoint(env: "PORT")` tells the Go server which port to bind.
+- [`telemetry.go`](src/api/telemetry.go) uses `autoexport`, which reads the standard
+  `OTEL_*` variables Aspire injects. Logs go to stdout **and** OTLP via `slog.NewMultiHandler`.
 
 ## Publish to Docker Compose
 
-If the sample is running in the background, stop it before publishing. This
-releases the file-based AppHost's build outputs on Windows:
-
 ```bash
-aspire stop --apphost apphost.cs
+aspire publish -o compose-output
 ```
 
-```bash
-aspire publish -o ./compose-output
-```
-
-This generates `compose-output/docker-compose.yaml` (plus a `.env`) describing
-every resource as a Compose service — the Go `api` (built image), `redis`, an
-Aspire dashboard, and the shared network. To run the generated stack:
+This writes `compose-output/docker-compose.yaml`, `.env`, and `api.Dockerfile`
+(a multi-stage Go build). Build the image and start the stack:
 
 ```bash
-# Build the API image and point the compose file at it
-docker build -t hitcounter-api:local src/api
+docker build -f compose-output/api.Dockerfile -t hitcounter-api:local src/api
 cd compose-output
-API_IMAGE=hitcounter-api:local docker compose up -d
-
-# Hit the counter, then tear down
-curl http://localhost:$(docker compose port api 8080 | cut -d: -f2)/api/hits
-API_IMAGE=hitcounter-api:local docker compose down -v
+API_IMAGE=hitcounter-api:local CACHE_PASSWORD=choose-a-password docker compose up -d
+docker compose port api 8000
 ```
 
-> `aspire publish` parameterizes the built image as `${API_IMAGE}` so you can push
-> it to any registry. For a fully automated build-and-push flow, configure a
-> container registry and use `aspire deploy`.
+Open `/api/hits` on the reported host port and refresh to watch the counter grow.
+The published stack also includes an Aspire dashboard container. Tear it down with
+`docker compose down`.
 
-## What It Demonstrates
-- `AddDockerComposeEnvironment("compose")` as a **publish-time compute
-  environment** — when present, every resource is emitted as a Compose service.
-- One app model, two targets: `aspire run` for local dev and `aspire publish` for
-  a portable `docker-compose.yaml`.
-- A polyglot mix — C# AppHost orchestrating a Go service and a Redis container —
-  with container-to-container networking by resource name (`REDIS_HOST=cache`).
+## Layout
 
-## Project Layout
-
-```
-apphost.cs            single-file C# AppHost (Docker Compose environment)
-aspire.config.json    points aspire at apphost.cs
-apphost.run.json      launch profiles (dashboard/OTLP ports)
-src/api/              Go hit-counter API + Dockerfile
+```text
+apphost.cs           single-file C# AppHost (Go + Redis + Compose publish target)
+src/api/main.go      HTTP API: /api/hits, /health, and a one-button page
+src/api/telemetry.go OpenTelemetry traces, metrics, and slog logs
 ```

@@ -432,6 +432,11 @@ samples/preview/svelte-go-bookmarks/apphost
 # Maven shade plugin leftover
 **/dependency-reduced-pom.xml
 
+# Go binaries built from the sample modules (go build without -o)
+samples/go-redis-compose/src/api/hitcounter
+samples/standalone-dashboard/apps/go-worker/go-worker
+samples/preview/svelte-go-bookmarks/go-api/bookmarks-api
+
 # macOS / IDE junk
 .DS_Store
 Thumbs.db

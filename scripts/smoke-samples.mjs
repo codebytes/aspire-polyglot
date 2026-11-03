@@ -116,28 +116,47 @@ async function eventually(check, description, timeout = 120_000) {
   assert.fail(`Timed out waiting for ${description}`);
 }
 
+// wait: resources that must become healthy before the check runs.
+// otel: workloads that must deliver structured logs AND traces to the dashboard.
 const samples = [
-  ["terminal-demo", "apphost.cs", ["shell", "node-repl"], terminals],
-  ["python-fastapi-docker", "apphost.cs", ["api"], analyzer],
-  ["ts-starter", "apphost.mts", ["app", "frontend"], weather],
-  ["postgres-adminer", "apphost.cs", ["db", "adminer"], adminer],
-  ["go-redis-compose", "apphost.cs", ["cache", "api"], hits],
-  ["java-javalin-redis", "apphost.cs", ["cache", "api"], leaderboard],
-  ["hono-redis-urls", "apphost.mts", ["cache", "api", "web"], shortener],
-  ["vite-react-api", "apphost.mts", ["cache", "api", "web"], todos],
-  ["dotnet-react-postgres", "apphost.cs", ["postgres", "api", "web"], quotes],
-  ["dotnet-angular-cosmos", join("AppHost", "AppHost.csproj"),
-    ["cosmos", "recipesdb", "recipes", "api", "frontend"], recipes],
-  ["polyglot-event-stream", join("AppHost", "AppHost.csproj"),
-    ["messaging", "producer", "consumer", "dashboard", "kafka-ui"], events],
-  ["preview/flask-markdown-wiki", "apphost.py", ["cache", "wiki"], wiki],
-  ["preview/django-htmx-polls", "apphost.py", ["pg", "pollsdb", "polls"], polls],
-  ["preview/svelte-go-bookmarks", "apphost.go", ["pg", "api", "frontend"], bookmarks],
-  ["preview/spring-boot-postgres", "AppHost.java", ["pg", "api"], notes],
-  ["standalone-dashboard", null, [], standalone],
+  { name: "terminal-demo", apphost: "apphost.cs", wait: ["shell", "node-repl"], otel: [], check: terminals },
+  { name: "python-fastapi-docker", apphost: "apphost.cs", wait: ["api"], otel: ["api"], check: analyzer },
+  { name: "ts-starter", apphost: "apphost.mts", wait: ["app", "frontend"], otel: ["app"], check: weather },
+  { name: "postgres-adminer", apphost: "apphost.cs", wait: ["db", "adminer"], otel: [], check: adminer },
+  { name: "go-redis-compose", apphost: "apphost.cs", wait: ["cache", "api"], otel: ["api"], check: hits },
+  { name: "java-javalin-redis", apphost: "apphost.cs", wait: ["cache", "api"], otel: ["api"], check: leaderboard },
+  { name: "hono-redis-urls", apphost: "apphost.mts", wait: ["cache", "api", "web"], otel: ["api"], check: shortener },
+  { name: "vite-react-api", apphost: "apphost.mts", wait: ["cache", "api", "web"], otel: ["api"], check: todos },
+  { name: "dotnet-react-postgres", apphost: "apphost.cs", wait: ["postgres", "api", "web"], otel: ["api"], check: quotes },
+  { name: "dotnet-angular-cosmos", apphost: join("AppHost", "AppHost.csproj"),
+    wait: ["cosmos", "recipesdb", "recipes", "api", "frontend"], otel: ["api"], check: recipes },
+  { name: "polyglot-event-stream", apphost: join("AppHost", "AppHost.csproj"),
+    wait: ["messaging", "producer", "consumer", "dashboard", "kafka-ui"],
+    otel: ["producer", "consumer", "dashboard"], check: events },
+  { name: "preview/flask-markdown-wiki", apphost: "apphost.py", wait: ["cache", "wiki"], otel: ["wiki"], check: wiki },
+  { name: "preview/django-htmx-polls", apphost: "apphost.py", wait: ["pg", "pollsdb", "polls"], otel: ["polls"], check: polls },
+  { name: "preview/svelte-go-bookmarks", apphost: "apphost.go", wait: ["pg", "api", "frontend"], otel: ["api"], check: bookmarks },
+  { name: "preview/spring-boot-postgres", apphost: "AppHost.java", wait: ["pg", "api"], otel: ["api"], check: notes },
+  { name: "standalone-dashboard", apphost: null, wait: [], otel: [], check: standalone },
 ];
 
-async function appHostSample([name, entryPoint, required, check]) {
+// Telemetry arrives asynchronously (batch exporters flush every ~1s under Aspire).
+// `aspire otel` exits non-zero until the resource has reported something.
+async function telemetry(aspire, resources) {
+  for (const resource of resources) {
+    for (const signal of ["logs", "traces"]) {
+      await eventually(async () => {
+        try {
+          return cliJson(await aspire("otel", signal, resource, "--format", "Json", "--limit", "5")).length > 0;
+        } catch {
+          return false;
+        }
+      }, `${resource} to export ${signal} to the dashboard`, 90_000);
+    }
+  }
+}
+
+async function appHostSample({ name, apphost: entryPoint, wait: required, otel, check }) {
   const cwd = join(root, "samples", ...name.split("/"));
   const apphost = join(cwd, entryPoint);
   const aspire = (...args) => command("aspire", [...args, "--apphost", apphost, ...flags], cwd);
@@ -169,6 +188,7 @@ async function appHostSample([name, entryPoint, required, check]) {
     };
     const container = (name, ...args) => command("docker", ["exec", resource(name).name, ...args]);
     await check({ aspire, endpoint, container });
+    await telemetry(aspire, otel);
   } catch (error) {
     failure = error;
     try {
@@ -456,22 +476,23 @@ if (names.includes("--list") || names.includes("--help")) {
   if (names.includes("--help")) {
     console.log("Usage: node --use-system-ca scripts/smoke-samples.mjs [sample ...]\n");
   }
-  console.log(samples.map(([name]) => name).join("\n"));
+  console.log(samples.map(sample => sample.name).join("\n"));
 } else {
-  for (const name of names) assert(samples.some(sample => sample[0] === name), `Unknown sample: ${name}`);
-  const selected = names.length ? samples.filter(sample => names.includes(sample[0])) : samples;
-  if (selected.some(([name]) => name === "python-fastapi-docker")) await trustDevelopmentCertificate();
+  for (const name of names) assert(samples.some(sample => sample.name === name), `Unknown sample: ${name}`);
+  const selected = names.length ? samples.filter(sample => names.includes(sample.name)) : samples;
+  // Native workloads serve HTTPS with the .NET development certificate.
+  if (selected.some(sample => sample.apphost)) await trustDevelopmentCertificate();
   const failed = [];
   for (const sample of selected) {
     const start = Date.now();
-    console.log(`[RUN] ${sample[0]}`);
+    console.log(`[RUN] ${sample.name}`);
     try {
-      if (sample[1]) await appHostSample(sample);
-      else await sample[3]();
-      console.log(`[PASS] ${sample[0]} (${Math.round((Date.now() - start) / 1000)}s)`);
+      if (sample.apphost) await appHostSample(sample);
+      else await sample.check();
+      console.log(`[PASS] ${sample.name} (${Math.round((Date.now() - start) / 1000)}s)`);
     } catch (error) {
-      failed.push(sample[0]);
-      console.error(`[FAIL] ${sample[0]}: ${error.message}`);
+      failed.push(sample.name);
+      console.error(`[FAIL] ${sample.name}: ${error.message}`);
     }
   }
   console.log(`\n${selected.length - failed.length}/${selected.length} samples passed.`);

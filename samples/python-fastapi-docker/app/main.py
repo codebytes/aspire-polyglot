@@ -1,15 +1,24 @@
-import re
 import logging
+import os
+import re
 from collections import Counter
 
-from fastapi import FastAPI
-from fastapi.responses import HTMLResponse
-from pydantic import BaseModel
-from telemetry import configure_telemetry
+logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
+
+# Aspire injects the OTEL_* settings (endpoint, protocol, certificate, service
+# name). The OpenTelemetry distro reads them, exports traces, metrics, and logs,
+# and instruments FastAPI. It must run before FastAPI is imported.
+if os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT"):
+    from opentelemetry.instrumentation.auto_instrumentation import initialize
+
+    initialize()
+
+from fastapi import FastAPI  # noqa: E402
+from fastapi.responses import HTMLResponse  # noqa: E402
+from pydantic import BaseModel  # noqa: E402
 
 app = FastAPI(title="Aspire Python Text Analyzer")
-configure_telemetry(app)
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("analyzer")
 
 # Words-per-minute used for the reading-time estimate.
 WPM = 200
@@ -45,7 +54,7 @@ def analyze(req: AnalyzeRequest):
     words = re.findall(r"\b\w+\b", text.lower())
     sentences = [s for s in re.split(r"[.!?]+", text) if s.strip()]
     top = Counter(words).most_common(5)
-    logger.info("Analyzed text: words=%d sentences=%d", len(words), len(sentences))
+    logger.info("Analyzed %d words in %d sentences", len(words), len(sentences))
 
     return {
         "characters": len(text),

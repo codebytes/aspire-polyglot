@@ -1,30 +1,28 @@
-#:sdk Aspire.AppHost.Sdk@13.6.1
+#:sdk Aspire.AppHost.Sdk@13.6.4
 #:property AspireUseCliBundle=true
-#:package Aspire.Hosting.Docker@13.6.1
+#:package Aspire.Hosting.Docker@13.6.4
+#:package Aspire.Hosting.Redis@13.6.4
+#:package Aspire.Hosting.Go@13.6.4-preview.1.26523.11
 
-// Single-file C# AppHost that targets a Docker Compose ENVIRONMENT. Running
-// `aspire publish` turns this model into a docker-compose.yaml you can deploy
-// with `docker compose up`; `aspire run` still runs everything locally with the
-// dashboard. Polyglot: the AppHost is C#, the API is Go, the store is Redis.
+// Single-file C# AppHost: a Go API and Redis.
+//
+//   aspire run      -> the Go API runs NATIVELY with `go run .`; Redis runs in a container.
+//   aspire publish  -> a docker-compose.yaml plus a generated Dockerfile for the Go API.
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-// Publish target: a Docker Compose environment. With this present, every
-// resource below is automatically emitted as a service in the generated
-// docker-compose.yaml — no per-resource opt-in required.
+// Publish target. Every compute resource below becomes a Compose service.
 builder.AddDockerComposeEnvironment("compose");
 
-// Redis (public image) — becomes an `image: redis` service in the compose output.
-var cache = builder.AddContainer("cache", "redis", "7-alpine");
+// Redis with a generated password. Referencing it injects CACHE_URI.
+var cache = builder.AddRedis("cache");
 
-// Go hit-counter API built from ./src/api — becomes a `build:` service in the
-// compose output. It reaches Redis by the container hostname "cache".
-builder.AddDockerfile("api", "src/api")
-    .WithOtlpExporter()
-    .WithEnvironment("REDIS_HOST", "cache")
-    .WithEnvironment("REDIS_PORT", "6379")
-    .WithHttpEndpoint(targetPort: 8080, env: "PORT")
-    .WithExternalHttpEndpoints()
-    .WaitFor(cache);
+// First-party Go hosting: `go run .` in src/api, with the Go toolchain on PATH.
+builder.AddGoApp("api", "src/api")
+    .WithReference(cache)
+    .WaitFor(cache)
+    .WithHttpEndpoint(env: "PORT")
+    .WithHttpHealthCheck("/health")
+    .WithExternalHttpEndpoints();
 
 builder.Build().Run();

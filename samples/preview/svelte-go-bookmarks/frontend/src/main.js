@@ -1,6 +1,3 @@
-// Bootstrap browser OpenTelemetry FIRST so the global tracer is installed
-// before any fetch() runs from a Svelte component.
-import './otel.js';
 import './app.css';
 import { mount } from 'svelte';
 import App from './App.svelte';

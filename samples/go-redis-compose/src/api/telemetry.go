@@ -3,68 +3,56 @@ package main
 import (
 	"context"
 	"errors"
-	"log"
 	"log/slog"
 	"os"
 
 	"go.opentelemetry.io/contrib/bridges/otelslog"
+	"go.opentelemetry.io/contrib/exporters/autoexport"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc"
-	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
-	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
+	"go.opentelemetry.io/otel/log/global"
 	"go.opentelemetry.io/otel/propagation"
 	sdklog "go.opentelemetry.io/otel/sdk/log"
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
-	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 )
 
-func initTelemetry(ctx context.Context) (func(context.Context) error, error) {
+// setupTelemetry sends traces, metrics, and logs to the OTLP endpoint Aspire
+// injects. autoexport reads the standard OTEL_* variables (endpoint, protocol,
+// headers, certificate, service name), so nothing here is Aspire-specific.
+// Logs are always written to stdout as well, for the dashboard's console view.
+func setupTelemetry(ctx context.Context) (func(context.Context) error, error) {
+	console := slog.NewTextHandler(os.Stdout, nil)
 	if os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT") == "" {
+		slog.SetDefault(slog.New(console))
 		return func(context.Context) error { return nil }, nil
 	}
-	res, err := resource.Merge(resource.Default(), resource.NewSchemaless(
-		attribute.String("service.name", envOr("OTEL_SERVICE_NAME", "hitcounter")),
-	))
+
+	spans, err := autoexport.NewSpanExporter(ctx)
 	if err != nil {
 		return nil, err
 	}
-	var shutdowns []func(context.Context) error
-	shutdown := func(ctx context.Context) error {
-		var failures []error
-		for _, stop := range shutdowns {
-			failures = append(failures, stop(ctx))
-		}
-		return errors.Join(failures...)
-	}
-	traceExporter, err := otlptracegrpc.New(ctx)
+	metrics, err := autoexport.NewMetricReader(ctx)
 	if err != nil {
 		return nil, err
 	}
-	tp := sdktrace.NewTracerProvider(sdktrace.WithResource(res), sdktrace.WithBatcher(traceExporter))
-	shutdowns = append(shutdowns, tp.Shutdown)
-	otel.SetTracerProvider(tp)
+	logs, err := autoexport.NewLogExporter(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(spans))
+	meterProvider := sdkmetric.NewMeterProvider(sdkmetric.WithReader(metrics))
+	loggerProvider := sdklog.NewLoggerProvider(sdklog.WithProcessor(sdklog.NewBatchProcessor(logs)))
+
+	otel.SetTracerProvider(tracerProvider)
+	otel.SetMeterProvider(meterProvider)
 	otel.SetTextMapPropagator(propagation.TraceContext{})
+	global.SetLoggerProvider(loggerProvider)
 
-	metricExporter, err := otlpmetricgrpc.New(ctx)
-	if err != nil {
-		return nil, errors.Join(err, shutdown(ctx))
-	}
-	mp := sdkmetric.NewMeterProvider(sdkmetric.WithResource(res),
-		sdkmetric.WithReader(sdkmetric.NewPeriodicReader(metricExporter)))
-	shutdowns = append(shutdowns, mp.Shutdown)
-	otel.SetMeterProvider(mp)
+	// Every slog call goes to stdout and, with trace correlation, to the dashboard.
+	slog.SetDefault(slog.New(slog.NewMultiHandler(console, otelslog.NewHandler("hitcounter"))))
 
-	logExporter, err := otlploggrpc.New(ctx)
-	if err != nil {
-		return nil, errors.Join(err, shutdown(ctx))
-	}
-	lp := sdklog.NewLoggerProvider(sdklog.WithResource(res),
-		sdklog.WithProcessor(sdklog.NewBatchProcessor(logExporter)))
-	shutdowns = append(shutdowns, lp.Shutdown)
-	slog.SetDefault(slog.New(otelslog.NewHandler("hitcounter", otelslog.WithLoggerProvider(lp))))
-	// Keep server and shutdown errors on stderr, even after the OTel provider closes.
-	log.SetOutput(os.Stderr)
-	return shutdown, nil
+	return func(ctx context.Context) error {
+		return errors.Join(tracerProvider.Shutdown(ctx), meterProvider.Shutdown(ctx), loggerProvider.Shutdown(ctx))
+	}, nil
 }

@@ -255,6 +255,38 @@ const (
 	UrlDisplayLocationDetailsOnly UrlDisplayLocation = "DetailsOnly"
 )
 
+// DenoPermissionKind represents DenoPermissionKind.
+type DenoPermissionKind string
+
+const (
+	DenoPermissionKindNet DenoPermissionKind = "Net"
+	DenoPermissionKindRead DenoPermissionKind = "Read"
+	DenoPermissionKindWrite DenoPermissionKind = "Write"
+	DenoPermissionKindRun DenoPermissionKind = "Run"
+	DenoPermissionKindEnv DenoPermissionKind = "Env"
+	DenoPermissionKindImport DenoPermissionKind = "Import"
+	DenoPermissionKindSys DenoPermissionKind = "Sys"
+	DenoPermissionKindFfi DenoPermissionKind = "Ffi"
+)
+
+// DenoNodeModulesDirMode represents DenoNodeModulesDirMode.
+type DenoNodeModulesDirMode string
+
+const (
+	DenoNodeModulesDirModeNone DenoNodeModulesDirMode = "None"
+	DenoNodeModulesDirModeAuto DenoNodeModulesDirMode = "Auto"
+	DenoNodeModulesDirModeManual DenoNodeModulesDirMode = "Manual"
+)
+
+// DenoInspectMode represents DenoInspectMode.
+type DenoInspectMode string
+
+const (
+	DenoInspectModeInspect DenoInspectMode = "Inspect"
+	DenoInspectModeInspectBrk DenoInspectMode = "InspectBrk"
+	DenoInspectModeInspectWait DenoInspectMode = "InspectWait"
+)
+
 // ============================================================================
 // DTOs
 // ============================================================================
@@ -1034,6 +1066,28 @@ func (d *ResourceUrlAnnotation) ToMap() map[string]any {
 	return m
 }
 
+// DelveServerOptions represents DelveServerOptions.
+type DelveServerOptions struct {
+	Port *float64 `json:"Port,omitempty"`
+	AcceptMultiClient *bool `json:"AcceptMultiClient,omitempty"`
+	OnlySameUser *bool `json:"OnlySameUser,omitempty"`
+	ContinueOnStart *bool `json:"ContinueOnStart,omitempty"`
+	Log *bool `json:"Log,omitempty"`
+	LogOutput *string `json:"LogOutput,omitempty"`
+}
+
+// ToMap converts the DTO to a map for JSON serialization.
+func (d *DelveServerOptions) ToMap() map[string]any {
+	m := map[string]any{}
+	if d.Port != nil { m["Port"] = serializeValue(d.Port) }
+	if d.AcceptMultiClient != nil { m["AcceptMultiClient"] = serializeValue(d.AcceptMultiClient) }
+	if d.OnlySameUser != nil { m["OnlySameUser"] = serializeValue(d.OnlySameUser) }
+	if d.ContinueOnStart != nil { m["ContinueOnStart"] = serializeValue(d.ContinueOnStart) }
+	if d.Log != nil { m["Log"] = serializeValue(d.Log) }
+	if d.LogOutput != nil { m["LogOutput"] = serializeValue(d.LogOutput) }
+	return m
+}
+
 // ============================================================================
 // Exported Values
 // ============================================================================
@@ -1130,6 +1184,18 @@ type ResourceWithArgs interface {
 	handleReference
 }
 
+// ResourceWithConnectionString marks types implementing IResourceWithConnectionString.
+// Methods are emitted on concrete impls; this interface is a marker for type assertions.
+type ResourceWithConnectionString interface {
+	handleReference
+}
+
+// ResourceWithContainerFiles marks types implementing IResourceWithContainerFiles.
+// Methods are emitted on concrete impls; this interface is a marker for type assertions.
+type ResourceWithContainerFiles interface {
+	handleReference
+}
+
 // ResourceWithEndpoints marks types implementing IResourceWithEndpoints.
 // Methods are emitted on concrete impls; this interface is a marker for type assertions.
 type ResourceWithEndpoints interface {
@@ -1145,6 +1211,12 @@ type ResourceWithEnvironment interface {
 // ResourceWithParent marks types implementing IResourceWithParent.
 // Marker interface.
 type ResourceWithParent interface {
+	handleReference
+}
+
+// ResourceWithServiceDiscovery marks types implementing IResourceWithServiceDiscovery.
+// Marker interface.
+type ResourceWithServiceDiscovery interface {
 	handleReference
 }
 
@@ -1484,6 +1556,1653 @@ func (s *beforeStartEvent) Services() ServiceProvider {
 		return &serviceProvider{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
 	}
 	return &serviceProvider{resourceBuilderBase: newResourceBuilderBase(href.getHandle(), s.client)}
+}
+
+// BunAppResource is the public interface for handle type BunAppResource.
+type BunAppResource interface {
+	handleReference
+	AsHttp2Service() BunAppResource
+	ClearContainerFilesSources() BunAppResource
+	Command() (string, error)
+	CreateExecutionConfiguration() ExecutionConfigurationBuilder
+	ExcludeFromManifest() BunAppResource
+	ExcludeFromMcp() BunAppResource
+	GetEndpoint(name string) EndpointReference
+	GetResourceName() (string, error)
+	Name() (string, error)
+	OnBeforeResourceStarted(callback func(arg BeforeResourceStartedEvent)) BunAppResource
+	OnInitializeResource(callback func(arg InitializeResourceEvent)) BunAppResource
+	OnResourceEndpointsAllocated(callback func(arg ResourceEndpointsAllocatedEvent)) BunAppResource
+	OnResourceReady(callback func(arg ResourceReadyEvent)) BunAppResource
+	OnResourceStopped(callback func(arg ResourceStoppedEvent)) BunAppResource
+	PublishAsDockerFile(configure func(obj ContainerResource)) BunAppResource
+	PublishAsNodeServer(entryPoint string, options ...*PublishAsNodeServerOptions) BunAppResource
+	PublishAsPackageScript(options ...*PublishAsPackageScriptOptions) BunAppResource
+	PublishAsStaticWebsite(options ...*PublishAsStaticWebsiteOptions) BunAppResource
+	PublishWithContainerFiles(source ResourceWithContainerFiles, destinationPath string) BunAppResource
+	SubscribeHttpsEndpointsUpdate(callback func(obj HttpsEndpointUpdateCallbackContext)) BunAppResource
+	WaitFor(dependency Resource, options ...*WaitForOptions) BunAppResource
+	WaitForCompletion(dependency Resource, options ...*WaitForCompletionOptions) BunAppResource
+	WaitForStart(dependency Resource, options ...*WaitForStartOptions) BunAppResource
+	WithArgs(args []string) BunAppResource
+	WithArgsCallback(callback func(obj CommandLineArgsCallbackContext)) BunAppResource
+	WithBrowserDebugger(options ...*WithBrowserDebuggerOptions) BunAppResource
+	WithBuildScript(scriptName string, options ...*WithBuildScriptOptions) BunAppResource
+	WithBun(options ...*WithBunOptions) BunAppResource
+	WithCertificateTrustScope(scope CertificateTrustScope) BunAppResource
+	WithChildRelationship(child Resource) BunAppResource
+	WithCommand(name string, displayName string, executeCommand func(arg ExecuteCommandContext) *ExecuteCommandResult, options ...*WithCommandOptions) BunAppResource
+	WithComputeEnvironment(computeEnvironmentResource ComputeEnvironmentResource) BunAppResource
+	WithContainerBuildOptions(callback func(arg ContainerBuildOptionsCallbackContext)) BunAppResource
+	WithContainerFilesSource(sourcePath string) BunAppResource
+	WithContainerRegistry(registry Resource) BunAppResource
+	WithDeno(options ...*WithDenoOptions) BunAppResource
+	WithDeveloperCertificateTrust(trust bool) BunAppResource
+	WithDockerfileBaseImage(options ...*WithDockerfileBaseImageOptions) BunAppResource
+	WithEndpoint(options ...*WithEndpointOptions) BunAppResource
+	WithEndpointCallback(endpointName string, callback func(obj EndpointUpdateContext), options ...*WithEndpointCallbackOptions) BunAppResource
+	WithEndpointProxySupport(proxyEnabled bool) BunAppResource
+	WithEnvironment(name string, value any) BunAppResource
+	WithEnvironmentCallback(callback func(arg EnvironmentCallbackContext)) BunAppResource
+	WithExecutableCommand(command string) BunAppResource
+	WithExplicitStart() BunAppResource
+	WithExternalHttpEndpoints() BunAppResource
+	WithHealthCheck(key string) BunAppResource
+	WithHidden() BunAppResource
+	WithHiddenOnCompletion(options ...*WithHiddenOnCompletionOptions) BunAppResource
+	WithHttpCommand(path string, displayName string, options ...*HttpCommandExportOptions) BunAppResource
+	WithHttpEndpoint(options ...*WithHttpEndpointOptions) BunAppResource
+	WithHttpEndpointCallback(callback func(obj EndpointUpdateContext), options ...*WithHttpEndpointCallbackOptions) BunAppResource
+	WithHttpHealthCheck(options ...*WithHttpHealthCheckOptions) BunAppResource
+	WithHttpProbe(probeType ProbeType, options ...*WithHttpProbeOptions) BunAppResource
+	WithHttpsCertificateConfiguration(callback func(arg HttpsCertificateConfigurationCallbackAnnotationContext)) BunAppResource
+	WithHttpsDeveloperCertificate(options ...*WithHttpsDeveloperCertificateOptions) BunAppResource
+	WithHttpsEndpoint(options ...*WithHttpsEndpointOptions) BunAppResource
+	WithHttpsEndpointCallback(callback func(obj EndpointUpdateContext), options ...*WithHttpsEndpointCallbackOptions) BunAppResource
+	WithIconName(iconName string, options ...*WithIconNameOptions) BunAppResource
+	WithImagePushOptions(callback func(arg ContainerImagePushOptionsCallbackContext)) BunAppResource
+	WithLifetimeOf(sourceBuilder Resource) BunAppResource
+	WithMcpServer(options ...*WithMcpServerOptions) BunAppResource
+	WithNpm(options ...*WithNpmOptions) BunAppResource
+	WithOtlpExporter(options ...*WithOtlpExporterOptions) BunAppResource
+	WithParentProcessLifetime(parentProcessId float64) BunAppResource
+	WithParentRelationship(parent Resource) BunAppResource
+	WithPersistentLifetime() BunAppResource
+	WithPipelineConfiguration(callback func(obj PipelineConfigurationContext)) BunAppResource
+	WithPipelineStepFactory(stepName string, callback func(arg PipelineStepContext), options ...*WithPipelineStepFactoryOptions) BunAppResource
+	WithPnpm(options ...*WithPnpmOptions) BunAppResource
+	WithProcessCommand(commandName string, displayName string, options *ProcessCommandExportOptions) BunAppResource
+	WithProcessCommandFactory(commandName string, displayName string, createProcessSpec func(arg ExecuteCommandContext) *ProcessCommandSpecExportData, options ...*ProcessCommandResultExportOptions) BunAppResource
+	WithReference(source any, options ...*WithReferenceOptions) BunAppResource
+	WithReferenceEnvironment(options *ReferenceEnvironmentInjectionOptions) BunAppResource
+	WithRelationship(resourceBuilder Resource, type_ string) BunAppResource
+	WithRemoteImageName(remoteImageName string) BunAppResource
+	WithRemoteImageTag(remoteImageTag string) BunAppResource
+	WithRequiredCommand(command string, options ...*WithRequiredCommandOptions) BunAppResource
+	WithRequiredCommandValidation(command string, validationCallback func(arg RequiredCommandValidationContext) RequiredCommandValidationResult, options ...*WithRequiredCommandValidationOptions) BunAppResource
+	WithRunScript(scriptName string, options ...*WithRunScriptOptions) BunAppResource
+	WithSessionLifetime() BunAppResource
+	WithTerminal() BunAppResource
+	WithUrl(url any, options ...*WithUrlOptions) BunAppResource
+	WithUrlForEndpoint(endpointName string, callback func(obj *ResourceUrlAnnotation)) BunAppResource
+	WithUrls(callback func(obj ResourceUrlsCallbackContext)) BunAppResource
+	WithVolume(target string, name string, env string, options ...*ExecutableResourceWithVolumeOptions) BunAppResource
+	WithWorkingDirectory(workingDirectory string) BunAppResource
+	WithYarn(options ...*WithYarnOptions) BunAppResource
+	WithoutHttpsCertificate() BunAppResource
+	WorkingDirectory() (string, error)
+	Err() error
+}
+
+// bunAppResource is the unexported impl of BunAppResource.
+type bunAppResource struct {
+	*resourceBuilderBase
+}
+
+// newBunAppResourceFromHandle wraps an existing handle as BunAppResource.
+func newBunAppResourceFromHandle(h *handle, c *client) BunAppResource {
+	return &bunAppResource{resourceBuilderBase: newResourceBuilderBase(h, c)}
+}
+
+// AsHttp2Service configures a resource to mark all endpoints' transport as HTTP/2. This is useful for HTTP/2 services that need prior knowledge.
+func (s *bunAppResource) AsHttp2Service() BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/asHttp2Service", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// ClearContainerFilesSources removes any container files source annotation from the resource being built.
+func (s *bunAppResource) ClearContainerFilesSources() BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/clearContainerFilesSources", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// Command gets the command associated with this executable resource.
+func (s *bunAppResource) Command() (string, error) {
+	if s.err != nil { var zero string; return zero, s.err }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"context": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/JavaScriptAppResource.command", reqArgs)
+	if err != nil {
+		var zero string
+		return zero, err
+	}
+	return decodeAs[string](result)
+}
+
+// CreateExecutionConfiguration creates an execution configuration builder for the specified resource.
+func (s *bunAppResource) CreateExecutionConfiguration() ExecutionConfigurationBuilder {
+	if s.err != nil { return &executionConfigurationBuilder{resourceBuilderBase: newErroredResourceBuilder(s.err, s.client)} }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting/createExecutionConfiguration", reqArgs)
+	if err != nil {
+		return &executionConfigurationBuilder{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	href, ok := result.(handleReference)
+	if !ok {
+		err := fmt.Errorf("aspire: Aspire.Hosting/createExecutionConfiguration returned unexpected type %T", result)
+		return &executionConfigurationBuilder{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	return &executionConfigurationBuilder{resourceBuilderBase: newResourceBuilderBase(href.getHandle(), s.client)}
+}
+
+// ExcludeFromManifest excludes a resource from being published to the manifest.
+func (s *bunAppResource) ExcludeFromManifest() BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/excludeFromManifest", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// ExcludeFromMcp exclude the resource from MCP operations using the Aspire MCP server. The resource is excluded from results that return resources, console logs and telemetry.
+func (s *bunAppResource) ExcludeFromMcp() BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/excludeFromMcp", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// GetEndpoint gets an endpoint reference
+func (s *bunAppResource) GetEndpoint(name string) EndpointReference {
+	if s.err != nil { return &endpointReference{resourceBuilderBase: newErroredResourceBuilder(s.err, s.client)} }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting/getEndpoint", reqArgs)
+	if err != nil {
+		return &endpointReference{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	href, ok := result.(handleReference)
+	if !ok {
+		err := fmt.Errorf("aspire: Aspire.Hosting/getEndpoint returned unexpected type %T", result)
+		return &endpointReference{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	return &endpointReference{resourceBuilderBase: newResourceBuilderBase(href.getHandle(), s.client)}
+}
+
+// GetResourceName gets the name of the resource from a builder.
+func (s *bunAppResource) GetResourceName() (string, error) {
+	if s.err != nil { var zero string; return zero, s.err }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting/getResourceName", reqArgs)
+	if err != nil {
+		var zero string
+		return zero, err
+	}
+	return decodeAs[string](result)
+}
+
+// Name gets the name of the resource.
+func (s *bunAppResource) Name() (string, error) {
+	if s.err != nil { var zero string; return zero, s.err }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"context": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/JavaScriptAppResource.name", reqArgs)
+	if err != nil {
+		var zero string
+		return zero, err
+	}
+	return decodeAs[string](result)
+}
+
+// OnBeforeResourceStarted subscribes to the BeforeResourceStarted event.
+func (s *bunAppResource) OnBeforeResourceStarted(callback func(arg BeforeResourceStartedEvent)) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[BeforeResourceStartedEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onBeforeResourceStarted", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// OnInitializeResource subscribes to the InitializeResource event.
+func (s *bunAppResource) OnInitializeResource(callback func(arg InitializeResourceEvent)) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[InitializeResourceEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onInitializeResource", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// OnResourceEndpointsAllocated subscribes to the ResourceEndpointsAllocated event.
+func (s *bunAppResource) OnResourceEndpointsAllocated(callback func(arg ResourceEndpointsAllocatedEvent)) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ResourceEndpointsAllocatedEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onResourceEndpointsAllocated", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// OnResourceReady subscribes to the ResourceReady event.
+func (s *bunAppResource) OnResourceReady(callback func(arg ResourceReadyEvent)) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ResourceReadyEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onResourceReady", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// OnResourceStopped subscribes to the ResourceStopped event.
+func (s *bunAppResource) OnResourceStopped(callback func(arg ResourceStoppedEvent)) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ResourceStoppedEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onResourceStopped", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// PublishAsDockerFile publishes an executable as a Docker file
+func (s *bunAppResource) PublishAsDockerFile(configure func(obj ContainerResource)) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if configure != nil {
+		cb := configure
+		shim := func(args ...any) any {
+			cb(callbackArg[ContainerResource](args, 0))
+			return nil
+		}
+		reqArgs["configure"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/publishAsDockerFile", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// PublishAsNodeServer configures the JavaScript application to publish as a standalone Node.js server that runs a built artifact directly.
+func (s *bunAppResource) PublishAsNodeServer(entryPoint string, options ...*PublishAsNodeServerOptions) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["entryPoint"] = serializeValue(entryPoint)
+	if len(options) > 0 {
+		merged := &PublishAsNodeServerOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/publishAsNodeServer", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// PublishAsPackageScript configures the JavaScript application to publish as a server that runs a package manager script at runtime.
+func (s *bunAppResource) PublishAsPackageScript(options ...*PublishAsPackageScriptOptions) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &PublishAsPackageScriptOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/publishAsPackageScript", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// PublishAsStaticWebsite publishes the JavaScript application as a standalone static website using YARP.
+func (s *bunAppResource) PublishAsStaticWebsite(options ...*PublishAsStaticWebsiteOptions) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &PublishAsStaticWebsiteOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/publishAsStaticWebsite", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// PublishWithContainerFiles configures the resource to copy container files from the specified source resource during publishing.
+func (s *bunAppResource) PublishWithContainerFiles(source ResourceWithContainerFiles, destinationPath string) BunAppResource {
+	if s.err != nil { return s }
+	if source != nil { if err := source.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["source"] = serializeValue(source)
+	reqArgs["destinationPath"] = serializeValue(destinationPath)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/publishWithContainerFilesFromResource", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// SubscribeHttpsEndpointsUpdate subscribes to the `BeforeStartEvent` and invokes the specified callback when an HTTPS certificate is determined to be available for the resource. This is used to conditionally update endpoint URI schemes or perform other HTTPS-related configuration at startup.
+func (s *bunAppResource) SubscribeHttpsEndpointsUpdate(callback func(obj HttpsEndpointUpdateCallbackContext)) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[HttpsEndpointUpdateCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/subscribeHttpsEndpointsUpdate", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WaitFor waits for another resource to be ready
+func (s *bunAppResource) WaitFor(dependency Resource, options ...*WaitForOptions) BunAppResource {
+	if s.err != nil { return s }
+	if dependency != nil { if err := dependency.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["dependency"] = serializeValue(dependency)
+	if len(options) > 0 {
+		merged := &WaitForOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/waitFor", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WaitForCompletion waits for the dependency resource to enter the Exited or Finished state before starting the resource.
+func (s *bunAppResource) WaitForCompletion(dependency Resource, options ...*WaitForCompletionOptions) BunAppResource {
+	if s.err != nil { return s }
+	if dependency != nil { if err := dependency.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["dependency"] = serializeValue(dependency)
+	if len(options) > 0 {
+		merged := &WaitForCompletionOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/waitForResourceCompletion", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WaitForStart waits for another resource to start
+func (s *bunAppResource) WaitForStart(dependency Resource, options ...*WaitForStartOptions) BunAppResource {
+	if s.err != nil { return s }
+	if dependency != nil { if err := dependency.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["dependency"] = serializeValue(dependency)
+	if len(options) > 0 {
+		merged := &WaitForStartOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/waitForStart", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithArgs adds arguments to be passed to a resource that supports arguments when it is launched.
+func (s *bunAppResource) WithArgs(args []string) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if args != nil { reqArgs["args"] = serializeValue(args) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withArgs", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithArgsCallback adds a callback to be executed with a list of command-line arguments when a resource is started.
+func (s *bunAppResource) WithArgsCallback(callback func(obj CommandLineArgsCallbackContext)) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[CommandLineArgsCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withArgsCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithBrowserDebugger configures a browser debugger for the JavaScript application resource, enabling browser-based debugging through a child resource that launches when the parent application is ready.
+func (s *bunAppResource) WithBrowserDebugger(options ...*WithBrowserDebuggerOptions) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithBrowserDebuggerOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withBrowserDebugger", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithBuildScript adds a build script annotation to the resource builder using the specified command-line arguments.
+func (s *bunAppResource) WithBuildScript(scriptName string, options ...*WithBuildScriptOptions) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	reqArgs["scriptName"] = serializeValue(scriptName)
+	if len(options) > 0 {
+		merged := &WithBuildScriptOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withBuildScript", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithBun configures the JavaScript resource to use Bun as the package manager and optionally installs packages before the application starts.
+func (s *bunAppResource) WithBun(options ...*WithBunOptions) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithBunOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withBun", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithCertificateTrustScope sets the certificate trust scope
+func (s *bunAppResource) WithCertificateTrustScope(scope CertificateTrustScope) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["scope"] = serializeValue(scope)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withCertificateTrustScope", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithChildRelationship sets a child relationship
+func (s *bunAppResource) WithChildRelationship(child Resource) BunAppResource {
+	if s.err != nil { return s }
+	if child != nil { if err := child.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["child"] = serializeValue(child)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withBuilderChildRelationship", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithCommand adds a resource command
+func (s *bunAppResource) WithCommand(name string, displayName string, executeCommand func(arg ExecuteCommandContext) *ExecuteCommandResult, options ...*WithCommandOptions) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	reqArgs["displayName"] = serializeValue(displayName)
+	if executeCommand != nil {
+		cb := executeCommand
+		shim := func(args ...any) any {
+			return cb(callbackArg[ExecuteCommandContext](args, 0))
+		}
+		reqArgs["executeCommand"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithCommandOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithComputeEnvironment configures the compute environment for the compute resource.
+func (s *bunAppResource) WithComputeEnvironment(computeEnvironmentResource ComputeEnvironmentResource) BunAppResource {
+	if s.err != nil { return s }
+	if computeEnvironmentResource != nil { if err := computeEnvironmentResource.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["computeEnvironmentResource"] = serializeValue(computeEnvironmentResource)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withComputeEnvironment", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerBuildOptions configures container build options for a compute resource using an async callback.
+func (s *bunAppResource) WithContainerBuildOptions(callback func(arg ContainerBuildOptionsCallbackContext)) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ContainerBuildOptionsCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerBuildOptions", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerFilesSource adds a container files source annotation to the resource being built, specifying the path to the container files source.
+func (s *bunAppResource) WithContainerFilesSource(sourcePath string) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["sourcePath"] = serializeValue(sourcePath)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerFilesSource", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerRegistry configures the resource to use the specified container registry for container image operations.
+func (s *bunAppResource) WithContainerRegistry(registry Resource) BunAppResource {
+	if s.err != nil { return s }
+	if registry != nil { if err := registry.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["registry"] = serializeValue(registry)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerRegistry", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDeno configures the JavaScript resource to use Deno as the package manager.
+func (s *bunAppResource) WithDeno(options ...*WithDenoOptions) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithDenoOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withDeno", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDeveloperCertificateTrust indicates whether developer certificates should be treated as trusted certificate authorities for the resource at run time. Currently this indicates trust for the ASP.NET Core developer certificate. The developer certificate will only be trusted when running in local development scenarios; in publish mode resources will use their default certificate trust.
+func (s *bunAppResource) WithDeveloperCertificateTrust(trust bool) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["trust"] = serializeValue(trust)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withDeveloperCertificateTrust", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDockerfileBaseImage configures custom base images for generated Dockerfiles.
+func (s *bunAppResource) WithDockerfileBaseImage(options ...*WithDockerfileBaseImageOptions) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithDockerfileBaseImageOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withDockerfileBaseImage", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEndpoint adds a network endpoint
+func (s *bunAppResource) WithEndpoint(options ...*WithEndpointOptions) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithEndpointOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEndpoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEndpointCallback updates a named endpoint via callback
+func (s *bunAppResource) WithEndpointCallback(endpointName string, callback func(obj EndpointUpdateContext), options ...*WithEndpointCallbackOptions) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["endpointName"] = serializeValue(endpointName)
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[EndpointUpdateContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithEndpointCallbackOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEndpointCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEndpointProxySupport set whether a resource can use proxied endpoints or whether they should be disabled for all endpoints belonging to the resource. If set to `false`, endpoints belonging to the resource will ignore the configured proxy settings and run proxy-less.
+func (s *bunAppResource) WithEndpointProxySupport(proxyEnabled bool) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["proxyEnabled"] = serializeValue(proxyEnabled)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEndpointProxySupport", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEnvironment sets an environment variable
+// Allowed types for parameter value: string, *ReferenceExpression, EndpointReference, ParameterResource, ExternalServiceResource, ResourceWithConnectionString, ExpressionValue.
+func (s *bunAppResource) WithEnvironment(name string, value any) BunAppResource {
+	if s.err != nil { return s }
+	switch value.(type) {
+	case string, *ReferenceExpression, EndpointReference, ParameterResource, ExternalServiceResource, ResourceWithConnectionString, ExpressionValue:
+	default:
+		err := fmt.Errorf("aspire: WithEnvironment: parameter %q must be one of [string, *ReferenceExpression, EndpointReference, ParameterResource, ExternalServiceResource, ResourceWithConnectionString, ExpressionValue], got %T", "value", value)
+		s.setErr(err); return s
+	}
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	if !isNil(value) { reqArgs["value"] = serializeValue(value) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEnvironment", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEnvironmentCallback allows for the population of environment variables on a resource.
+func (s *bunAppResource) WithEnvironmentCallback(callback func(arg EnvironmentCallbackContext)) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[EnvironmentCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEnvironmentCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithExecutableCommand sets the command for the executable resource.
+func (s *bunAppResource) WithExecutableCommand(command string) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["command"] = serializeValue(command)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withExecutableCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithExplicitStart prevents resource from starting automatically
+func (s *bunAppResource) WithExplicitStart() BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withExplicitStart", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithExternalHttpEndpoints marks existing http or https endpoints on a resource as external.
+func (s *bunAppResource) WithExternalHttpEndpoints() BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withExternalHttpEndpoints", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHealthCheck adds a health check by key
+func (s *bunAppResource) WithHealthCheck(key string) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["key"] = serializeValue(key)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHealthCheck", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHidden hides the resource from default resource lists
+func (s *bunAppResource) WithHidden() BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHidden", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHiddenOnCompletion hides the resource from default resource lists after successful completion
+func (s *bunAppResource) WithHiddenOnCompletion(options ...*WithHiddenOnCompletionOptions) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHiddenOnCompletionOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHiddenOnCompletion", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpCommand adds an HTTP resource command
+func (s *bunAppResource) WithHttpCommand(path string, displayName string, options ...*HttpCommandExportOptions) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["path"] = serializeValue(path)
+	reqArgs["displayName"] = serializeValue(displayName)
+	if len(options) > 0 {
+		merged := &HttpCommandExportOptions{}
+		applied := false
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt); applied = true }
+		}
+		if applied { reqArgs["options"] = serializeValue(merged) }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpEndpoint adds an HTTP endpoint
+func (s *bunAppResource) WithHttpEndpoint(options ...*WithHttpEndpointOptions) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHttpEndpointOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpEndpoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpEndpointCallback updates an HTTP endpoint via callback
+func (s *bunAppResource) WithHttpEndpointCallback(callback func(obj EndpointUpdateContext), options ...*WithHttpEndpointCallbackOptions) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[EndpointUpdateContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithHttpEndpointCallbackOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpEndpointCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpHealthCheck adds a health check to the resource which is mapped to a specific endpoint.
+func (s *bunAppResource) WithHttpHealthCheck(options ...*WithHttpHealthCheckOptions) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHttpHealthCheckOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpHealthCheck", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpProbe adds an HTTP health probe to the resource
+func (s *bunAppResource) WithHttpProbe(probeType ProbeType, options ...*WithHttpProbeOptions) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["probeType"] = serializeValue(probeType)
+	if len(options) > 0 {
+		merged := &WithHttpProbeOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpProbe", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpsCertificateConfiguration adds a callback that allows configuring the resource to use a specific HTTPS/TLS certificate key pair for server authentication.
+func (s *bunAppResource) WithHttpsCertificateConfiguration(callback func(arg HttpsCertificateConfigurationCallbackAnnotationContext)) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[HttpsCertificateConfigurationCallbackAnnotationContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpsCertificateConfiguration", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpsDeveloperCertificate indicates that a resource should use the developer certificate key pair for HTTPS endpoints at run time. Currently this indicates use of the ASP.NET Core developer certificate. The developer certificate will only be used when running in local development scenarios; in publish mode resources will use their default certificate configuration.
+func (s *bunAppResource) WithHttpsDeveloperCertificate(options ...*WithHttpsDeveloperCertificateOptions) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHttpsDeveloperCertificateOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withParameterHttpsDeveloperCertificate", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpsEndpoint adds an HTTPS endpoint
+func (s *bunAppResource) WithHttpsEndpoint(options ...*WithHttpsEndpointOptions) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHttpsEndpointOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpsEndpoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpsEndpointCallback updates an HTTPS endpoint via callback
+func (s *bunAppResource) WithHttpsEndpointCallback(callback func(obj EndpointUpdateContext), options ...*WithHttpsEndpointCallbackOptions) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[EndpointUpdateContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithHttpsEndpointCallbackOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpsEndpointCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithIconName specifies the icon to use when displaying the resource in the dashboard.
+func (s *bunAppResource) WithIconName(iconName string, options ...*WithIconNameOptions) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["iconName"] = serializeValue(iconName)
+	if len(options) > 0 {
+		merged := &WithIconNameOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withIconName", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithImagePushOptions adds an asynchronous callback to configure container image push options for the resource.
+func (s *bunAppResource) WithImagePushOptions(callback func(arg ContainerImagePushOptionsCallbackContext)) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ContainerImagePushOptionsCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withImagePushOptions", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithLifetimeOf configures a resource to match the lifetime of another resource.
+func (s *bunAppResource) WithLifetimeOf(sourceBuilder Resource) BunAppResource {
+	if s.err != nil { return s }
+	if sourceBuilder != nil { if err := sourceBuilder.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["sourceBuilder"] = serializeValue(sourceBuilder)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withLifetimeOf", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithMcpServer marks the resource as hosting a Model Context Protocol (MCP) server on the specified endpoint.
+func (s *bunAppResource) WithMcpServer(options ...*WithMcpServerOptions) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithMcpServerOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withMcpServer", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithNpm configures the Node.js resource to use npm as the package manager and optionally installs packages before the application starts.
+func (s *bunAppResource) WithNpm(options ...*WithNpmOptions) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithNpmOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withNpm", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithOtlpExporter configures OTLP telemetry export
+func (s *bunAppResource) WithOtlpExporter(options ...*WithOtlpExporterOptions) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithOtlpExporterOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withOtlpExporter", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithParentProcessLifetime configures a resource to use a persistent lifetime that ends when a parent process exits.
+func (s *bunAppResource) WithParentProcessLifetime(parentProcessId float64) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["parentProcessId"] = serializeValue(parentProcessId)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withParentProcessLifetime", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithParentRelationship sets the parent relationship
+func (s *bunAppResource) WithParentRelationship(parent Resource) BunAppResource {
+	if s.err != nil { return s }
+	if parent != nil { if err := parent.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["parent"] = serializeValue(parent)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withBuilderParentRelationship", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithPersistentLifetime configures a resource to use a persistent lifetime.
+func (s *bunAppResource) WithPersistentLifetime() BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withPersistentLifetime", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithPipelineConfiguration registers a callback to be executed during the pipeline configuration phase, allowing modification of step dependencies and relationships.
+func (s *bunAppResource) WithPipelineConfiguration(callback func(obj PipelineConfigurationContext)) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[PipelineConfigurationContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withPipelineConfiguration", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithPipelineStepFactory adds a pipeline step to the resource that will be executed during deployment.
+func (s *bunAppResource) WithPipelineStepFactory(stepName string, callback func(arg PipelineStepContext), options ...*WithPipelineStepFactoryOptions) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["stepName"] = serializeValue(stepName)
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[PipelineStepContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithPipelineStepFactoryOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withPipelineStepFactory", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithPnpm configures the Node.js resource to use pnpm as the package manager and optionally installs packages before the application starts.
+func (s *bunAppResource) WithPnpm(options ...*WithPnpmOptions) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithPnpmOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withPnpm", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithProcessCommand adds a command to the resource that starts a local process when invoked.
+func (s *bunAppResource) WithProcessCommand(commandName string, displayName string, options *ProcessCommandExportOptions) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["commandName"] = serializeValue(commandName)
+	reqArgs["displayName"] = serializeValue(displayName)
+	if options != nil { reqArgs["options"] = serializeValue(options) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withProcessCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithProcessCommandFactory adds a command to the resource that starts a local process created by a callback when invoked.
+func (s *bunAppResource) WithProcessCommandFactory(commandName string, displayName string, createProcessSpec func(arg ExecuteCommandContext) *ProcessCommandSpecExportData, options ...*ProcessCommandResultExportOptions) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["commandName"] = serializeValue(commandName)
+	reqArgs["displayName"] = serializeValue(displayName)
+	if createProcessSpec != nil {
+		cb := createProcessSpec
+		shim := func(args ...any) any {
+			return cb(callbackArg[ExecuteCommandContext](args, 0))
+		}
+		reqArgs["createProcessSpec"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &ProcessCommandResultExportOptions{}
+		applied := false
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt); applied = true }
+		}
+		if applied { reqArgs["options"] = serializeValue(merged) }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withProcessCommandFactory", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithReference adds a reference to another resource
+// Allowed types for parameter source: Resource, EndpointReference, string.
+func (s *bunAppResource) WithReference(source any, options ...*WithReferenceOptions) BunAppResource {
+	if s.err != nil { return s }
+	switch source.(type) {
+	case Resource, EndpointReference, string:
+	default:
+		err := fmt.Errorf("aspire: WithReference: parameter %q must be one of [Resource, EndpointReference, string], got %T", "source", source)
+		s.setErr(err); return s
+	}
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if !isNil(source) { reqArgs["source"] = serializeValue(source) }
+	if len(options) > 0 {
+		merged := &WithReferenceOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withReference", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithReferenceEnvironment configures how information is injected into environment variables when the resource references other resources.
+func (s *bunAppResource) WithReferenceEnvironment(options *ReferenceEnvironmentInjectionOptions) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if options != nil { reqArgs["options"] = serializeValue(options) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withReferenceEnvironment", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRelationship adds a relationship to another resource using its builder.
+func (s *bunAppResource) WithRelationship(resourceBuilder Resource, type_ string) BunAppResource {
+	if s.err != nil { return s }
+	if resourceBuilder != nil { if err := resourceBuilder.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["resourceBuilder"] = serializeValue(resourceBuilder)
+	reqArgs["type"] = serializeValue(type_)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withBuilderRelationship", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRemoteImageName sets the remote image name (without registry endpoint or tag) for container push operations.
+func (s *bunAppResource) WithRemoteImageName(remoteImageName string) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["remoteImageName"] = serializeValue(remoteImageName)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withRemoteImageName", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRemoteImageTag sets the remote image tag for container push operations.
+func (s *bunAppResource) WithRemoteImageTag(remoteImageTag string) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["remoteImageTag"] = serializeValue(remoteImageTag)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withRemoteImageTag", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRequiredCommand declares that a resource requires a specific command/executable to be available on the local machine PATH before it can start.
+func (s *bunAppResource) WithRequiredCommand(command string, options ...*WithRequiredCommandOptions) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["command"] = serializeValue(command)
+	if len(options) > 0 {
+		merged := &WithRequiredCommandOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withRequiredCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRequiredCommandValidation declares that a resource requires a specific command/executable to be available on the local machine PATH before it can start, with custom validation logic.
+func (s *bunAppResource) WithRequiredCommandValidation(command string, validationCallback func(arg RequiredCommandValidationContext) RequiredCommandValidationResult, options ...*WithRequiredCommandValidationOptions) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["command"] = serializeValue(command)
+	if validationCallback != nil {
+		cb := validationCallback
+		shim := func(args ...any) any {
+			return cb(callbackArg[RequiredCommandValidationContext](args, 0))
+		}
+		reqArgs["validationCallback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithRequiredCommandValidationOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withRequiredCommandValidation", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRunScript adds a run script annotation to the specified JavaScript application resource builder, specifying the script to execute and its arguments during run mode.
+func (s *bunAppResource) WithRunScript(scriptName string, options ...*WithRunScriptOptions) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	reqArgs["scriptName"] = serializeValue(scriptName)
+	if len(options) > 0 {
+		merged := &WithRunScriptOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withRunScript", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithSessionLifetime configures a resource to use a session lifetime.
+func (s *bunAppResource) WithSessionLifetime() BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withSessionLifetime", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithTerminal adds an interactive terminal session to a resource using the default terminal options.
+func (s *bunAppResource) WithTerminal() BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withTerminal", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithUrl adds or modifies displayed URLs
+// Allowed types for parameter url: string, *ReferenceExpression.
+func (s *bunAppResource) WithUrl(url any, options ...*WithUrlOptions) BunAppResource {
+	if s.err != nil { return s }
+	switch url.(type) {
+	case string, *ReferenceExpression:
+	default:
+		err := fmt.Errorf("aspire: WithUrl: parameter %q must be one of [string, *ReferenceExpression], got %T", "url", url)
+		s.setErr(err); return s
+	}
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if !isNil(url) { reqArgs["url"] = serializeValue(url) }
+	if len(options) > 0 {
+		merged := &WithUrlOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withUrl", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithUrlForEndpoint registers a callback to update the URL displayed for the endpoint with the specified name.
+func (s *bunAppResource) WithUrlForEndpoint(endpointName string, callback func(obj *ResourceUrlAnnotation)) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["endpointName"] = serializeValue(endpointName)
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			arg0 := callbackArg[*ResourceUrlAnnotation](args, 0)
+			cb(arg0)
+			return map[string]any{
+				"p0": serializeValue(arg0),
+			}
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withUrlForEndpoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithUrls registers a callback to customize the URLs displayed for the resource.
+func (s *bunAppResource) WithUrls(callback func(obj ResourceUrlsCallbackContext)) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ResourceUrlsCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withUrls", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithVolume adds a volume to an executable resource.
+func (s *bunAppResource) WithVolume(target string, name string, env string, options ...*ExecutableResourceWithVolumeOptions) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	reqArgs["target"] = serializeValue(target)
+	reqArgs["name"] = serializeValue(name)
+	reqArgs["env"] = serializeValue(env)
+	if len(options) > 0 {
+		merged := &ExecutableResourceWithVolumeOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withExecutableVolume", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithWorkingDirectory sets the working directory for the executable resource.
+func (s *bunAppResource) WithWorkingDirectory(workingDirectory string) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["workingDirectory"] = serializeValue(workingDirectory)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withWorkingDirectory", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithYarn configures the Node.js resource to use yarn as the package manager and optionally installs packages before the application starts.
+func (s *bunAppResource) WithYarn(options ...*WithYarnOptions) BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithYarnOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withYarn", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithoutHttpsCertificate disable HTTPS/TLS server certificate configuration for the resource. No HTTPS/TLS termination configuration will be applied.
+func (s *bunAppResource) WithoutHttpsCertificate() BunAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withoutHttpsCertificate", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WorkingDirectory gets the working directory for the executable resource.
+func (s *bunAppResource) WorkingDirectory() (string, error) {
+	if s.err != nil { var zero string; return zero, s.err }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"context": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/JavaScriptAppResource.workingDirectory", reqArgs)
+	if err != nil {
+		var zero string
+		return zero, err
+	}
+	return decodeAs[string](result)
 }
 
 // CSharpAppResource is the public interface for handle type CSharpAppResource.
@@ -6305,6 +8024,1884 @@ func (s *containerResource) WithoutHttpsCertificate() ContainerResource {
 	return s
 }
 
+// DenoAppResource is the public interface for handle type DenoAppResource.
+type DenoAppResource interface {
+	handleReference
+	AsHttp2Service() DenoAppResource
+	ClearContainerFilesSources() DenoAppResource
+	Command() (string, error)
+	CreateExecutionConfiguration() ExecutionConfigurationBuilder
+	ExcludeFromManifest() DenoAppResource
+	ExcludeFromMcp() DenoAppResource
+	GetEndpoint(name string) EndpointReference
+	GetResourceName() (string, error)
+	Name() (string, error)
+	OnBeforeResourceStarted(callback func(arg BeforeResourceStartedEvent)) DenoAppResource
+	OnInitializeResource(callback func(arg InitializeResourceEvent)) DenoAppResource
+	OnResourceEndpointsAllocated(callback func(arg ResourceEndpointsAllocatedEvent)) DenoAppResource
+	OnResourceReady(callback func(arg ResourceReadyEvent)) DenoAppResource
+	OnResourceStopped(callback func(arg ResourceStoppedEvent)) DenoAppResource
+	PublishAsDockerFile(configure func(obj ContainerResource)) DenoAppResource
+	PublishAsNodeServer(entryPoint string, options ...*PublishAsNodeServerOptions) DenoAppResource
+	PublishAsPackageScript(options ...*PublishAsPackageScriptOptions) DenoAppResource
+	PublishAsStaticWebsite(options ...*PublishAsStaticWebsiteOptions) DenoAppResource
+	PublishWithContainerFiles(source ResourceWithContainerFiles, destinationPath string) DenoAppResource
+	SubscribeHttpsEndpointsUpdate(callback func(obj HttpsEndpointUpdateCallbackContext)) DenoAppResource
+	WaitFor(dependency Resource, options ...*WaitForOptions) DenoAppResource
+	WaitForCompletion(dependency Resource, options ...*WaitForCompletionOptions) DenoAppResource
+	WaitForStart(dependency Resource, options ...*WaitForStartOptions) DenoAppResource
+	WithArgs(args []string) DenoAppResource
+	WithArgsCallback(callback func(obj CommandLineArgsCallbackContext)) DenoAppResource
+	WithBrowserDebugger(options ...*WithBrowserDebuggerOptions) DenoAppResource
+	WithBuildScript(scriptName string, options ...*WithBuildScriptOptions) DenoAppResource
+	WithBun(options ...*WithBunOptions) DenoAppResource
+	WithCertificateTrustScope(scope CertificateTrustScope) DenoAppResource
+	WithChildRelationship(child Resource) DenoAppResource
+	WithCommand(name string, displayName string, executeCommand func(arg ExecuteCommandContext) *ExecuteCommandResult, options ...*WithCommandOptions) DenoAppResource
+	WithComputeEnvironment(computeEnvironmentResource ComputeEnvironmentResource) DenoAppResource
+	WithContainerBuildOptions(callback func(arg ContainerBuildOptionsCallbackContext)) DenoAppResource
+	WithContainerFilesSource(sourcePath string) DenoAppResource
+	WithContainerRegistry(registry Resource) DenoAppResource
+	WithDeno(options ...*WithDenoOptions) DenoAppResource
+	WithDenoAllow(kind DenoPermissionKind, values []string) DenoAppResource
+	WithDenoAllowAll(options ...*WithDenoAllowAllOptions) DenoAppResource
+	WithDenoConfig(configFile string) DenoAppResource
+	WithDenoDeny(kind DenoPermissionKind, values []string) DenoAppResource
+	WithDenoImportMap(importMapFile string) DenoAppResource
+	WithDenoInspect(options ...*WithDenoInspectOptions) DenoAppResource
+	WithDenoLock(lockFile string) DenoAppResource
+	WithDenoNoLock() DenoAppResource
+	WithDenoNodeModulesDir(options ...*WithDenoNodeModulesDirOptions) DenoAppResource
+	WithDenoRun() DenoAppResource
+	WithDenoRuntimeArgs(args []string) DenoAppResource
+	WithDenoScriptArgs(args []string) DenoAppResource
+	WithDenoServe() DenoAppResource
+	WithDenoTask(taskName string) DenoAppResource
+	WithDenoUnstable(features []string) DenoAppResource
+	WithDenoWatch(options ...*WithDenoWatchOptions) DenoAppResource
+	WithDeveloperCertificateTrust(trust bool) DenoAppResource
+	WithDockerfileBaseImage(options ...*WithDockerfileBaseImageOptions) DenoAppResource
+	WithEndpoint(options ...*WithEndpointOptions) DenoAppResource
+	WithEndpointCallback(endpointName string, callback func(obj EndpointUpdateContext), options ...*WithEndpointCallbackOptions) DenoAppResource
+	WithEndpointProxySupport(proxyEnabled bool) DenoAppResource
+	WithEnvironment(name string, value any) DenoAppResource
+	WithEnvironmentCallback(callback func(arg EnvironmentCallbackContext)) DenoAppResource
+	WithExecutableCommand(command string) DenoAppResource
+	WithExplicitStart() DenoAppResource
+	WithExternalHttpEndpoints() DenoAppResource
+	WithHealthCheck(key string) DenoAppResource
+	WithHidden() DenoAppResource
+	WithHiddenOnCompletion(options ...*WithHiddenOnCompletionOptions) DenoAppResource
+	WithHttpCommand(path string, displayName string, options ...*HttpCommandExportOptions) DenoAppResource
+	WithHttpEndpoint(options ...*WithHttpEndpointOptions) DenoAppResource
+	WithHttpEndpointCallback(callback func(obj EndpointUpdateContext), options ...*WithHttpEndpointCallbackOptions) DenoAppResource
+	WithHttpHealthCheck(options ...*WithHttpHealthCheckOptions) DenoAppResource
+	WithHttpProbe(probeType ProbeType, options ...*WithHttpProbeOptions) DenoAppResource
+	WithHttpsCertificateConfiguration(callback func(arg HttpsCertificateConfigurationCallbackAnnotationContext)) DenoAppResource
+	WithHttpsDeveloperCertificate(options ...*WithHttpsDeveloperCertificateOptions) DenoAppResource
+	WithHttpsEndpoint(options ...*WithHttpsEndpointOptions) DenoAppResource
+	WithHttpsEndpointCallback(callback func(obj EndpointUpdateContext), options ...*WithHttpsEndpointCallbackOptions) DenoAppResource
+	WithIconName(iconName string, options ...*WithIconNameOptions) DenoAppResource
+	WithImagePushOptions(callback func(arg ContainerImagePushOptionsCallbackContext)) DenoAppResource
+	WithLifetimeOf(sourceBuilder Resource) DenoAppResource
+	WithMcpServer(options ...*WithMcpServerOptions) DenoAppResource
+	WithNpm(options ...*WithNpmOptions) DenoAppResource
+	WithOtlpExporter(options ...*WithOtlpExporterOptions) DenoAppResource
+	WithParentProcessLifetime(parentProcessId float64) DenoAppResource
+	WithParentRelationship(parent Resource) DenoAppResource
+	WithPersistentLifetime() DenoAppResource
+	WithPipelineConfiguration(callback func(obj PipelineConfigurationContext)) DenoAppResource
+	WithPipelineStepFactory(stepName string, callback func(arg PipelineStepContext), options ...*WithPipelineStepFactoryOptions) DenoAppResource
+	WithPnpm(options ...*WithPnpmOptions) DenoAppResource
+	WithProcessCommand(commandName string, displayName string, options *ProcessCommandExportOptions) DenoAppResource
+	WithProcessCommandFactory(commandName string, displayName string, createProcessSpec func(arg ExecuteCommandContext) *ProcessCommandSpecExportData, options ...*ProcessCommandResultExportOptions) DenoAppResource
+	WithReference(source any, options ...*WithReferenceOptions) DenoAppResource
+	WithReferenceEnvironment(options *ReferenceEnvironmentInjectionOptions) DenoAppResource
+	WithRelationship(resourceBuilder Resource, type_ string) DenoAppResource
+	WithRemoteImageName(remoteImageName string) DenoAppResource
+	WithRemoteImageTag(remoteImageTag string) DenoAppResource
+	WithRequiredCommand(command string, options ...*WithRequiredCommandOptions) DenoAppResource
+	WithRequiredCommandValidation(command string, validationCallback func(arg RequiredCommandValidationContext) RequiredCommandValidationResult, options ...*WithRequiredCommandValidationOptions) DenoAppResource
+	WithRunScript(scriptName string, options ...*WithRunScriptOptions) DenoAppResource
+	WithSessionLifetime() DenoAppResource
+	WithTerminal() DenoAppResource
+	WithUrl(url any, options ...*WithUrlOptions) DenoAppResource
+	WithUrlForEndpoint(endpointName string, callback func(obj *ResourceUrlAnnotation)) DenoAppResource
+	WithUrls(callback func(obj ResourceUrlsCallbackContext)) DenoAppResource
+	WithVolume(target string, name string, env string, options ...*ExecutableResourceWithVolumeOptions) DenoAppResource
+	WithWorkingDirectory(workingDirectory string) DenoAppResource
+	WithYarn(options ...*WithYarnOptions) DenoAppResource
+	WithoutHttpsCertificate() DenoAppResource
+	WorkingDirectory() (string, error)
+	Err() error
+}
+
+// denoAppResource is the unexported impl of DenoAppResource.
+type denoAppResource struct {
+	*resourceBuilderBase
+}
+
+// newDenoAppResourceFromHandle wraps an existing handle as DenoAppResource.
+func newDenoAppResourceFromHandle(h *handle, c *client) DenoAppResource {
+	return &denoAppResource{resourceBuilderBase: newResourceBuilderBase(h, c)}
+}
+
+// AsHttp2Service configures a resource to mark all endpoints' transport as HTTP/2. This is useful for HTTP/2 services that need prior knowledge.
+func (s *denoAppResource) AsHttp2Service() DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/asHttp2Service", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// ClearContainerFilesSources removes any container files source annotation from the resource being built.
+func (s *denoAppResource) ClearContainerFilesSources() DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/clearContainerFilesSources", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// Command gets the command associated with this executable resource.
+func (s *denoAppResource) Command() (string, error) {
+	if s.err != nil { var zero string; return zero, s.err }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"context": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/JavaScriptAppResource.command", reqArgs)
+	if err != nil {
+		var zero string
+		return zero, err
+	}
+	return decodeAs[string](result)
+}
+
+// CreateExecutionConfiguration creates an execution configuration builder for the specified resource.
+func (s *denoAppResource) CreateExecutionConfiguration() ExecutionConfigurationBuilder {
+	if s.err != nil { return &executionConfigurationBuilder{resourceBuilderBase: newErroredResourceBuilder(s.err, s.client)} }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting/createExecutionConfiguration", reqArgs)
+	if err != nil {
+		return &executionConfigurationBuilder{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	href, ok := result.(handleReference)
+	if !ok {
+		err := fmt.Errorf("aspire: Aspire.Hosting/createExecutionConfiguration returned unexpected type %T", result)
+		return &executionConfigurationBuilder{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	return &executionConfigurationBuilder{resourceBuilderBase: newResourceBuilderBase(href.getHandle(), s.client)}
+}
+
+// ExcludeFromManifest excludes a resource from being published to the manifest.
+func (s *denoAppResource) ExcludeFromManifest() DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/excludeFromManifest", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// ExcludeFromMcp exclude the resource from MCP operations using the Aspire MCP server. The resource is excluded from results that return resources, console logs and telemetry.
+func (s *denoAppResource) ExcludeFromMcp() DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/excludeFromMcp", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// GetEndpoint gets an endpoint reference
+func (s *denoAppResource) GetEndpoint(name string) EndpointReference {
+	if s.err != nil { return &endpointReference{resourceBuilderBase: newErroredResourceBuilder(s.err, s.client)} }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting/getEndpoint", reqArgs)
+	if err != nil {
+		return &endpointReference{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	href, ok := result.(handleReference)
+	if !ok {
+		err := fmt.Errorf("aspire: Aspire.Hosting/getEndpoint returned unexpected type %T", result)
+		return &endpointReference{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	return &endpointReference{resourceBuilderBase: newResourceBuilderBase(href.getHandle(), s.client)}
+}
+
+// GetResourceName gets the name of the resource from a builder.
+func (s *denoAppResource) GetResourceName() (string, error) {
+	if s.err != nil { var zero string; return zero, s.err }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting/getResourceName", reqArgs)
+	if err != nil {
+		var zero string
+		return zero, err
+	}
+	return decodeAs[string](result)
+}
+
+// Name gets the name of the resource.
+func (s *denoAppResource) Name() (string, error) {
+	if s.err != nil { var zero string; return zero, s.err }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"context": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/JavaScriptAppResource.name", reqArgs)
+	if err != nil {
+		var zero string
+		return zero, err
+	}
+	return decodeAs[string](result)
+}
+
+// OnBeforeResourceStarted subscribes to the BeforeResourceStarted event.
+func (s *denoAppResource) OnBeforeResourceStarted(callback func(arg BeforeResourceStartedEvent)) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[BeforeResourceStartedEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onBeforeResourceStarted", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// OnInitializeResource subscribes to the InitializeResource event.
+func (s *denoAppResource) OnInitializeResource(callback func(arg InitializeResourceEvent)) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[InitializeResourceEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onInitializeResource", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// OnResourceEndpointsAllocated subscribes to the ResourceEndpointsAllocated event.
+func (s *denoAppResource) OnResourceEndpointsAllocated(callback func(arg ResourceEndpointsAllocatedEvent)) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ResourceEndpointsAllocatedEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onResourceEndpointsAllocated", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// OnResourceReady subscribes to the ResourceReady event.
+func (s *denoAppResource) OnResourceReady(callback func(arg ResourceReadyEvent)) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ResourceReadyEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onResourceReady", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// OnResourceStopped subscribes to the ResourceStopped event.
+func (s *denoAppResource) OnResourceStopped(callback func(arg ResourceStoppedEvent)) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ResourceStoppedEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onResourceStopped", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// PublishAsDockerFile publishes an executable as a Docker file
+func (s *denoAppResource) PublishAsDockerFile(configure func(obj ContainerResource)) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if configure != nil {
+		cb := configure
+		shim := func(args ...any) any {
+			cb(callbackArg[ContainerResource](args, 0))
+			return nil
+		}
+		reqArgs["configure"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/publishAsDockerFile", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// PublishAsNodeServer configures the JavaScript application to publish as a standalone Node.js server that runs a built artifact directly.
+func (s *denoAppResource) PublishAsNodeServer(entryPoint string, options ...*PublishAsNodeServerOptions) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["entryPoint"] = serializeValue(entryPoint)
+	if len(options) > 0 {
+		merged := &PublishAsNodeServerOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/publishAsNodeServer", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// PublishAsPackageScript configures the JavaScript application to publish as a server that runs a package manager script at runtime.
+func (s *denoAppResource) PublishAsPackageScript(options ...*PublishAsPackageScriptOptions) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &PublishAsPackageScriptOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/publishAsPackageScript", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// PublishAsStaticWebsite publishes the JavaScript application as a standalone static website using YARP.
+func (s *denoAppResource) PublishAsStaticWebsite(options ...*PublishAsStaticWebsiteOptions) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &PublishAsStaticWebsiteOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/publishAsStaticWebsite", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// PublishWithContainerFiles configures the resource to copy container files from the specified source resource during publishing.
+func (s *denoAppResource) PublishWithContainerFiles(source ResourceWithContainerFiles, destinationPath string) DenoAppResource {
+	if s.err != nil { return s }
+	if source != nil { if err := source.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["source"] = serializeValue(source)
+	reqArgs["destinationPath"] = serializeValue(destinationPath)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/publishWithContainerFilesFromResource", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// SubscribeHttpsEndpointsUpdate subscribes to the `BeforeStartEvent` and invokes the specified callback when an HTTPS certificate is determined to be available for the resource. This is used to conditionally update endpoint URI schemes or perform other HTTPS-related configuration at startup.
+func (s *denoAppResource) SubscribeHttpsEndpointsUpdate(callback func(obj HttpsEndpointUpdateCallbackContext)) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[HttpsEndpointUpdateCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/subscribeHttpsEndpointsUpdate", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WaitFor waits for another resource to be ready
+func (s *denoAppResource) WaitFor(dependency Resource, options ...*WaitForOptions) DenoAppResource {
+	if s.err != nil { return s }
+	if dependency != nil { if err := dependency.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["dependency"] = serializeValue(dependency)
+	if len(options) > 0 {
+		merged := &WaitForOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/waitFor", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WaitForCompletion waits for the dependency resource to enter the Exited or Finished state before starting the resource.
+func (s *denoAppResource) WaitForCompletion(dependency Resource, options ...*WaitForCompletionOptions) DenoAppResource {
+	if s.err != nil { return s }
+	if dependency != nil { if err := dependency.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["dependency"] = serializeValue(dependency)
+	if len(options) > 0 {
+		merged := &WaitForCompletionOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/waitForResourceCompletion", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WaitForStart waits for another resource to start
+func (s *denoAppResource) WaitForStart(dependency Resource, options ...*WaitForStartOptions) DenoAppResource {
+	if s.err != nil { return s }
+	if dependency != nil { if err := dependency.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["dependency"] = serializeValue(dependency)
+	if len(options) > 0 {
+		merged := &WaitForStartOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/waitForStart", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithArgs adds arguments to be passed to a resource that supports arguments when it is launched.
+func (s *denoAppResource) WithArgs(args []string) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if args != nil { reqArgs["args"] = serializeValue(args) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withArgs", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithArgsCallback adds a callback to be executed with a list of command-line arguments when a resource is started.
+func (s *denoAppResource) WithArgsCallback(callback func(obj CommandLineArgsCallbackContext)) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[CommandLineArgsCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withArgsCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithBrowserDebugger configures a browser debugger for the JavaScript application resource, enabling browser-based debugging through a child resource that launches when the parent application is ready.
+func (s *denoAppResource) WithBrowserDebugger(options ...*WithBrowserDebuggerOptions) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithBrowserDebuggerOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withBrowserDebugger", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithBuildScript adds a build script annotation to the resource builder using the specified command-line arguments.
+func (s *denoAppResource) WithBuildScript(scriptName string, options ...*WithBuildScriptOptions) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	reqArgs["scriptName"] = serializeValue(scriptName)
+	if len(options) > 0 {
+		merged := &WithBuildScriptOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withBuildScript", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithBun configures the JavaScript resource to use Bun as the package manager and optionally installs packages before the application starts.
+func (s *denoAppResource) WithBun(options ...*WithBunOptions) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithBunOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withBun", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithCertificateTrustScope sets the certificate trust scope
+func (s *denoAppResource) WithCertificateTrustScope(scope CertificateTrustScope) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["scope"] = serializeValue(scope)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withCertificateTrustScope", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithChildRelationship sets a child relationship
+func (s *denoAppResource) WithChildRelationship(child Resource) DenoAppResource {
+	if s.err != nil { return s }
+	if child != nil { if err := child.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["child"] = serializeValue(child)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withBuilderChildRelationship", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithCommand adds a resource command
+func (s *denoAppResource) WithCommand(name string, displayName string, executeCommand func(arg ExecuteCommandContext) *ExecuteCommandResult, options ...*WithCommandOptions) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	reqArgs["displayName"] = serializeValue(displayName)
+	if executeCommand != nil {
+		cb := executeCommand
+		shim := func(args ...any) any {
+			return cb(callbackArg[ExecuteCommandContext](args, 0))
+		}
+		reqArgs["executeCommand"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithCommandOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithComputeEnvironment configures the compute environment for the compute resource.
+func (s *denoAppResource) WithComputeEnvironment(computeEnvironmentResource ComputeEnvironmentResource) DenoAppResource {
+	if s.err != nil { return s }
+	if computeEnvironmentResource != nil { if err := computeEnvironmentResource.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["computeEnvironmentResource"] = serializeValue(computeEnvironmentResource)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withComputeEnvironment", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerBuildOptions configures container build options for a compute resource using an async callback.
+func (s *denoAppResource) WithContainerBuildOptions(callback func(arg ContainerBuildOptionsCallbackContext)) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ContainerBuildOptionsCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerBuildOptions", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerFilesSource adds a container files source annotation to the resource being built, specifying the path to the container files source.
+func (s *denoAppResource) WithContainerFilesSource(sourcePath string) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["sourcePath"] = serializeValue(sourcePath)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerFilesSource", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerRegistry configures the resource to use the specified container registry for container image operations.
+func (s *denoAppResource) WithContainerRegistry(registry Resource) DenoAppResource {
+	if s.err != nil { return s }
+	if registry != nil { if err := registry.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["registry"] = serializeValue(registry)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerRegistry", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDeno configures the JavaScript resource to use Deno as the package manager.
+func (s *denoAppResource) WithDeno(options ...*WithDenoOptions) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithDenoOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withDeno", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDenoAllow grants a Deno permission, optionally scoped to the supplied values.
+func (s *denoAppResource) WithDenoAllow(kind DenoPermissionKind, values []string) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["kind"] = serializeValue(kind)
+	if values != nil { reqArgs["values"] = serializeValue(values) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withDenoAllow", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDenoAllowAll controls the blanket `-A`/`--allow-all` grant.
+func (s *denoAppResource) WithDenoAllowAll(options ...*WithDenoAllowAllOptions) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithDenoAllowAllOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withDenoAllowAll", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDenoConfig sets `--config <file>` (path to a `deno.json`/`deno.jsonc`).
+func (s *denoAppResource) WithDenoConfig(configFile string) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["configFile"] = serializeValue(configFile)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withDenoConfig", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDenoDeny denies a Deno permission, optionally scoped to the supplied values.
+func (s *denoAppResource) WithDenoDeny(kind DenoPermissionKind, values []string) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["kind"] = serializeValue(kind)
+	if values != nil { reqArgs["values"] = serializeValue(values) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withDenoDeny", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDenoImportMap sets `--import-map <file>`.
+func (s *denoAppResource) WithDenoImportMap(importMapFile string) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["importMapFile"] = serializeValue(importMapFile)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withDenoImportMap", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDenoInspect enables a Deno inspector mode, optionally at `hostPort` (for example `127.0.0.1:9229`).
+func (s *denoAppResource) WithDenoInspect(options ...*WithDenoInspectOptions) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithDenoInspectOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withDenoInspect", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDenoLock sets `--lock <file>`.
+func (s *denoAppResource) WithDenoLock(lockFile string) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["lockFile"] = serializeValue(lockFile)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withDenoLock", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDenoNoLock sets `--no-lock`, disabling lockfile use.
+func (s *denoAppResource) WithDenoNoLock() DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withDenoNoLock", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDenoNodeModulesDir sets `--node-modules-dir`, optionally with a mode emitted as `--node-modules-dir=<mode>`.
+func (s *denoAppResource) WithDenoNodeModulesDir(options ...*WithDenoNodeModulesDirOptions) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithDenoNodeModulesDirOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withDenoNodeModulesDir", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDenoRun selects the `deno run <entrypoint>` mode (the default).
+func (s *denoAppResource) WithDenoRun() DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withDenoRun", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDenoRuntimeArgs appends raw runtime arguments injected verbatim BEFORE the entrypoint. This is the escape hatch that gives full parity with `AddExecutable("name", "deno", workdir, args...)` for any flag not covered by a dedicated `WithDeno*` method.
+func (s *denoAppResource) WithDenoRuntimeArgs(args []string) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if args != nil { reqArgs["args"] = serializeValue(args) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withDenoRuntimeArgs", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDenoScriptArgs appends arguments passed to the script AFTER the entrypoint. Deno forwards everything after the entrypoint to the running program.
+func (s *denoAppResource) WithDenoScriptArgs(args []string) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if args != nil { reqArgs["args"] = serializeValue(args) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withDenoScriptArgs", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDenoServe selects the `deno serve <entrypoint>` mode for serving an HTTP entrypoint.
+func (s *denoAppResource) WithDenoServe() DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withDenoServe", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDenoTask selects the `deno task <taskName>` mode, running a task defined in `deno.json` instead of a script entrypoint. Permissions are defined by the task itself and are not emitted for this mode.
+func (s *denoAppResource) WithDenoTask(taskName string) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["taskName"] = serializeValue(taskName)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withDenoTask", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDenoUnstable adds one or more `--unstable-*` flags. Each feature may be supplied bare (for example `"kv"`, `"worker-options"`, `"sloppy-imports"`) or fully qualified (`"--unstable-kv"`).
+func (s *denoAppResource) WithDenoUnstable(features []string) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if features != nil { reqArgs["features"] = serializeValue(features) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withDenoUnstable", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDenoWatch enables `--watch` (or `--watch-hmr` when `hmr` is `true`).
+func (s *denoAppResource) WithDenoWatch(options ...*WithDenoWatchOptions) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithDenoWatchOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withDenoWatch", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDeveloperCertificateTrust indicates whether developer certificates should be treated as trusted certificate authorities for the resource at run time. Currently this indicates trust for the ASP.NET Core developer certificate. The developer certificate will only be trusted when running in local development scenarios; in publish mode resources will use their default certificate trust.
+func (s *denoAppResource) WithDeveloperCertificateTrust(trust bool) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["trust"] = serializeValue(trust)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withDeveloperCertificateTrust", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDockerfileBaseImage configures custom base images for generated Dockerfiles.
+func (s *denoAppResource) WithDockerfileBaseImage(options ...*WithDockerfileBaseImageOptions) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithDockerfileBaseImageOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withDockerfileBaseImage", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEndpoint adds a network endpoint
+func (s *denoAppResource) WithEndpoint(options ...*WithEndpointOptions) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithEndpointOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEndpoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEndpointCallback updates a named endpoint via callback
+func (s *denoAppResource) WithEndpointCallback(endpointName string, callback func(obj EndpointUpdateContext), options ...*WithEndpointCallbackOptions) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["endpointName"] = serializeValue(endpointName)
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[EndpointUpdateContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithEndpointCallbackOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEndpointCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEndpointProxySupport set whether a resource can use proxied endpoints or whether they should be disabled for all endpoints belonging to the resource. If set to `false`, endpoints belonging to the resource will ignore the configured proxy settings and run proxy-less.
+func (s *denoAppResource) WithEndpointProxySupport(proxyEnabled bool) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["proxyEnabled"] = serializeValue(proxyEnabled)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEndpointProxySupport", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEnvironment sets an environment variable
+// Allowed types for parameter value: string, *ReferenceExpression, EndpointReference, ParameterResource, ExternalServiceResource, ResourceWithConnectionString, ExpressionValue.
+func (s *denoAppResource) WithEnvironment(name string, value any) DenoAppResource {
+	if s.err != nil { return s }
+	switch value.(type) {
+	case string, *ReferenceExpression, EndpointReference, ParameterResource, ExternalServiceResource, ResourceWithConnectionString, ExpressionValue:
+	default:
+		err := fmt.Errorf("aspire: WithEnvironment: parameter %q must be one of [string, *ReferenceExpression, EndpointReference, ParameterResource, ExternalServiceResource, ResourceWithConnectionString, ExpressionValue], got %T", "value", value)
+		s.setErr(err); return s
+	}
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	if !isNil(value) { reqArgs["value"] = serializeValue(value) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEnvironment", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEnvironmentCallback allows for the population of environment variables on a resource.
+func (s *denoAppResource) WithEnvironmentCallback(callback func(arg EnvironmentCallbackContext)) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[EnvironmentCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEnvironmentCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithExecutableCommand sets the command for the executable resource.
+func (s *denoAppResource) WithExecutableCommand(command string) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["command"] = serializeValue(command)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withExecutableCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithExplicitStart prevents resource from starting automatically
+func (s *denoAppResource) WithExplicitStart() DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withExplicitStart", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithExternalHttpEndpoints marks existing http or https endpoints on a resource as external.
+func (s *denoAppResource) WithExternalHttpEndpoints() DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withExternalHttpEndpoints", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHealthCheck adds a health check by key
+func (s *denoAppResource) WithHealthCheck(key string) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["key"] = serializeValue(key)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHealthCheck", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHidden hides the resource from default resource lists
+func (s *denoAppResource) WithHidden() DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHidden", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHiddenOnCompletion hides the resource from default resource lists after successful completion
+func (s *denoAppResource) WithHiddenOnCompletion(options ...*WithHiddenOnCompletionOptions) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHiddenOnCompletionOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHiddenOnCompletion", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpCommand adds an HTTP resource command
+func (s *denoAppResource) WithHttpCommand(path string, displayName string, options ...*HttpCommandExportOptions) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["path"] = serializeValue(path)
+	reqArgs["displayName"] = serializeValue(displayName)
+	if len(options) > 0 {
+		merged := &HttpCommandExportOptions{}
+		applied := false
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt); applied = true }
+		}
+		if applied { reqArgs["options"] = serializeValue(merged) }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpEndpoint adds an HTTP endpoint
+func (s *denoAppResource) WithHttpEndpoint(options ...*WithHttpEndpointOptions) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHttpEndpointOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpEndpoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpEndpointCallback updates an HTTP endpoint via callback
+func (s *denoAppResource) WithHttpEndpointCallback(callback func(obj EndpointUpdateContext), options ...*WithHttpEndpointCallbackOptions) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[EndpointUpdateContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithHttpEndpointCallbackOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpEndpointCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpHealthCheck adds a health check to the resource which is mapped to a specific endpoint.
+func (s *denoAppResource) WithHttpHealthCheck(options ...*WithHttpHealthCheckOptions) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHttpHealthCheckOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpHealthCheck", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpProbe adds an HTTP health probe to the resource
+func (s *denoAppResource) WithHttpProbe(probeType ProbeType, options ...*WithHttpProbeOptions) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["probeType"] = serializeValue(probeType)
+	if len(options) > 0 {
+		merged := &WithHttpProbeOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpProbe", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpsCertificateConfiguration adds a callback that allows configuring the resource to use a specific HTTPS/TLS certificate key pair for server authentication.
+func (s *denoAppResource) WithHttpsCertificateConfiguration(callback func(arg HttpsCertificateConfigurationCallbackAnnotationContext)) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[HttpsCertificateConfigurationCallbackAnnotationContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpsCertificateConfiguration", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpsDeveloperCertificate indicates that a resource should use the developer certificate key pair for HTTPS endpoints at run time. Currently this indicates use of the ASP.NET Core developer certificate. The developer certificate will only be used when running in local development scenarios; in publish mode resources will use their default certificate configuration.
+func (s *denoAppResource) WithHttpsDeveloperCertificate(options ...*WithHttpsDeveloperCertificateOptions) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHttpsDeveloperCertificateOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withParameterHttpsDeveloperCertificate", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpsEndpoint adds an HTTPS endpoint
+func (s *denoAppResource) WithHttpsEndpoint(options ...*WithHttpsEndpointOptions) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHttpsEndpointOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpsEndpoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpsEndpointCallback updates an HTTPS endpoint via callback
+func (s *denoAppResource) WithHttpsEndpointCallback(callback func(obj EndpointUpdateContext), options ...*WithHttpsEndpointCallbackOptions) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[EndpointUpdateContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithHttpsEndpointCallbackOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpsEndpointCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithIconName specifies the icon to use when displaying the resource in the dashboard.
+func (s *denoAppResource) WithIconName(iconName string, options ...*WithIconNameOptions) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["iconName"] = serializeValue(iconName)
+	if len(options) > 0 {
+		merged := &WithIconNameOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withIconName", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithImagePushOptions adds an asynchronous callback to configure container image push options for the resource.
+func (s *denoAppResource) WithImagePushOptions(callback func(arg ContainerImagePushOptionsCallbackContext)) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ContainerImagePushOptionsCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withImagePushOptions", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithLifetimeOf configures a resource to match the lifetime of another resource.
+func (s *denoAppResource) WithLifetimeOf(sourceBuilder Resource) DenoAppResource {
+	if s.err != nil { return s }
+	if sourceBuilder != nil { if err := sourceBuilder.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["sourceBuilder"] = serializeValue(sourceBuilder)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withLifetimeOf", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithMcpServer marks the resource as hosting a Model Context Protocol (MCP) server on the specified endpoint.
+func (s *denoAppResource) WithMcpServer(options ...*WithMcpServerOptions) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithMcpServerOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withMcpServer", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithNpm configures the Node.js resource to use npm as the package manager and optionally installs packages before the application starts.
+func (s *denoAppResource) WithNpm(options ...*WithNpmOptions) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithNpmOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withNpm", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithOtlpExporter configures OTLP telemetry export
+func (s *denoAppResource) WithOtlpExporter(options ...*WithOtlpExporterOptions) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithOtlpExporterOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withOtlpExporter", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithParentProcessLifetime configures a resource to use a persistent lifetime that ends when a parent process exits.
+func (s *denoAppResource) WithParentProcessLifetime(parentProcessId float64) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["parentProcessId"] = serializeValue(parentProcessId)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withParentProcessLifetime", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithParentRelationship sets the parent relationship
+func (s *denoAppResource) WithParentRelationship(parent Resource) DenoAppResource {
+	if s.err != nil { return s }
+	if parent != nil { if err := parent.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["parent"] = serializeValue(parent)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withBuilderParentRelationship", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithPersistentLifetime configures a resource to use a persistent lifetime.
+func (s *denoAppResource) WithPersistentLifetime() DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withPersistentLifetime", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithPipelineConfiguration registers a callback to be executed during the pipeline configuration phase, allowing modification of step dependencies and relationships.
+func (s *denoAppResource) WithPipelineConfiguration(callback func(obj PipelineConfigurationContext)) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[PipelineConfigurationContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withPipelineConfiguration", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithPipelineStepFactory adds a pipeline step to the resource that will be executed during deployment.
+func (s *denoAppResource) WithPipelineStepFactory(stepName string, callback func(arg PipelineStepContext), options ...*WithPipelineStepFactoryOptions) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["stepName"] = serializeValue(stepName)
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[PipelineStepContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithPipelineStepFactoryOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withPipelineStepFactory", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithPnpm configures the Node.js resource to use pnpm as the package manager and optionally installs packages before the application starts.
+func (s *denoAppResource) WithPnpm(options ...*WithPnpmOptions) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithPnpmOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withPnpm", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithProcessCommand adds a command to the resource that starts a local process when invoked.
+func (s *denoAppResource) WithProcessCommand(commandName string, displayName string, options *ProcessCommandExportOptions) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["commandName"] = serializeValue(commandName)
+	reqArgs["displayName"] = serializeValue(displayName)
+	if options != nil { reqArgs["options"] = serializeValue(options) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withProcessCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithProcessCommandFactory adds a command to the resource that starts a local process created by a callback when invoked.
+func (s *denoAppResource) WithProcessCommandFactory(commandName string, displayName string, createProcessSpec func(arg ExecuteCommandContext) *ProcessCommandSpecExportData, options ...*ProcessCommandResultExportOptions) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["commandName"] = serializeValue(commandName)
+	reqArgs["displayName"] = serializeValue(displayName)
+	if createProcessSpec != nil {
+		cb := createProcessSpec
+		shim := func(args ...any) any {
+			return cb(callbackArg[ExecuteCommandContext](args, 0))
+		}
+		reqArgs["createProcessSpec"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &ProcessCommandResultExportOptions{}
+		applied := false
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt); applied = true }
+		}
+		if applied { reqArgs["options"] = serializeValue(merged) }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withProcessCommandFactory", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithReference adds a reference to another resource
+// Allowed types for parameter source: Resource, EndpointReference, string.
+func (s *denoAppResource) WithReference(source any, options ...*WithReferenceOptions) DenoAppResource {
+	if s.err != nil { return s }
+	switch source.(type) {
+	case Resource, EndpointReference, string:
+	default:
+		err := fmt.Errorf("aspire: WithReference: parameter %q must be one of [Resource, EndpointReference, string], got %T", "source", source)
+		s.setErr(err); return s
+	}
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if !isNil(source) { reqArgs["source"] = serializeValue(source) }
+	if len(options) > 0 {
+		merged := &WithReferenceOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withReference", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithReferenceEnvironment configures how information is injected into environment variables when the resource references other resources.
+func (s *denoAppResource) WithReferenceEnvironment(options *ReferenceEnvironmentInjectionOptions) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if options != nil { reqArgs["options"] = serializeValue(options) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withReferenceEnvironment", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRelationship adds a relationship to another resource using its builder.
+func (s *denoAppResource) WithRelationship(resourceBuilder Resource, type_ string) DenoAppResource {
+	if s.err != nil { return s }
+	if resourceBuilder != nil { if err := resourceBuilder.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["resourceBuilder"] = serializeValue(resourceBuilder)
+	reqArgs["type"] = serializeValue(type_)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withBuilderRelationship", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRemoteImageName sets the remote image name (without registry endpoint or tag) for container push operations.
+func (s *denoAppResource) WithRemoteImageName(remoteImageName string) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["remoteImageName"] = serializeValue(remoteImageName)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withRemoteImageName", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRemoteImageTag sets the remote image tag for container push operations.
+func (s *denoAppResource) WithRemoteImageTag(remoteImageTag string) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["remoteImageTag"] = serializeValue(remoteImageTag)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withRemoteImageTag", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRequiredCommand declares that a resource requires a specific command/executable to be available on the local machine PATH before it can start.
+func (s *denoAppResource) WithRequiredCommand(command string, options ...*WithRequiredCommandOptions) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["command"] = serializeValue(command)
+	if len(options) > 0 {
+		merged := &WithRequiredCommandOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withRequiredCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRequiredCommandValidation declares that a resource requires a specific command/executable to be available on the local machine PATH before it can start, with custom validation logic.
+func (s *denoAppResource) WithRequiredCommandValidation(command string, validationCallback func(arg RequiredCommandValidationContext) RequiredCommandValidationResult, options ...*WithRequiredCommandValidationOptions) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["command"] = serializeValue(command)
+	if validationCallback != nil {
+		cb := validationCallback
+		shim := func(args ...any) any {
+			return cb(callbackArg[RequiredCommandValidationContext](args, 0))
+		}
+		reqArgs["validationCallback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithRequiredCommandValidationOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withRequiredCommandValidation", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRunScript adds a run script annotation to the specified JavaScript application resource builder, specifying the script to execute and its arguments during run mode.
+func (s *denoAppResource) WithRunScript(scriptName string, options ...*WithRunScriptOptions) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	reqArgs["scriptName"] = serializeValue(scriptName)
+	if len(options) > 0 {
+		merged := &WithRunScriptOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withRunScript", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithSessionLifetime configures a resource to use a session lifetime.
+func (s *denoAppResource) WithSessionLifetime() DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withSessionLifetime", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithTerminal adds an interactive terminal session to a resource using the default terminal options.
+func (s *denoAppResource) WithTerminal() DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withTerminal", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithUrl adds or modifies displayed URLs
+// Allowed types for parameter url: string, *ReferenceExpression.
+func (s *denoAppResource) WithUrl(url any, options ...*WithUrlOptions) DenoAppResource {
+	if s.err != nil { return s }
+	switch url.(type) {
+	case string, *ReferenceExpression:
+	default:
+		err := fmt.Errorf("aspire: WithUrl: parameter %q must be one of [string, *ReferenceExpression], got %T", "url", url)
+		s.setErr(err); return s
+	}
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if !isNil(url) { reqArgs["url"] = serializeValue(url) }
+	if len(options) > 0 {
+		merged := &WithUrlOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withUrl", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithUrlForEndpoint registers a callback to update the URL displayed for the endpoint with the specified name.
+func (s *denoAppResource) WithUrlForEndpoint(endpointName string, callback func(obj *ResourceUrlAnnotation)) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["endpointName"] = serializeValue(endpointName)
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			arg0 := callbackArg[*ResourceUrlAnnotation](args, 0)
+			cb(arg0)
+			return map[string]any{
+				"p0": serializeValue(arg0),
+			}
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withUrlForEndpoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithUrls registers a callback to customize the URLs displayed for the resource.
+func (s *denoAppResource) WithUrls(callback func(obj ResourceUrlsCallbackContext)) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ResourceUrlsCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withUrls", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithVolume adds a volume to an executable resource.
+func (s *denoAppResource) WithVolume(target string, name string, env string, options ...*ExecutableResourceWithVolumeOptions) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	reqArgs["target"] = serializeValue(target)
+	reqArgs["name"] = serializeValue(name)
+	reqArgs["env"] = serializeValue(env)
+	if len(options) > 0 {
+		merged := &ExecutableResourceWithVolumeOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withExecutableVolume", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithWorkingDirectory sets the working directory for the executable resource.
+func (s *denoAppResource) WithWorkingDirectory(workingDirectory string) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["workingDirectory"] = serializeValue(workingDirectory)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withWorkingDirectory", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithYarn configures the Node.js resource to use yarn as the package manager and optionally installs packages before the application starts.
+func (s *denoAppResource) WithYarn(options ...*WithYarnOptions) DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithYarnOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withYarn", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithoutHttpsCertificate disable HTTPS/TLS server certificate configuration for the resource. No HTTPS/TLS termination configuration will be applied.
+func (s *denoAppResource) WithoutHttpsCertificate() DenoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withoutHttpsCertificate", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WorkingDirectory gets the working directory for the executable resource.
+func (s *denoAppResource) WorkingDirectory() (string, error) {
+	if s.err != nil { var zero string; return zero, s.err }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"context": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/JavaScriptAppResource.workingDirectory", reqArgs)
+	if err != nil {
+		var zero string
+		return zero, err
+	}
+	return decodeAs[string](result)
+}
+
 // DistributedApplication is the public interface for handle type DistributedApplication.
 type DistributedApplication interface {
 	handleReference
@@ -6349,10 +9946,12 @@ func (s *distributedApplication) Run(options ...*RunOptions) error {
 // DistributedApplicationBuilder is the public interface for handle type DistributedApplicationBuilder.
 type DistributedApplicationBuilder interface {
 	handleReference
+	AddBunApp(name string, appDirectory string, scriptPath string) BunAppResource
 	AddCSharpApp(name string, path string, options ...*AddCSharpAppOptions) CSharpAppResource
 	AddConnectionString(name string, options ...*AddConnectionStringOptions) ResourceWithConnectionString
 	AddContainer(name string, image any) ContainerResource
 	AddContainerRegistry(name string, endpoint any, options ...*AddContainerRegistryOptions) ContainerRegistryResource
+	AddDenoApp(name string, appDirectory string, scriptPath string) DenoAppResource
 	AddDockerfile(name string, contextPath string, options ...*AddDockerfileOptions) ContainerResource
 	AddDockerfileBuilder(name string, contextPath string, callback func(arg DockerfileBuilderCallbackContext), options ...*AddDockerfileBuilderOptions) ContainerResource
 	AddDockerfileFactory(name string, contextPath string, dockerfileFactory func(arg DockerfileFactoryContext) string, options ...*AddDockerfileFactoryOptions) ContainerResource
@@ -6360,11 +9959,17 @@ type DistributedApplicationBuilder interface {
 	AddEventingSubscriber(subscribe func(arg EventingSubscriberRegistrationContext)) error
 	AddExecutable(name string, command string, workingDirectory string, args []string) ExecutableResource
 	AddExternalService(name string, url any) ExternalServiceResource
+	AddGoApp(name string, appDirectory string, options ...*AddGoAppOptions) GoAppResource
 	AddHealthCheck(name string, check func(...any) *HealthCheckResult) error
+	AddJavaScriptApp(name string, appDirectory string, options ...*AddJavaScriptAppOptions) JavaScriptAppResource
+	AddNextJsApp(name string, appDirectory string, options ...*AddNextJsAppOptions) NextJsAppResource
+	AddNodeApp(name string, appDirectory string, scriptPath string) NodeAppResource
 	AddParameter(name string, options ...*AddParameterOptions) ParameterResource
 	AddParameterFromConfiguration(name string, configurationKey string, options ...*AddParameterFromConfigurationOptions) ParameterResource
 	AddParameterWithGeneratedValue(name string, value *GenerateParameterDefault, options ...*AddParameterWithGeneratedValueOptions) ParameterResource
+	AddPostgres(name string, options ...*AddPostgresOptions) PostgresServerResource
 	AddProject(name string, projectPath string, options ...*AddProjectOptions) ProjectResource
+	AddViteApp(name string, appDirectory string, options ...*AddViteAppOptions) ViteAppResource
 	AppHostDirectory() (string, error)
 	Environment() HostEnvironment
 	Eventing() DistributedApplicationEventing
@@ -6389,6 +9994,28 @@ type distributedApplicationBuilder struct {
 // newDistributedApplicationBuilderFromHandle wraps an existing handle as DistributedApplicationBuilder.
 func newDistributedApplicationBuilderFromHandle(h *handle, c *client) DistributedApplicationBuilder {
 	return &distributedApplicationBuilder{resourceBuilderBase: newResourceBuilderBase(h, c)}
+}
+
+// AddBunApp adds a Bun application to the application model. Bun should be available on the PATH.
+func (s *distributedApplicationBuilder) AddBunApp(name string, appDirectory string, scriptPath string) BunAppResource {
+	if s.err != nil { return &bunAppResource{resourceBuilderBase: newErroredResourceBuilder(s.err, s.client)} }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	reqArgs["appDirectory"] = serializeValue(appDirectory)
+	reqArgs["scriptPath"] = serializeValue(scriptPath)
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/addBunApp", reqArgs)
+	if err != nil {
+		return &bunAppResource{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	href, ok := result.(handleReference)
+	if !ok {
+		err := fmt.Errorf("aspire: Aspire.Hosting.JavaScript/addBunApp returned unexpected type %T", result)
+		return &bunAppResource{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	return &bunAppResource{resourceBuilderBase: newResourceBuilderBase(href.getHandle(), s.client)}
 }
 
 // AddCSharpApp adds a C# application resource
@@ -6421,7 +10048,7 @@ func (s *distributedApplicationBuilder) AddCSharpApp(name string, path string, o
 
 // AddConnectionString adds a connection string resource
 func (s *distributedApplicationBuilder) AddConnectionString(name string, options ...*AddConnectionStringOptions) ResourceWithConnectionString {
-	if s.err != nil { return &resourceWithConnectionString{resourceBuilderBase: newErroredResourceBuilder(s.err, s.client)} }
+	if s.err != nil { return nil }
 	ctx := context.Background()
 	reqArgs := map[string]any{
 		"builder": s.handle.ToJSON(),
@@ -6435,15 +10062,13 @@ func (s *distributedApplicationBuilder) AddConnectionString(name string, options
 		for k, v := range merged.ToMap() { reqArgs[k] = v }
 	}
 	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting/addConnectionString", reqArgs)
-	if err != nil {
-		return &resourceWithConnectionString{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
-	}
-	href, ok := result.(handleReference)
+	if err != nil { s.setErr(err); return nil }
+	typed, ok := result.(ResourceWithConnectionString)
 	if !ok {
-		err := fmt.Errorf("aspire: Aspire.Hosting/addConnectionString returned unexpected type %T", result)
-		return &resourceWithConnectionString{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+		s.setErr(fmt.Errorf("aspire: Aspire.Hosting/addConnectionString returned unexpected type %T", result))
+		return nil
 	}
-	return &resourceWithConnectionString{resourceBuilderBase: newResourceBuilderBase(href.getHandle(), s.client)}
+	return typed
 }
 
 // AddContainer adds a container resource to the application.
@@ -6507,6 +10132,28 @@ func (s *distributedApplicationBuilder) AddContainerRegistry(name string, endpoi
 		return &containerRegistryResource{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
 	}
 	return &containerRegistryResource{resourceBuilderBase: newResourceBuilderBase(href.getHandle(), s.client)}
+}
+
+// AddDenoApp adds a Deno application to the application model. Deno should be available on the PATH.
+func (s *distributedApplicationBuilder) AddDenoApp(name string, appDirectory string, scriptPath string) DenoAppResource {
+	if s.err != nil { return &denoAppResource{resourceBuilderBase: newErroredResourceBuilder(s.err, s.client)} }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	reqArgs["appDirectory"] = serializeValue(appDirectory)
+	reqArgs["scriptPath"] = serializeValue(scriptPath)
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/addDenoApp", reqArgs)
+	if err != nil {
+		return &denoAppResource{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	href, ok := result.(handleReference)
+	if !ok {
+		err := fmt.Errorf("aspire: Aspire.Hosting.JavaScript/addDenoApp returned unexpected type %T", result)
+		return &denoAppResource{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	return &denoAppResource{resourceBuilderBase: newResourceBuilderBase(href.getHandle(), s.client)}
 }
 
 // AddDockerfile adds a Dockerfile to the application model that can be treated like a container resource.
@@ -6699,6 +10346,34 @@ func (s *distributedApplicationBuilder) AddExternalService(name string, url any)
 	return &externalServiceResource{resourceBuilderBase: newResourceBuilderBase(href.getHandle(), s.client)}
 }
 
+// AddGoApp adds a Go application to the application model. The Go toolchain must be available on the PATH.
+func (s *distributedApplicationBuilder) AddGoApp(name string, appDirectory string, options ...*AddGoAppOptions) GoAppResource {
+	if s.err != nil { return &goAppResource{resourceBuilderBase: newErroredResourceBuilder(s.err, s.client)} }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	reqArgs["appDirectory"] = serializeValue(appDirectory)
+	if len(options) > 0 {
+		merged := &AddGoAppOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting.Go/addGoApp", reqArgs)
+	if err != nil {
+		return &goAppResource{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	href, ok := result.(handleReference)
+	if !ok {
+		err := fmt.Errorf("aspire: Aspire.Hosting.Go/addGoApp returned unexpected type %T", result)
+		return &goAppResource{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	return &goAppResource{resourceBuilderBase: newResourceBuilderBase(href.getHandle(), s.client)}
+}
+
 // AddHealthCheck adds a custom health check callback to the distributed-application builder.
 func (s *distributedApplicationBuilder) AddHealthCheck(name string, check func(...any) *HealthCheckResult) error {
 	if s.err != nil { return s.err }
@@ -6716,6 +10391,84 @@ func (s *distributedApplicationBuilder) AddHealthCheck(name string, check func(.
 	}
 	_, err := s.client.invokeCapability(ctx, "Aspire.Hosting/addHealthCheck", reqArgs)
 	return err
+}
+
+// AddJavaScriptApp adds a JavaScript application resource to the distributed application using the specified app directory and run script.
+func (s *distributedApplicationBuilder) AddJavaScriptApp(name string, appDirectory string, options ...*AddJavaScriptAppOptions) JavaScriptAppResource {
+	if s.err != nil { return &javaScriptAppResource{resourceBuilderBase: newErroredResourceBuilder(s.err, s.client)} }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	reqArgs["appDirectory"] = serializeValue(appDirectory)
+	if len(options) > 0 {
+		merged := &AddJavaScriptAppOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/addJavaScriptApp", reqArgs)
+	if err != nil {
+		return &javaScriptAppResource{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	href, ok := result.(handleReference)
+	if !ok {
+		err := fmt.Errorf("aspire: Aspire.Hosting.JavaScript/addJavaScriptApp returned unexpected type %T", result)
+		return &javaScriptAppResource{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	return &javaScriptAppResource{resourceBuilderBase: newResourceBuilderBase(href.getHandle(), s.client)}
+}
+
+// AddNextJsApp adds a Next.js app to the distributed application builder.
+func (s *distributedApplicationBuilder) AddNextJsApp(name string, appDirectory string, options ...*AddNextJsAppOptions) NextJsAppResource {
+	if s.err != nil { return &nextJsAppResource{resourceBuilderBase: newErroredResourceBuilder(s.err, s.client)} }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	reqArgs["appDirectory"] = serializeValue(appDirectory)
+	if len(options) > 0 {
+		merged := &AddNextJsAppOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/addNextJsApp", reqArgs)
+	if err != nil {
+		return &nextJsAppResource{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	href, ok := result.(handleReference)
+	if !ok {
+		err := fmt.Errorf("aspire: Aspire.Hosting.JavaScript/addNextJsApp returned unexpected type %T", result)
+		return &nextJsAppResource{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	return &nextJsAppResource{resourceBuilderBase: newResourceBuilderBase(href.getHandle(), s.client)}
+}
+
+// AddNodeApp adds a node application to the application model. Node should be available on the PATH.
+func (s *distributedApplicationBuilder) AddNodeApp(name string, appDirectory string, scriptPath string) NodeAppResource {
+	if s.err != nil { return &nodeAppResource{resourceBuilderBase: newErroredResourceBuilder(s.err, s.client)} }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	reqArgs["appDirectory"] = serializeValue(appDirectory)
+	reqArgs["scriptPath"] = serializeValue(scriptPath)
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/addNodeApp", reqArgs)
+	if err != nil {
+		return &nodeAppResource{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	href, ok := result.(handleReference)
+	if !ok {
+		err := fmt.Errorf("aspire: Aspire.Hosting.JavaScript/addNodeApp returned unexpected type %T", result)
+		return &nodeAppResource{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	return &nodeAppResource{resourceBuilderBase: newResourceBuilderBase(href.getHandle(), s.client)}
 }
 
 // AddParameter adds a parameter resource
@@ -6801,6 +10554,33 @@ func (s *distributedApplicationBuilder) AddParameterWithGeneratedValue(name stri
 	return &parameterResource{resourceBuilderBase: newResourceBuilderBase(href.getHandle(), s.client)}
 }
 
+// AddPostgres adds a PostgreSQL resource to the application model. A container is used for local development.
+func (s *distributedApplicationBuilder) AddPostgres(name string, options ...*AddPostgresOptions) PostgresServerResource {
+	if s.err != nil { return &postgresServerResource{resourceBuilderBase: newErroredResourceBuilder(s.err, s.client)} }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	if len(options) > 0 {
+		merged := &AddPostgresOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting.PostgreSQL/addPostgres", reqArgs)
+	if err != nil {
+		return &postgresServerResource{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	href, ok := result.(handleReference)
+	if !ok {
+		err := fmt.Errorf("aspire: Aspire.Hosting.PostgreSQL/addPostgres returned unexpected type %T", result)
+		return &postgresServerResource{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	return &postgresServerResource{resourceBuilderBase: newResourceBuilderBase(href.getHandle(), s.client)}
+}
+
 // AddProject adds a .NET project resource
 func (s *distributedApplicationBuilder) AddProject(name string, projectPath string, options ...*AddProjectOptions) ProjectResource {
 	if s.err != nil { return &projectResource{resourceBuilderBase: newErroredResourceBuilder(s.err, s.client)} }
@@ -6827,6 +10607,34 @@ func (s *distributedApplicationBuilder) AddProject(name string, projectPath stri
 		return &projectResource{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
 	}
 	return &projectResource{resourceBuilderBase: newResourceBuilderBase(href.getHandle(), s.client)}
+}
+
+// AddViteApp adds a Vite app to the distributed application builder.
+func (s *distributedApplicationBuilder) AddViteApp(name string, appDirectory string, options ...*AddViteAppOptions) ViteAppResource {
+	if s.err != nil { return &viteAppResource{resourceBuilderBase: newErroredResourceBuilder(s.err, s.client)} }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	reqArgs["appDirectory"] = serializeValue(appDirectory)
+	if len(options) > 0 {
+		merged := &AddViteAppOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/addViteApp", reqArgs)
+	if err != nil {
+		return &viteAppResource{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	href, ok := result.(handleReference)
+	if !ok {
+		err := fmt.Errorf("aspire: Aspire.Hosting.JavaScript/addViteApp returned unexpected type %T", result)
+		return &viteAppResource{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	return &viteAppResource{resourceBuilderBase: newResourceBuilderBase(href.getHandle(), s.client)}
 }
 
 // AppHostDirectory directory of the project where the app host is located. Defaults to the content root if there's no project.
@@ -12601,6 +16409,1518 @@ func (s *externalServiceResource) WithUrls(callback func(obj ResourceUrlsCallbac
 	return s
 }
 
+// GoAppResource is the public interface for handle type GoAppResource.
+type GoAppResource interface {
+	handleReference
+	AsHttp2Service() GoAppResource
+	Command() (string, error)
+	CreateExecutionConfiguration() ExecutionConfigurationBuilder
+	ExcludeFromManifest() GoAppResource
+	ExcludeFromMcp() GoAppResource
+	GetEndpoint(name string) EndpointReference
+	GetResourceName() (string, error)
+	Name() (string, error)
+	OnBeforeResourceStarted(callback func(arg BeforeResourceStartedEvent)) GoAppResource
+	OnInitializeResource(callback func(arg InitializeResourceEvent)) GoAppResource
+	OnResourceEndpointsAllocated(callback func(arg ResourceEndpointsAllocatedEvent)) GoAppResource
+	OnResourceReady(callback func(arg ResourceReadyEvent)) GoAppResource
+	OnResourceStopped(callback func(arg ResourceStoppedEvent)) GoAppResource
+	PublishAsDockerFile(configure func(obj ContainerResource)) GoAppResource
+	PublishWithContainerFiles(source ResourceWithContainerFiles, destinationPath string) GoAppResource
+	SubscribeHttpsEndpointsUpdate(callback func(obj HttpsEndpointUpdateCallbackContext)) GoAppResource
+	WaitFor(dependency Resource, options ...*WaitForOptions) GoAppResource
+	WaitForCompletion(dependency Resource, options ...*WaitForCompletionOptions) GoAppResource
+	WaitForStart(dependency Resource, options ...*WaitForStartOptions) GoAppResource
+	WithAppArgs(args []any) GoAppResource
+	WithArgs(args []string) GoAppResource
+	WithArgsCallback(callback func(obj CommandLineArgsCallbackContext)) GoAppResource
+	WithCertificateTrustScope(scope CertificateTrustScope) GoAppResource
+	WithChildRelationship(child Resource) GoAppResource
+	WithCommand(name string, displayName string, executeCommand func(arg ExecuteCommandContext) *ExecuteCommandResult, options ...*WithCommandOptions) GoAppResource
+	WithComputeEnvironment(computeEnvironmentResource ComputeEnvironmentResource) GoAppResource
+	WithContainerBuildOptions(callback func(arg ContainerBuildOptionsCallbackContext)) GoAppResource
+	WithContainerRegistry(registry Resource) GoAppResource
+	WithDelveServer(options ...*DelveServerOptions) GoAppResource
+	WithDeveloperCertificateTrust(trust bool) GoAppResource
+	WithDockerfileBaseImage(options ...*WithDockerfileBaseImageOptions) GoAppResource
+	WithEndpoint(options ...*WithEndpointOptions) GoAppResource
+	WithEndpointCallback(endpointName string, callback func(obj EndpointUpdateContext), options ...*WithEndpointCallbackOptions) GoAppResource
+	WithEndpointProxySupport(proxyEnabled bool) GoAppResource
+	WithEnvironment(name string, value any) GoAppResource
+	WithEnvironmentCallback(callback func(arg EnvironmentCallbackContext)) GoAppResource
+	WithExecutableCommand(command string) GoAppResource
+	WithExplicitStart() GoAppResource
+	WithExternalHttpEndpoints() GoAppResource
+	WithGoPrivate(privatePatterns []string, authHost string, options ...*WithGoPrivateOptions) GoAppResource
+	WithHealthCheck(key string) GoAppResource
+	WithHidden() GoAppResource
+	WithHiddenOnCompletion(options ...*WithHiddenOnCompletionOptions) GoAppResource
+	WithHttpCommand(path string, displayName string, options ...*HttpCommandExportOptions) GoAppResource
+	WithHttpEndpoint(options ...*WithHttpEndpointOptions) GoAppResource
+	WithHttpEndpointCallback(callback func(obj EndpointUpdateContext), options ...*WithHttpEndpointCallbackOptions) GoAppResource
+	WithHttpHealthCheck(options ...*WithHttpHealthCheckOptions) GoAppResource
+	WithHttpProbe(probeType ProbeType, options ...*WithHttpProbeOptions) GoAppResource
+	WithHttpsCertificateConfiguration(callback func(arg HttpsCertificateConfigurationCallbackAnnotationContext)) GoAppResource
+	WithHttpsDeveloperCertificate(options ...*WithHttpsDeveloperCertificateOptions) GoAppResource
+	WithHttpsEndpoint(options ...*WithHttpsEndpointOptions) GoAppResource
+	WithHttpsEndpointCallback(callback func(obj EndpointUpdateContext), options ...*WithHttpsEndpointCallbackOptions) GoAppResource
+	WithIconName(iconName string, options ...*WithIconNameOptions) GoAppResource
+	WithImagePushOptions(callback func(arg ContainerImagePushOptionsCallbackContext)) GoAppResource
+	WithLifetimeOf(sourceBuilder Resource) GoAppResource
+	WithMcpServer(options ...*WithMcpServerOptions) GoAppResource
+	WithModDownload() GoAppResource
+	WithModTidy() GoAppResource
+	WithModVendor() GoAppResource
+	WithOtlpExporter(options ...*WithOtlpExporterOptions) GoAppResource
+	WithParentProcessLifetime(parentProcessId float64) GoAppResource
+	WithParentRelationship(parent Resource) GoAppResource
+	WithPersistentLifetime() GoAppResource
+	WithPipelineConfiguration(callback func(obj PipelineConfigurationContext)) GoAppResource
+	WithPipelineStepFactory(stepName string, callback func(arg PipelineStepContext), options ...*WithPipelineStepFactoryOptions) GoAppResource
+	WithProcessCommand(commandName string, displayName string, options *ProcessCommandExportOptions) GoAppResource
+	WithProcessCommandFactory(commandName string, displayName string, createProcessSpec func(arg ExecuteCommandContext) *ProcessCommandSpecExportData, options ...*ProcessCommandResultExportOptions) GoAppResource
+	WithReference(source any, options ...*WithReferenceOptions) GoAppResource
+	WithReferenceEnvironment(options *ReferenceEnvironmentInjectionOptions) GoAppResource
+	WithRelationship(resourceBuilder Resource, type_ string) GoAppResource
+	WithRemoteImageName(remoteImageName string) GoAppResource
+	WithRemoteImageTag(remoteImageTag string) GoAppResource
+	WithRequiredCommand(command string, options ...*WithRequiredCommandOptions) GoAppResource
+	WithRequiredCommandValidation(command string, validationCallback func(arg RequiredCommandValidationContext) RequiredCommandValidationResult, options ...*WithRequiredCommandValidationOptions) GoAppResource
+	WithSessionLifetime() GoAppResource
+	WithTerminal() GoAppResource
+	WithUrl(url any, options ...*WithUrlOptions) GoAppResource
+	WithUrlForEndpoint(endpointName string, callback func(obj *ResourceUrlAnnotation)) GoAppResource
+	WithUrls(callback func(obj ResourceUrlsCallbackContext)) GoAppResource
+	WithVetTool() GoAppResource
+	WithVolume(target string, name string, env string, options ...*ExecutableResourceWithVolumeOptions) GoAppResource
+	WithWorkingDirectory(workingDirectory string) GoAppResource
+	WithoutHttpsCertificate() GoAppResource
+	WorkingDirectory() (string, error)
+	Err() error
+}
+
+// goAppResource is the unexported impl of GoAppResource.
+type goAppResource struct {
+	*resourceBuilderBase
+}
+
+// newGoAppResourceFromHandle wraps an existing handle as GoAppResource.
+func newGoAppResourceFromHandle(h *handle, c *client) GoAppResource {
+	return &goAppResource{resourceBuilderBase: newResourceBuilderBase(h, c)}
+}
+
+// AsHttp2Service configures a resource to mark all endpoints' transport as HTTP/2. This is useful for HTTP/2 services that need prior knowledge.
+func (s *goAppResource) AsHttp2Service() GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/asHttp2Service", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// Command gets the command associated with this executable resource.
+func (s *goAppResource) Command() (string, error) {
+	if s.err != nil { var zero string; return zero, s.err }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"context": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting.Go/GoAppResource.command", reqArgs)
+	if err != nil {
+		var zero string
+		return zero, err
+	}
+	return decodeAs[string](result)
+}
+
+// CreateExecutionConfiguration creates an execution configuration builder for the specified resource.
+func (s *goAppResource) CreateExecutionConfiguration() ExecutionConfigurationBuilder {
+	if s.err != nil { return &executionConfigurationBuilder{resourceBuilderBase: newErroredResourceBuilder(s.err, s.client)} }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting/createExecutionConfiguration", reqArgs)
+	if err != nil {
+		return &executionConfigurationBuilder{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	href, ok := result.(handleReference)
+	if !ok {
+		err := fmt.Errorf("aspire: Aspire.Hosting/createExecutionConfiguration returned unexpected type %T", result)
+		return &executionConfigurationBuilder{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	return &executionConfigurationBuilder{resourceBuilderBase: newResourceBuilderBase(href.getHandle(), s.client)}
+}
+
+// ExcludeFromManifest excludes a resource from being published to the manifest.
+func (s *goAppResource) ExcludeFromManifest() GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/excludeFromManifest", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// ExcludeFromMcp exclude the resource from MCP operations using the Aspire MCP server. The resource is excluded from results that return resources, console logs and telemetry.
+func (s *goAppResource) ExcludeFromMcp() GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/excludeFromMcp", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// GetEndpoint gets an endpoint reference
+func (s *goAppResource) GetEndpoint(name string) EndpointReference {
+	if s.err != nil { return &endpointReference{resourceBuilderBase: newErroredResourceBuilder(s.err, s.client)} }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting/getEndpoint", reqArgs)
+	if err != nil {
+		return &endpointReference{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	href, ok := result.(handleReference)
+	if !ok {
+		err := fmt.Errorf("aspire: Aspire.Hosting/getEndpoint returned unexpected type %T", result)
+		return &endpointReference{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	return &endpointReference{resourceBuilderBase: newResourceBuilderBase(href.getHandle(), s.client)}
+}
+
+// GetResourceName gets the name of the resource from a builder.
+func (s *goAppResource) GetResourceName() (string, error) {
+	if s.err != nil { var zero string; return zero, s.err }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting/getResourceName", reqArgs)
+	if err != nil {
+		var zero string
+		return zero, err
+	}
+	return decodeAs[string](result)
+}
+
+// Name gets the name of the resource.
+func (s *goAppResource) Name() (string, error) {
+	if s.err != nil { var zero string; return zero, s.err }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"context": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting.Go/GoAppResource.name", reqArgs)
+	if err != nil {
+		var zero string
+		return zero, err
+	}
+	return decodeAs[string](result)
+}
+
+// OnBeforeResourceStarted subscribes to the BeforeResourceStarted event.
+func (s *goAppResource) OnBeforeResourceStarted(callback func(arg BeforeResourceStartedEvent)) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[BeforeResourceStartedEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onBeforeResourceStarted", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// OnInitializeResource subscribes to the InitializeResource event.
+func (s *goAppResource) OnInitializeResource(callback func(arg InitializeResourceEvent)) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[InitializeResourceEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onInitializeResource", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// OnResourceEndpointsAllocated subscribes to the ResourceEndpointsAllocated event.
+func (s *goAppResource) OnResourceEndpointsAllocated(callback func(arg ResourceEndpointsAllocatedEvent)) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ResourceEndpointsAllocatedEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onResourceEndpointsAllocated", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// OnResourceReady subscribes to the ResourceReady event.
+func (s *goAppResource) OnResourceReady(callback func(arg ResourceReadyEvent)) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ResourceReadyEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onResourceReady", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// OnResourceStopped subscribes to the ResourceStopped event.
+func (s *goAppResource) OnResourceStopped(callback func(arg ResourceStoppedEvent)) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ResourceStoppedEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onResourceStopped", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// PublishAsDockerFile publishes an executable as a Docker file
+func (s *goAppResource) PublishAsDockerFile(configure func(obj ContainerResource)) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if configure != nil {
+		cb := configure
+		shim := func(args ...any) any {
+			cb(callbackArg[ContainerResource](args, 0))
+			return nil
+		}
+		reqArgs["configure"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/publishAsDockerFile", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// PublishWithContainerFiles configures the resource to copy container files from the specified source resource during publishing.
+func (s *goAppResource) PublishWithContainerFiles(source ResourceWithContainerFiles, destinationPath string) GoAppResource {
+	if s.err != nil { return s }
+	if source != nil { if err := source.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["source"] = serializeValue(source)
+	reqArgs["destinationPath"] = serializeValue(destinationPath)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/publishWithContainerFilesFromResource", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// SubscribeHttpsEndpointsUpdate subscribes to the `BeforeStartEvent` and invokes the specified callback when an HTTPS certificate is determined to be available for the resource. This is used to conditionally update endpoint URI schemes or perform other HTTPS-related configuration at startup.
+func (s *goAppResource) SubscribeHttpsEndpointsUpdate(callback func(obj HttpsEndpointUpdateCallbackContext)) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[HttpsEndpointUpdateCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/subscribeHttpsEndpointsUpdate", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WaitFor waits for another resource to be ready
+func (s *goAppResource) WaitFor(dependency Resource, options ...*WaitForOptions) GoAppResource {
+	if s.err != nil { return s }
+	if dependency != nil { if err := dependency.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["dependency"] = serializeValue(dependency)
+	if len(options) > 0 {
+		merged := &WaitForOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/waitFor", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WaitForCompletion waits for the dependency resource to enter the Exited or Finished state before starting the resource.
+func (s *goAppResource) WaitForCompletion(dependency Resource, options ...*WaitForCompletionOptions) GoAppResource {
+	if s.err != nil { return s }
+	if dependency != nil { if err := dependency.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["dependency"] = serializeValue(dependency)
+	if len(options) > 0 {
+		merged := &WaitForCompletionOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/waitForResourceCompletion", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WaitForStart waits for another resource to start
+func (s *goAppResource) WaitForStart(dependency Resource, options ...*WaitForStartOptions) GoAppResource {
+	if s.err != nil { return s }
+	if dependency != nil { if err := dependency.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["dependency"] = serializeValue(dependency)
+	if len(options) > 0 {
+		merged := &WaitForStartOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/waitForStart", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithAppArgs passes extra arguments to the Go program at runtime. In normal run mode they appear after `go run .`; in Delve mode after the `--` separator.
+func (s *goAppResource) WithAppArgs(args []any) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if args != nil { reqArgs["args"] = serializeValue(args) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.Go/withAppArgs", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithArgs adds arguments to be passed to a resource that supports arguments when it is launched.
+func (s *goAppResource) WithArgs(args []string) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if args != nil { reqArgs["args"] = serializeValue(args) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withArgs", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithArgsCallback adds a callback to be executed with a list of command-line arguments when a resource is started.
+func (s *goAppResource) WithArgsCallback(callback func(obj CommandLineArgsCallbackContext)) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[CommandLineArgsCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withArgsCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithCertificateTrustScope sets the certificate trust scope
+func (s *goAppResource) WithCertificateTrustScope(scope CertificateTrustScope) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["scope"] = serializeValue(scope)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withCertificateTrustScope", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithChildRelationship sets a child relationship
+func (s *goAppResource) WithChildRelationship(child Resource) GoAppResource {
+	if s.err != nil { return s }
+	if child != nil { if err := child.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["child"] = serializeValue(child)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withBuilderChildRelationship", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithCommand adds a resource command
+func (s *goAppResource) WithCommand(name string, displayName string, executeCommand func(arg ExecuteCommandContext) *ExecuteCommandResult, options ...*WithCommandOptions) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	reqArgs["displayName"] = serializeValue(displayName)
+	if executeCommand != nil {
+		cb := executeCommand
+		shim := func(args ...any) any {
+			return cb(callbackArg[ExecuteCommandContext](args, 0))
+		}
+		reqArgs["executeCommand"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithCommandOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithComputeEnvironment configures the compute environment for the compute resource.
+func (s *goAppResource) WithComputeEnvironment(computeEnvironmentResource ComputeEnvironmentResource) GoAppResource {
+	if s.err != nil { return s }
+	if computeEnvironmentResource != nil { if err := computeEnvironmentResource.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["computeEnvironmentResource"] = serializeValue(computeEnvironmentResource)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withComputeEnvironment", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerBuildOptions configures container build options for a compute resource using an async callback.
+func (s *goAppResource) WithContainerBuildOptions(callback func(arg ContainerBuildOptionsCallbackContext)) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ContainerBuildOptionsCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerBuildOptions", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerRegistry configures the resource to use the specified container registry for container image operations.
+func (s *goAppResource) WithContainerRegistry(registry Resource) GoAppResource {
+	if s.err != nil { return s }
+	if registry != nil { if err := registry.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["registry"] = serializeValue(registry)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerRegistry", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDelveServer starts a configurable headless Delve debug server so that DAP-compatible clients can attach remotely. The application is launched with `dlv debug` instead of `go run`. Delve must be available on the PATH.
+func (s *goAppResource) WithDelveServer(options ...*DelveServerOptions) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &DelveServerOptions{}
+		applied := false
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt); applied = true }
+		}
+		if applied { reqArgs["options"] = serializeValue(merged) }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.Go/withDelveServer", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDeveloperCertificateTrust indicates whether developer certificates should be treated as trusted certificate authorities for the resource at run time. Currently this indicates trust for the ASP.NET Core developer certificate. The developer certificate will only be trusted when running in local development scenarios; in publish mode resources will use their default certificate trust.
+func (s *goAppResource) WithDeveloperCertificateTrust(trust bool) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["trust"] = serializeValue(trust)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withDeveloperCertificateTrust", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDockerfileBaseImage configures custom base images for generated Dockerfiles.
+func (s *goAppResource) WithDockerfileBaseImage(options ...*WithDockerfileBaseImageOptions) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithDockerfileBaseImageOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withDockerfileBaseImage", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEndpoint adds a network endpoint
+func (s *goAppResource) WithEndpoint(options ...*WithEndpointOptions) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithEndpointOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEndpoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEndpointCallback updates a named endpoint via callback
+func (s *goAppResource) WithEndpointCallback(endpointName string, callback func(obj EndpointUpdateContext), options ...*WithEndpointCallbackOptions) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["endpointName"] = serializeValue(endpointName)
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[EndpointUpdateContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithEndpointCallbackOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEndpointCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEndpointProxySupport set whether a resource can use proxied endpoints or whether they should be disabled for all endpoints belonging to the resource. If set to `false`, endpoints belonging to the resource will ignore the configured proxy settings and run proxy-less.
+func (s *goAppResource) WithEndpointProxySupport(proxyEnabled bool) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["proxyEnabled"] = serializeValue(proxyEnabled)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEndpointProxySupport", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEnvironment sets an environment variable
+// Allowed types for parameter value: string, *ReferenceExpression, EndpointReference, ParameterResource, ExternalServiceResource, ResourceWithConnectionString, ExpressionValue.
+func (s *goAppResource) WithEnvironment(name string, value any) GoAppResource {
+	if s.err != nil { return s }
+	switch value.(type) {
+	case string, *ReferenceExpression, EndpointReference, ParameterResource, ExternalServiceResource, ResourceWithConnectionString, ExpressionValue:
+	default:
+		err := fmt.Errorf("aspire: WithEnvironment: parameter %q must be one of [string, *ReferenceExpression, EndpointReference, ParameterResource, ExternalServiceResource, ResourceWithConnectionString, ExpressionValue], got %T", "value", value)
+		s.setErr(err); return s
+	}
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	if !isNil(value) { reqArgs["value"] = serializeValue(value) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEnvironment", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEnvironmentCallback allows for the population of environment variables on a resource.
+func (s *goAppResource) WithEnvironmentCallback(callback func(arg EnvironmentCallbackContext)) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[EnvironmentCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEnvironmentCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithExecutableCommand sets the command for the executable resource.
+func (s *goAppResource) WithExecutableCommand(command string) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["command"] = serializeValue(command)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withExecutableCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithExplicitStart prevents resource from starting automatically
+func (s *goAppResource) WithExplicitStart() GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withExplicitStart", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithExternalHttpEndpoints marks existing http or https endpoints on a resource as external.
+func (s *goAppResource) WithExternalHttpEndpoints() GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withExternalHttpEndpoints", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithGoPrivate configures private Go module authentication for publish-time Dockerfile generation.
+func (s *goAppResource) WithGoPrivate(privatePatterns []string, authHost string, options ...*WithGoPrivateOptions) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if privatePatterns != nil { reqArgs["privatePatterns"] = serializeValue(privatePatterns) }
+	reqArgs["authHost"] = serializeValue(authHost)
+	if len(options) > 0 {
+		merged := &WithGoPrivateOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.Go/withGoPrivate", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHealthCheck adds a health check by key
+func (s *goAppResource) WithHealthCheck(key string) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["key"] = serializeValue(key)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHealthCheck", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHidden hides the resource from default resource lists
+func (s *goAppResource) WithHidden() GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHidden", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHiddenOnCompletion hides the resource from default resource lists after successful completion
+func (s *goAppResource) WithHiddenOnCompletion(options ...*WithHiddenOnCompletionOptions) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHiddenOnCompletionOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHiddenOnCompletion", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpCommand adds an HTTP resource command
+func (s *goAppResource) WithHttpCommand(path string, displayName string, options ...*HttpCommandExportOptions) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["path"] = serializeValue(path)
+	reqArgs["displayName"] = serializeValue(displayName)
+	if len(options) > 0 {
+		merged := &HttpCommandExportOptions{}
+		applied := false
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt); applied = true }
+		}
+		if applied { reqArgs["options"] = serializeValue(merged) }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpEndpoint adds an HTTP endpoint
+func (s *goAppResource) WithHttpEndpoint(options ...*WithHttpEndpointOptions) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHttpEndpointOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpEndpoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpEndpointCallback updates an HTTP endpoint via callback
+func (s *goAppResource) WithHttpEndpointCallback(callback func(obj EndpointUpdateContext), options ...*WithHttpEndpointCallbackOptions) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[EndpointUpdateContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithHttpEndpointCallbackOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpEndpointCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpHealthCheck adds a health check to the resource which is mapped to a specific endpoint.
+func (s *goAppResource) WithHttpHealthCheck(options ...*WithHttpHealthCheckOptions) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHttpHealthCheckOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpHealthCheck", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpProbe adds an HTTP health probe to the resource
+func (s *goAppResource) WithHttpProbe(probeType ProbeType, options ...*WithHttpProbeOptions) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["probeType"] = serializeValue(probeType)
+	if len(options) > 0 {
+		merged := &WithHttpProbeOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpProbe", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpsCertificateConfiguration adds a callback that allows configuring the resource to use a specific HTTPS/TLS certificate key pair for server authentication.
+func (s *goAppResource) WithHttpsCertificateConfiguration(callback func(arg HttpsCertificateConfigurationCallbackAnnotationContext)) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[HttpsCertificateConfigurationCallbackAnnotationContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpsCertificateConfiguration", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpsDeveloperCertificate indicates that a resource should use the developer certificate key pair for HTTPS endpoints at run time. Currently this indicates use of the ASP.NET Core developer certificate. The developer certificate will only be used when running in local development scenarios; in publish mode resources will use their default certificate configuration.
+func (s *goAppResource) WithHttpsDeveloperCertificate(options ...*WithHttpsDeveloperCertificateOptions) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHttpsDeveloperCertificateOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withParameterHttpsDeveloperCertificate", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpsEndpoint adds an HTTPS endpoint
+func (s *goAppResource) WithHttpsEndpoint(options ...*WithHttpsEndpointOptions) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHttpsEndpointOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpsEndpoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpsEndpointCallback updates an HTTPS endpoint via callback
+func (s *goAppResource) WithHttpsEndpointCallback(callback func(obj EndpointUpdateContext), options ...*WithHttpsEndpointCallbackOptions) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[EndpointUpdateContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithHttpsEndpointCallbackOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpsEndpointCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithIconName specifies the icon to use when displaying the resource in the dashboard.
+func (s *goAppResource) WithIconName(iconName string, options ...*WithIconNameOptions) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["iconName"] = serializeValue(iconName)
+	if len(options) > 0 {
+		merged := &WithIconNameOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withIconName", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithImagePushOptions adds an asynchronous callback to configure container image push options for the resource.
+func (s *goAppResource) WithImagePushOptions(callback func(arg ContainerImagePushOptionsCallbackContext)) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ContainerImagePushOptionsCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withImagePushOptions", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithLifetimeOf configures a resource to match the lifetime of another resource.
+func (s *goAppResource) WithLifetimeOf(sourceBuilder Resource) GoAppResource {
+	if s.err != nil { return s }
+	if sourceBuilder != nil { if err := sourceBuilder.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["sourceBuilder"] = serializeValue(sourceBuilder)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withLifetimeOf", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithMcpServer marks the resource as hosting a Model Context Protocol (MCP) server on the specified endpoint.
+func (s *goAppResource) WithMcpServer(options ...*WithMcpServerOptions) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithMcpServerOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withMcpServer", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithModDownload runs `go mod download` before starting the application, pre-fetching all module dependencies into the local module cache without modifying `go.sum`. The main application waits for the download step to complete successfully before launching.
+func (s *goAppResource) WithModDownload() GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.Go/withModDownload", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithModTidy runs `go mod tidy` before starting the application, ensuring `go.sum` is up to date. The main application waits for the tidy step to complete successfully before launching.
+func (s *goAppResource) WithModTidy() GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.Go/withModTidy", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithModVendor runs `go mod vendor` before starting the application, caching all module dependencies in the local `vendor/` directory. The main application waits for the vendor step to complete successfully before launching.
+func (s *goAppResource) WithModVendor() GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.Go/withModVendor", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithOtlpExporter configures OTLP telemetry export
+func (s *goAppResource) WithOtlpExporter(options ...*WithOtlpExporterOptions) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithOtlpExporterOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withOtlpExporter", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithParentProcessLifetime configures a resource to use a persistent lifetime that ends when a parent process exits.
+func (s *goAppResource) WithParentProcessLifetime(parentProcessId float64) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["parentProcessId"] = serializeValue(parentProcessId)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withParentProcessLifetime", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithParentRelationship sets the parent relationship
+func (s *goAppResource) WithParentRelationship(parent Resource) GoAppResource {
+	if s.err != nil { return s }
+	if parent != nil { if err := parent.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["parent"] = serializeValue(parent)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withBuilderParentRelationship", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithPersistentLifetime configures a resource to use a persistent lifetime.
+func (s *goAppResource) WithPersistentLifetime() GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withPersistentLifetime", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithPipelineConfiguration registers a callback to be executed during the pipeline configuration phase, allowing modification of step dependencies and relationships.
+func (s *goAppResource) WithPipelineConfiguration(callback func(obj PipelineConfigurationContext)) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[PipelineConfigurationContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withPipelineConfiguration", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithPipelineStepFactory adds a pipeline step to the resource that will be executed during deployment.
+func (s *goAppResource) WithPipelineStepFactory(stepName string, callback func(arg PipelineStepContext), options ...*WithPipelineStepFactoryOptions) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["stepName"] = serializeValue(stepName)
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[PipelineStepContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithPipelineStepFactoryOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withPipelineStepFactory", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithProcessCommand adds a command to the resource that starts a local process when invoked.
+func (s *goAppResource) WithProcessCommand(commandName string, displayName string, options *ProcessCommandExportOptions) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["commandName"] = serializeValue(commandName)
+	reqArgs["displayName"] = serializeValue(displayName)
+	if options != nil { reqArgs["options"] = serializeValue(options) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withProcessCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithProcessCommandFactory adds a command to the resource that starts a local process created by a callback when invoked.
+func (s *goAppResource) WithProcessCommandFactory(commandName string, displayName string, createProcessSpec func(arg ExecuteCommandContext) *ProcessCommandSpecExportData, options ...*ProcessCommandResultExportOptions) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["commandName"] = serializeValue(commandName)
+	reqArgs["displayName"] = serializeValue(displayName)
+	if createProcessSpec != nil {
+		cb := createProcessSpec
+		shim := func(args ...any) any {
+			return cb(callbackArg[ExecuteCommandContext](args, 0))
+		}
+		reqArgs["createProcessSpec"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &ProcessCommandResultExportOptions{}
+		applied := false
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt); applied = true }
+		}
+		if applied { reqArgs["options"] = serializeValue(merged) }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withProcessCommandFactory", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithReference adds a reference to another resource
+// Allowed types for parameter source: Resource, EndpointReference, string.
+func (s *goAppResource) WithReference(source any, options ...*WithReferenceOptions) GoAppResource {
+	if s.err != nil { return s }
+	switch source.(type) {
+	case Resource, EndpointReference, string:
+	default:
+		err := fmt.Errorf("aspire: WithReference: parameter %q must be one of [Resource, EndpointReference, string], got %T", "source", source)
+		s.setErr(err); return s
+	}
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if !isNil(source) { reqArgs["source"] = serializeValue(source) }
+	if len(options) > 0 {
+		merged := &WithReferenceOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withReference", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithReferenceEnvironment configures how information is injected into environment variables when the resource references other resources.
+func (s *goAppResource) WithReferenceEnvironment(options *ReferenceEnvironmentInjectionOptions) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if options != nil { reqArgs["options"] = serializeValue(options) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withReferenceEnvironment", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRelationship adds a relationship to another resource using its builder.
+func (s *goAppResource) WithRelationship(resourceBuilder Resource, type_ string) GoAppResource {
+	if s.err != nil { return s }
+	if resourceBuilder != nil { if err := resourceBuilder.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["resourceBuilder"] = serializeValue(resourceBuilder)
+	reqArgs["type"] = serializeValue(type_)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withBuilderRelationship", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRemoteImageName sets the remote image name (without registry endpoint or tag) for container push operations.
+func (s *goAppResource) WithRemoteImageName(remoteImageName string) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["remoteImageName"] = serializeValue(remoteImageName)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withRemoteImageName", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRemoteImageTag sets the remote image tag for container push operations.
+func (s *goAppResource) WithRemoteImageTag(remoteImageTag string) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["remoteImageTag"] = serializeValue(remoteImageTag)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withRemoteImageTag", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRequiredCommand declares that a resource requires a specific command/executable to be available on the local machine PATH before it can start.
+func (s *goAppResource) WithRequiredCommand(command string, options ...*WithRequiredCommandOptions) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["command"] = serializeValue(command)
+	if len(options) > 0 {
+		merged := &WithRequiredCommandOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withRequiredCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRequiredCommandValidation declares that a resource requires a specific command/executable to be available on the local machine PATH before it can start, with custom validation logic.
+func (s *goAppResource) WithRequiredCommandValidation(command string, validationCallback func(arg RequiredCommandValidationContext) RequiredCommandValidationResult, options ...*WithRequiredCommandValidationOptions) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["command"] = serializeValue(command)
+	if validationCallback != nil {
+		cb := validationCallback
+		shim := func(args ...any) any {
+			return cb(callbackArg[RequiredCommandValidationContext](args, 0))
+		}
+		reqArgs["validationCallback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithRequiredCommandValidationOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withRequiredCommandValidation", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithSessionLifetime configures a resource to use a session lifetime.
+func (s *goAppResource) WithSessionLifetime() GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withSessionLifetime", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithTerminal adds an interactive terminal session to a resource using the default terminal options.
+func (s *goAppResource) WithTerminal() GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withTerminal", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithUrl adds or modifies displayed URLs
+// Allowed types for parameter url: string, *ReferenceExpression.
+func (s *goAppResource) WithUrl(url any, options ...*WithUrlOptions) GoAppResource {
+	if s.err != nil { return s }
+	switch url.(type) {
+	case string, *ReferenceExpression:
+	default:
+		err := fmt.Errorf("aspire: WithUrl: parameter %q must be one of [string, *ReferenceExpression], got %T", "url", url)
+		s.setErr(err); return s
+	}
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if !isNil(url) { reqArgs["url"] = serializeValue(url) }
+	if len(options) > 0 {
+		merged := &WithUrlOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withUrl", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithUrlForEndpoint registers a callback to update the URL displayed for the endpoint with the specified name.
+func (s *goAppResource) WithUrlForEndpoint(endpointName string, callback func(obj *ResourceUrlAnnotation)) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["endpointName"] = serializeValue(endpointName)
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			arg0 := callbackArg[*ResourceUrlAnnotation](args, 0)
+			cb(arg0)
+			return map[string]any{
+				"p0": serializeValue(arg0),
+			}
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withUrlForEndpoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithUrls registers a callback to customize the URLs displayed for the resource.
+func (s *goAppResource) WithUrls(callback func(obj ResourceUrlsCallbackContext)) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ResourceUrlsCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withUrls", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithVetTool runs `go vet ./...` before starting the application to catch static analysis issues. The main application waits for the vet step to complete successfully before launching.
+func (s *goAppResource) WithVetTool() GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.Go/withVetTool", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithVolume adds a volume to an executable resource.
+func (s *goAppResource) WithVolume(target string, name string, env string, options ...*ExecutableResourceWithVolumeOptions) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	reqArgs["target"] = serializeValue(target)
+	reqArgs["name"] = serializeValue(name)
+	reqArgs["env"] = serializeValue(env)
+	if len(options) > 0 {
+		merged := &ExecutableResourceWithVolumeOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withExecutableVolume", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithWorkingDirectory sets the working directory for the executable resource.
+func (s *goAppResource) WithWorkingDirectory(workingDirectory string) GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["workingDirectory"] = serializeValue(workingDirectory)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withWorkingDirectory", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithoutHttpsCertificate disable HTTPS/TLS server certificate configuration for the resource. No HTTPS/TLS termination configuration will be applied.
+func (s *goAppResource) WithoutHttpsCertificate() GoAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withoutHttpsCertificate", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WorkingDirectory gets the working directory for the executable resource.
+func (s *goAppResource) WorkingDirectory() (string, error) {
+	if s.err != nil { var zero string; return zero, s.err }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"context": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting.Go/GoAppResource.workingDirectory", reqArgs)
+	if err != nil {
+		var zero string
+		return zero, err
+	}
+	return decodeAs[string](result)
+}
+
 // HostEnvironment is the public interface for handle type HostEnvironment.
 type HostEnvironment interface {
 	handleReference
@@ -14077,6 +19397,1638 @@ func (s *interactionService) PromptProgress(message string, options ...*PromptPr
 	return decodeAs[*BoolInteractionResult](result)
 }
 
+// JavaScriptAppResource is the public interface for handle type JavaScriptAppResource.
+type JavaScriptAppResource interface {
+	handleReference
+	AsHttp2Service() JavaScriptAppResource
+	ClearContainerFilesSources() JavaScriptAppResource
+	Command() (string, error)
+	CreateExecutionConfiguration() ExecutionConfigurationBuilder
+	ExcludeFromManifest() JavaScriptAppResource
+	ExcludeFromMcp() JavaScriptAppResource
+	GetEndpoint(name string) EndpointReference
+	GetResourceName() (string, error)
+	Name() (string, error)
+	OnBeforeResourceStarted(callback func(arg BeforeResourceStartedEvent)) JavaScriptAppResource
+	OnInitializeResource(callback func(arg InitializeResourceEvent)) JavaScriptAppResource
+	OnResourceEndpointsAllocated(callback func(arg ResourceEndpointsAllocatedEvent)) JavaScriptAppResource
+	OnResourceReady(callback func(arg ResourceReadyEvent)) JavaScriptAppResource
+	OnResourceStopped(callback func(arg ResourceStoppedEvent)) JavaScriptAppResource
+	PublishAsDockerFile(configure func(obj ContainerResource)) JavaScriptAppResource
+	PublishAsNodeServer(entryPoint string, options ...*PublishAsNodeServerOptions) JavaScriptAppResource
+	PublishAsPackageScript(options ...*PublishAsPackageScriptOptions) JavaScriptAppResource
+	PublishAsStaticWebsite(options ...*PublishAsStaticWebsiteOptions) JavaScriptAppResource
+	SubscribeHttpsEndpointsUpdate(callback func(obj HttpsEndpointUpdateCallbackContext)) JavaScriptAppResource
+	WaitFor(dependency Resource, options ...*WaitForOptions) JavaScriptAppResource
+	WaitForCompletion(dependency Resource, options ...*WaitForCompletionOptions) JavaScriptAppResource
+	WaitForStart(dependency Resource, options ...*WaitForStartOptions) JavaScriptAppResource
+	WithArgs(args []string) JavaScriptAppResource
+	WithArgsCallback(callback func(obj CommandLineArgsCallbackContext)) JavaScriptAppResource
+	WithBrowserDebugger(options ...*WithBrowserDebuggerOptions) JavaScriptAppResource
+	WithBuildScript(scriptName string, options ...*WithBuildScriptOptions) JavaScriptAppResource
+	WithBun(options ...*WithBunOptions) JavaScriptAppResource
+	WithCertificateTrustScope(scope CertificateTrustScope) JavaScriptAppResource
+	WithChildRelationship(child Resource) JavaScriptAppResource
+	WithCommand(name string, displayName string, executeCommand func(arg ExecuteCommandContext) *ExecuteCommandResult, options ...*WithCommandOptions) JavaScriptAppResource
+	WithComputeEnvironment(computeEnvironmentResource ComputeEnvironmentResource) JavaScriptAppResource
+	WithContainerBuildOptions(callback func(arg ContainerBuildOptionsCallbackContext)) JavaScriptAppResource
+	WithContainerFilesSource(sourcePath string) JavaScriptAppResource
+	WithContainerRegistry(registry Resource) JavaScriptAppResource
+	WithDeno(options ...*WithDenoOptions) JavaScriptAppResource
+	WithDeveloperCertificateTrust(trust bool) JavaScriptAppResource
+	WithDockerfileBaseImage(options ...*WithDockerfileBaseImageOptions) JavaScriptAppResource
+	WithEndpoint(options ...*WithEndpointOptions) JavaScriptAppResource
+	WithEndpointCallback(endpointName string, callback func(obj EndpointUpdateContext), options ...*WithEndpointCallbackOptions) JavaScriptAppResource
+	WithEndpointProxySupport(proxyEnabled bool) JavaScriptAppResource
+	WithEnvironment(name string, value any) JavaScriptAppResource
+	WithEnvironmentCallback(callback func(arg EnvironmentCallbackContext)) JavaScriptAppResource
+	WithExecutableCommand(command string) JavaScriptAppResource
+	WithExplicitStart() JavaScriptAppResource
+	WithExternalHttpEndpoints() JavaScriptAppResource
+	WithHealthCheck(key string) JavaScriptAppResource
+	WithHidden() JavaScriptAppResource
+	WithHiddenOnCompletion(options ...*WithHiddenOnCompletionOptions) JavaScriptAppResource
+	WithHttpCommand(path string, displayName string, options ...*HttpCommandExportOptions) JavaScriptAppResource
+	WithHttpEndpoint(options ...*WithHttpEndpointOptions) JavaScriptAppResource
+	WithHttpEndpointCallback(callback func(obj EndpointUpdateContext), options ...*WithHttpEndpointCallbackOptions) JavaScriptAppResource
+	WithHttpHealthCheck(options ...*WithHttpHealthCheckOptions) JavaScriptAppResource
+	WithHttpProbe(probeType ProbeType, options ...*WithHttpProbeOptions) JavaScriptAppResource
+	WithHttpsCertificateConfiguration(callback func(arg HttpsCertificateConfigurationCallbackAnnotationContext)) JavaScriptAppResource
+	WithHttpsDeveloperCertificate(options ...*WithHttpsDeveloperCertificateOptions) JavaScriptAppResource
+	WithHttpsEndpoint(options ...*WithHttpsEndpointOptions) JavaScriptAppResource
+	WithHttpsEndpointCallback(callback func(obj EndpointUpdateContext), options ...*WithHttpsEndpointCallbackOptions) JavaScriptAppResource
+	WithIconName(iconName string, options ...*WithIconNameOptions) JavaScriptAppResource
+	WithImagePushOptions(callback func(arg ContainerImagePushOptionsCallbackContext)) JavaScriptAppResource
+	WithLifetimeOf(sourceBuilder Resource) JavaScriptAppResource
+	WithMcpServer(options ...*WithMcpServerOptions) JavaScriptAppResource
+	WithNpm(options ...*WithNpmOptions) JavaScriptAppResource
+	WithOtlpExporter(options ...*WithOtlpExporterOptions) JavaScriptAppResource
+	WithParentProcessLifetime(parentProcessId float64) JavaScriptAppResource
+	WithParentRelationship(parent Resource) JavaScriptAppResource
+	WithPersistentLifetime() JavaScriptAppResource
+	WithPipelineConfiguration(callback func(obj PipelineConfigurationContext)) JavaScriptAppResource
+	WithPipelineStepFactory(stepName string, callback func(arg PipelineStepContext), options ...*WithPipelineStepFactoryOptions) JavaScriptAppResource
+	WithPnpm(options ...*WithPnpmOptions) JavaScriptAppResource
+	WithProcessCommand(commandName string, displayName string, options *ProcessCommandExportOptions) JavaScriptAppResource
+	WithProcessCommandFactory(commandName string, displayName string, createProcessSpec func(arg ExecuteCommandContext) *ProcessCommandSpecExportData, options ...*ProcessCommandResultExportOptions) JavaScriptAppResource
+	WithReference(source any, options ...*WithReferenceOptions) JavaScriptAppResource
+	WithReferenceEnvironment(options *ReferenceEnvironmentInjectionOptions) JavaScriptAppResource
+	WithRelationship(resourceBuilder Resource, type_ string) JavaScriptAppResource
+	WithRemoteImageName(remoteImageName string) JavaScriptAppResource
+	WithRemoteImageTag(remoteImageTag string) JavaScriptAppResource
+	WithRequiredCommand(command string, options ...*WithRequiredCommandOptions) JavaScriptAppResource
+	WithRequiredCommandValidation(command string, validationCallback func(arg RequiredCommandValidationContext) RequiredCommandValidationResult, options ...*WithRequiredCommandValidationOptions) JavaScriptAppResource
+	WithRunScript(scriptName string, options ...*WithRunScriptOptions) JavaScriptAppResource
+	WithSessionLifetime() JavaScriptAppResource
+	WithTerminal() JavaScriptAppResource
+	WithUrl(url any, options ...*WithUrlOptions) JavaScriptAppResource
+	WithUrlForEndpoint(endpointName string, callback func(obj *ResourceUrlAnnotation)) JavaScriptAppResource
+	WithUrls(callback func(obj ResourceUrlsCallbackContext)) JavaScriptAppResource
+	WithVolume(target string, name string, env string, options ...*ExecutableResourceWithVolumeOptions) JavaScriptAppResource
+	WithWorkingDirectory(workingDirectory string) JavaScriptAppResource
+	WithYarn(options ...*WithYarnOptions) JavaScriptAppResource
+	WithoutHttpsCertificate() JavaScriptAppResource
+	WorkingDirectory() (string, error)
+	Err() error
+}
+
+// javaScriptAppResource is the unexported impl of JavaScriptAppResource.
+type javaScriptAppResource struct {
+	*resourceBuilderBase
+}
+
+// newJavaScriptAppResourceFromHandle wraps an existing handle as JavaScriptAppResource.
+func newJavaScriptAppResourceFromHandle(h *handle, c *client) JavaScriptAppResource {
+	return &javaScriptAppResource{resourceBuilderBase: newResourceBuilderBase(h, c)}
+}
+
+// AsHttp2Service configures a resource to mark all endpoints' transport as HTTP/2. This is useful for HTTP/2 services that need prior knowledge.
+func (s *javaScriptAppResource) AsHttp2Service() JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/asHttp2Service", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// ClearContainerFilesSources removes any container files source annotation from the resource being built.
+func (s *javaScriptAppResource) ClearContainerFilesSources() JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/clearContainerFilesSources", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// Command gets the command associated with this executable resource.
+func (s *javaScriptAppResource) Command() (string, error) {
+	if s.err != nil { var zero string; return zero, s.err }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"context": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/JavaScriptAppResource.command", reqArgs)
+	if err != nil {
+		var zero string
+		return zero, err
+	}
+	return decodeAs[string](result)
+}
+
+// CreateExecutionConfiguration creates an execution configuration builder for the specified resource.
+func (s *javaScriptAppResource) CreateExecutionConfiguration() ExecutionConfigurationBuilder {
+	if s.err != nil { return &executionConfigurationBuilder{resourceBuilderBase: newErroredResourceBuilder(s.err, s.client)} }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting/createExecutionConfiguration", reqArgs)
+	if err != nil {
+		return &executionConfigurationBuilder{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	href, ok := result.(handleReference)
+	if !ok {
+		err := fmt.Errorf("aspire: Aspire.Hosting/createExecutionConfiguration returned unexpected type %T", result)
+		return &executionConfigurationBuilder{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	return &executionConfigurationBuilder{resourceBuilderBase: newResourceBuilderBase(href.getHandle(), s.client)}
+}
+
+// ExcludeFromManifest excludes a resource from being published to the manifest.
+func (s *javaScriptAppResource) ExcludeFromManifest() JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/excludeFromManifest", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// ExcludeFromMcp exclude the resource from MCP operations using the Aspire MCP server. The resource is excluded from results that return resources, console logs and telemetry.
+func (s *javaScriptAppResource) ExcludeFromMcp() JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/excludeFromMcp", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// GetEndpoint gets an endpoint reference
+func (s *javaScriptAppResource) GetEndpoint(name string) EndpointReference {
+	if s.err != nil { return &endpointReference{resourceBuilderBase: newErroredResourceBuilder(s.err, s.client)} }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting/getEndpoint", reqArgs)
+	if err != nil {
+		return &endpointReference{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	href, ok := result.(handleReference)
+	if !ok {
+		err := fmt.Errorf("aspire: Aspire.Hosting/getEndpoint returned unexpected type %T", result)
+		return &endpointReference{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	return &endpointReference{resourceBuilderBase: newResourceBuilderBase(href.getHandle(), s.client)}
+}
+
+// GetResourceName gets the name of the resource from a builder.
+func (s *javaScriptAppResource) GetResourceName() (string, error) {
+	if s.err != nil { var zero string; return zero, s.err }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting/getResourceName", reqArgs)
+	if err != nil {
+		var zero string
+		return zero, err
+	}
+	return decodeAs[string](result)
+}
+
+// Name gets the name of the resource.
+func (s *javaScriptAppResource) Name() (string, error) {
+	if s.err != nil { var zero string; return zero, s.err }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"context": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/JavaScriptAppResource.name", reqArgs)
+	if err != nil {
+		var zero string
+		return zero, err
+	}
+	return decodeAs[string](result)
+}
+
+// OnBeforeResourceStarted subscribes to the BeforeResourceStarted event.
+func (s *javaScriptAppResource) OnBeforeResourceStarted(callback func(arg BeforeResourceStartedEvent)) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[BeforeResourceStartedEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onBeforeResourceStarted", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// OnInitializeResource subscribes to the InitializeResource event.
+func (s *javaScriptAppResource) OnInitializeResource(callback func(arg InitializeResourceEvent)) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[InitializeResourceEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onInitializeResource", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// OnResourceEndpointsAllocated subscribes to the ResourceEndpointsAllocated event.
+func (s *javaScriptAppResource) OnResourceEndpointsAllocated(callback func(arg ResourceEndpointsAllocatedEvent)) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ResourceEndpointsAllocatedEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onResourceEndpointsAllocated", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// OnResourceReady subscribes to the ResourceReady event.
+func (s *javaScriptAppResource) OnResourceReady(callback func(arg ResourceReadyEvent)) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ResourceReadyEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onResourceReady", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// OnResourceStopped subscribes to the ResourceStopped event.
+func (s *javaScriptAppResource) OnResourceStopped(callback func(arg ResourceStoppedEvent)) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ResourceStoppedEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onResourceStopped", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// PublishAsDockerFile publishes an executable as a Docker file
+func (s *javaScriptAppResource) PublishAsDockerFile(configure func(obj ContainerResource)) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if configure != nil {
+		cb := configure
+		shim := func(args ...any) any {
+			cb(callbackArg[ContainerResource](args, 0))
+			return nil
+		}
+		reqArgs["configure"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/publishAsDockerFile", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// PublishAsNodeServer configures the JavaScript application to publish as a standalone Node.js server that runs a built artifact directly.
+func (s *javaScriptAppResource) PublishAsNodeServer(entryPoint string, options ...*PublishAsNodeServerOptions) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["entryPoint"] = serializeValue(entryPoint)
+	if len(options) > 0 {
+		merged := &PublishAsNodeServerOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/publishAsNodeServer", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// PublishAsPackageScript configures the JavaScript application to publish as a server that runs a package manager script at runtime.
+func (s *javaScriptAppResource) PublishAsPackageScript(options ...*PublishAsPackageScriptOptions) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &PublishAsPackageScriptOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/publishAsPackageScript", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// PublishAsStaticWebsite publishes the JavaScript application as a standalone static website using YARP.
+func (s *javaScriptAppResource) PublishAsStaticWebsite(options ...*PublishAsStaticWebsiteOptions) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &PublishAsStaticWebsiteOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/publishAsStaticWebsite", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// SubscribeHttpsEndpointsUpdate subscribes to the `BeforeStartEvent` and invokes the specified callback when an HTTPS certificate is determined to be available for the resource. This is used to conditionally update endpoint URI schemes or perform other HTTPS-related configuration at startup.
+func (s *javaScriptAppResource) SubscribeHttpsEndpointsUpdate(callback func(obj HttpsEndpointUpdateCallbackContext)) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[HttpsEndpointUpdateCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/subscribeHttpsEndpointsUpdate", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WaitFor waits for another resource to be ready
+func (s *javaScriptAppResource) WaitFor(dependency Resource, options ...*WaitForOptions) JavaScriptAppResource {
+	if s.err != nil { return s }
+	if dependency != nil { if err := dependency.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["dependency"] = serializeValue(dependency)
+	if len(options) > 0 {
+		merged := &WaitForOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/waitFor", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WaitForCompletion waits for the dependency resource to enter the Exited or Finished state before starting the resource.
+func (s *javaScriptAppResource) WaitForCompletion(dependency Resource, options ...*WaitForCompletionOptions) JavaScriptAppResource {
+	if s.err != nil { return s }
+	if dependency != nil { if err := dependency.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["dependency"] = serializeValue(dependency)
+	if len(options) > 0 {
+		merged := &WaitForCompletionOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/waitForResourceCompletion", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WaitForStart waits for another resource to start
+func (s *javaScriptAppResource) WaitForStart(dependency Resource, options ...*WaitForStartOptions) JavaScriptAppResource {
+	if s.err != nil { return s }
+	if dependency != nil { if err := dependency.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["dependency"] = serializeValue(dependency)
+	if len(options) > 0 {
+		merged := &WaitForStartOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/waitForStart", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithArgs adds arguments to be passed to a resource that supports arguments when it is launched.
+func (s *javaScriptAppResource) WithArgs(args []string) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if args != nil { reqArgs["args"] = serializeValue(args) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withArgs", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithArgsCallback adds a callback to be executed with a list of command-line arguments when a resource is started.
+func (s *javaScriptAppResource) WithArgsCallback(callback func(obj CommandLineArgsCallbackContext)) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[CommandLineArgsCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withArgsCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithBrowserDebugger configures a browser debugger for the JavaScript application resource, enabling browser-based debugging through a child resource that launches when the parent application is ready.
+func (s *javaScriptAppResource) WithBrowserDebugger(options ...*WithBrowserDebuggerOptions) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithBrowserDebuggerOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withBrowserDebugger", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithBuildScript adds a build script annotation to the resource builder using the specified command-line arguments.
+func (s *javaScriptAppResource) WithBuildScript(scriptName string, options ...*WithBuildScriptOptions) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	reqArgs["scriptName"] = serializeValue(scriptName)
+	if len(options) > 0 {
+		merged := &WithBuildScriptOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withBuildScript", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithBun configures the JavaScript resource to use Bun as the package manager and optionally installs packages before the application starts.
+func (s *javaScriptAppResource) WithBun(options ...*WithBunOptions) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithBunOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withBun", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithCertificateTrustScope sets the certificate trust scope
+func (s *javaScriptAppResource) WithCertificateTrustScope(scope CertificateTrustScope) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["scope"] = serializeValue(scope)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withCertificateTrustScope", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithChildRelationship sets a child relationship
+func (s *javaScriptAppResource) WithChildRelationship(child Resource) JavaScriptAppResource {
+	if s.err != nil { return s }
+	if child != nil { if err := child.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["child"] = serializeValue(child)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withBuilderChildRelationship", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithCommand adds a resource command
+func (s *javaScriptAppResource) WithCommand(name string, displayName string, executeCommand func(arg ExecuteCommandContext) *ExecuteCommandResult, options ...*WithCommandOptions) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	reqArgs["displayName"] = serializeValue(displayName)
+	if executeCommand != nil {
+		cb := executeCommand
+		shim := func(args ...any) any {
+			return cb(callbackArg[ExecuteCommandContext](args, 0))
+		}
+		reqArgs["executeCommand"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithCommandOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithComputeEnvironment configures the compute environment for the compute resource.
+func (s *javaScriptAppResource) WithComputeEnvironment(computeEnvironmentResource ComputeEnvironmentResource) JavaScriptAppResource {
+	if s.err != nil { return s }
+	if computeEnvironmentResource != nil { if err := computeEnvironmentResource.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["computeEnvironmentResource"] = serializeValue(computeEnvironmentResource)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withComputeEnvironment", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerBuildOptions configures container build options for a compute resource using an async callback.
+func (s *javaScriptAppResource) WithContainerBuildOptions(callback func(arg ContainerBuildOptionsCallbackContext)) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ContainerBuildOptionsCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerBuildOptions", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerFilesSource adds a container files source annotation to the resource being built, specifying the path to the container files source.
+func (s *javaScriptAppResource) WithContainerFilesSource(sourcePath string) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["sourcePath"] = serializeValue(sourcePath)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerFilesSource", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerRegistry configures the resource to use the specified container registry for container image operations.
+func (s *javaScriptAppResource) WithContainerRegistry(registry Resource) JavaScriptAppResource {
+	if s.err != nil { return s }
+	if registry != nil { if err := registry.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["registry"] = serializeValue(registry)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerRegistry", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDeno configures the JavaScript resource to use Deno as the package manager.
+func (s *javaScriptAppResource) WithDeno(options ...*WithDenoOptions) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithDenoOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withDeno", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDeveloperCertificateTrust indicates whether developer certificates should be treated as trusted certificate authorities for the resource at run time. Currently this indicates trust for the ASP.NET Core developer certificate. The developer certificate will only be trusted when running in local development scenarios; in publish mode resources will use their default certificate trust.
+func (s *javaScriptAppResource) WithDeveloperCertificateTrust(trust bool) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["trust"] = serializeValue(trust)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withDeveloperCertificateTrust", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDockerfileBaseImage configures custom base images for generated Dockerfiles.
+func (s *javaScriptAppResource) WithDockerfileBaseImage(options ...*WithDockerfileBaseImageOptions) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithDockerfileBaseImageOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withDockerfileBaseImage", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEndpoint adds a network endpoint
+func (s *javaScriptAppResource) WithEndpoint(options ...*WithEndpointOptions) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithEndpointOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEndpoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEndpointCallback updates a named endpoint via callback
+func (s *javaScriptAppResource) WithEndpointCallback(endpointName string, callback func(obj EndpointUpdateContext), options ...*WithEndpointCallbackOptions) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["endpointName"] = serializeValue(endpointName)
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[EndpointUpdateContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithEndpointCallbackOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEndpointCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEndpointProxySupport set whether a resource can use proxied endpoints or whether they should be disabled for all endpoints belonging to the resource. If set to `false`, endpoints belonging to the resource will ignore the configured proxy settings and run proxy-less.
+func (s *javaScriptAppResource) WithEndpointProxySupport(proxyEnabled bool) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["proxyEnabled"] = serializeValue(proxyEnabled)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEndpointProxySupport", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEnvironment sets an environment variable
+// Allowed types for parameter value: string, *ReferenceExpression, EndpointReference, ParameterResource, ExternalServiceResource, ResourceWithConnectionString, ExpressionValue.
+func (s *javaScriptAppResource) WithEnvironment(name string, value any) JavaScriptAppResource {
+	if s.err != nil { return s }
+	switch value.(type) {
+	case string, *ReferenceExpression, EndpointReference, ParameterResource, ExternalServiceResource, ResourceWithConnectionString, ExpressionValue:
+	default:
+		err := fmt.Errorf("aspire: WithEnvironment: parameter %q must be one of [string, *ReferenceExpression, EndpointReference, ParameterResource, ExternalServiceResource, ResourceWithConnectionString, ExpressionValue], got %T", "value", value)
+		s.setErr(err); return s
+	}
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	if !isNil(value) { reqArgs["value"] = serializeValue(value) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEnvironment", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEnvironmentCallback allows for the population of environment variables on a resource.
+func (s *javaScriptAppResource) WithEnvironmentCallback(callback func(arg EnvironmentCallbackContext)) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[EnvironmentCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEnvironmentCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithExecutableCommand sets the command for the executable resource.
+func (s *javaScriptAppResource) WithExecutableCommand(command string) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["command"] = serializeValue(command)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withExecutableCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithExplicitStart prevents resource from starting automatically
+func (s *javaScriptAppResource) WithExplicitStart() JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withExplicitStart", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithExternalHttpEndpoints marks existing http or https endpoints on a resource as external.
+func (s *javaScriptAppResource) WithExternalHttpEndpoints() JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withExternalHttpEndpoints", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHealthCheck adds a health check by key
+func (s *javaScriptAppResource) WithHealthCheck(key string) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["key"] = serializeValue(key)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHealthCheck", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHidden hides the resource from default resource lists
+func (s *javaScriptAppResource) WithHidden() JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHidden", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHiddenOnCompletion hides the resource from default resource lists after successful completion
+func (s *javaScriptAppResource) WithHiddenOnCompletion(options ...*WithHiddenOnCompletionOptions) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHiddenOnCompletionOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHiddenOnCompletion", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpCommand adds an HTTP resource command
+func (s *javaScriptAppResource) WithHttpCommand(path string, displayName string, options ...*HttpCommandExportOptions) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["path"] = serializeValue(path)
+	reqArgs["displayName"] = serializeValue(displayName)
+	if len(options) > 0 {
+		merged := &HttpCommandExportOptions{}
+		applied := false
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt); applied = true }
+		}
+		if applied { reqArgs["options"] = serializeValue(merged) }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpEndpoint adds an HTTP endpoint
+func (s *javaScriptAppResource) WithHttpEndpoint(options ...*WithHttpEndpointOptions) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHttpEndpointOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpEndpoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpEndpointCallback updates an HTTP endpoint via callback
+func (s *javaScriptAppResource) WithHttpEndpointCallback(callback func(obj EndpointUpdateContext), options ...*WithHttpEndpointCallbackOptions) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[EndpointUpdateContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithHttpEndpointCallbackOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpEndpointCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpHealthCheck adds a health check to the resource which is mapped to a specific endpoint.
+func (s *javaScriptAppResource) WithHttpHealthCheck(options ...*WithHttpHealthCheckOptions) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHttpHealthCheckOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpHealthCheck", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpProbe adds an HTTP health probe to the resource
+func (s *javaScriptAppResource) WithHttpProbe(probeType ProbeType, options ...*WithHttpProbeOptions) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["probeType"] = serializeValue(probeType)
+	if len(options) > 0 {
+		merged := &WithHttpProbeOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpProbe", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpsCertificateConfiguration adds a callback that allows configuring the resource to use a specific HTTPS/TLS certificate key pair for server authentication.
+func (s *javaScriptAppResource) WithHttpsCertificateConfiguration(callback func(arg HttpsCertificateConfigurationCallbackAnnotationContext)) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[HttpsCertificateConfigurationCallbackAnnotationContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpsCertificateConfiguration", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpsDeveloperCertificate indicates that a resource should use the developer certificate key pair for HTTPS endpoints at run time. Currently this indicates use of the ASP.NET Core developer certificate. The developer certificate will only be used when running in local development scenarios; in publish mode resources will use their default certificate configuration.
+func (s *javaScriptAppResource) WithHttpsDeveloperCertificate(options ...*WithHttpsDeveloperCertificateOptions) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHttpsDeveloperCertificateOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withParameterHttpsDeveloperCertificate", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpsEndpoint adds an HTTPS endpoint
+func (s *javaScriptAppResource) WithHttpsEndpoint(options ...*WithHttpsEndpointOptions) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHttpsEndpointOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpsEndpoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpsEndpointCallback updates an HTTPS endpoint via callback
+func (s *javaScriptAppResource) WithHttpsEndpointCallback(callback func(obj EndpointUpdateContext), options ...*WithHttpsEndpointCallbackOptions) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[EndpointUpdateContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithHttpsEndpointCallbackOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpsEndpointCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithIconName specifies the icon to use when displaying the resource in the dashboard.
+func (s *javaScriptAppResource) WithIconName(iconName string, options ...*WithIconNameOptions) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["iconName"] = serializeValue(iconName)
+	if len(options) > 0 {
+		merged := &WithIconNameOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withIconName", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithImagePushOptions adds an asynchronous callback to configure container image push options for the resource.
+func (s *javaScriptAppResource) WithImagePushOptions(callback func(arg ContainerImagePushOptionsCallbackContext)) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ContainerImagePushOptionsCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withImagePushOptions", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithLifetimeOf configures a resource to match the lifetime of another resource.
+func (s *javaScriptAppResource) WithLifetimeOf(sourceBuilder Resource) JavaScriptAppResource {
+	if s.err != nil { return s }
+	if sourceBuilder != nil { if err := sourceBuilder.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["sourceBuilder"] = serializeValue(sourceBuilder)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withLifetimeOf", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithMcpServer marks the resource as hosting a Model Context Protocol (MCP) server on the specified endpoint.
+func (s *javaScriptAppResource) WithMcpServer(options ...*WithMcpServerOptions) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithMcpServerOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withMcpServer", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithNpm configures the Node.js resource to use npm as the package manager and optionally installs packages before the application starts.
+func (s *javaScriptAppResource) WithNpm(options ...*WithNpmOptions) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithNpmOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withNpm", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithOtlpExporter configures OTLP telemetry export
+func (s *javaScriptAppResource) WithOtlpExporter(options ...*WithOtlpExporterOptions) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithOtlpExporterOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withOtlpExporter", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithParentProcessLifetime configures a resource to use a persistent lifetime that ends when a parent process exits.
+func (s *javaScriptAppResource) WithParentProcessLifetime(parentProcessId float64) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["parentProcessId"] = serializeValue(parentProcessId)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withParentProcessLifetime", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithParentRelationship sets the parent relationship
+func (s *javaScriptAppResource) WithParentRelationship(parent Resource) JavaScriptAppResource {
+	if s.err != nil { return s }
+	if parent != nil { if err := parent.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["parent"] = serializeValue(parent)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withBuilderParentRelationship", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithPersistentLifetime configures a resource to use a persistent lifetime.
+func (s *javaScriptAppResource) WithPersistentLifetime() JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withPersistentLifetime", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithPipelineConfiguration registers a callback to be executed during the pipeline configuration phase, allowing modification of step dependencies and relationships.
+func (s *javaScriptAppResource) WithPipelineConfiguration(callback func(obj PipelineConfigurationContext)) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[PipelineConfigurationContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withPipelineConfiguration", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithPipelineStepFactory adds a pipeline step to the resource that will be executed during deployment.
+func (s *javaScriptAppResource) WithPipelineStepFactory(stepName string, callback func(arg PipelineStepContext), options ...*WithPipelineStepFactoryOptions) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["stepName"] = serializeValue(stepName)
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[PipelineStepContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithPipelineStepFactoryOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withPipelineStepFactory", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithPnpm configures the Node.js resource to use pnpm as the package manager and optionally installs packages before the application starts.
+func (s *javaScriptAppResource) WithPnpm(options ...*WithPnpmOptions) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithPnpmOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withPnpm", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithProcessCommand adds a command to the resource that starts a local process when invoked.
+func (s *javaScriptAppResource) WithProcessCommand(commandName string, displayName string, options *ProcessCommandExportOptions) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["commandName"] = serializeValue(commandName)
+	reqArgs["displayName"] = serializeValue(displayName)
+	if options != nil { reqArgs["options"] = serializeValue(options) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withProcessCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithProcessCommandFactory adds a command to the resource that starts a local process created by a callback when invoked.
+func (s *javaScriptAppResource) WithProcessCommandFactory(commandName string, displayName string, createProcessSpec func(arg ExecuteCommandContext) *ProcessCommandSpecExportData, options ...*ProcessCommandResultExportOptions) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["commandName"] = serializeValue(commandName)
+	reqArgs["displayName"] = serializeValue(displayName)
+	if createProcessSpec != nil {
+		cb := createProcessSpec
+		shim := func(args ...any) any {
+			return cb(callbackArg[ExecuteCommandContext](args, 0))
+		}
+		reqArgs["createProcessSpec"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &ProcessCommandResultExportOptions{}
+		applied := false
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt); applied = true }
+		}
+		if applied { reqArgs["options"] = serializeValue(merged) }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withProcessCommandFactory", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithReference adds a reference to another resource
+// Allowed types for parameter source: Resource, EndpointReference, string.
+func (s *javaScriptAppResource) WithReference(source any, options ...*WithReferenceOptions) JavaScriptAppResource {
+	if s.err != nil { return s }
+	switch source.(type) {
+	case Resource, EndpointReference, string:
+	default:
+		err := fmt.Errorf("aspire: WithReference: parameter %q must be one of [Resource, EndpointReference, string], got %T", "source", source)
+		s.setErr(err); return s
+	}
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if !isNil(source) { reqArgs["source"] = serializeValue(source) }
+	if len(options) > 0 {
+		merged := &WithReferenceOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withReference", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithReferenceEnvironment configures how information is injected into environment variables when the resource references other resources.
+func (s *javaScriptAppResource) WithReferenceEnvironment(options *ReferenceEnvironmentInjectionOptions) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if options != nil { reqArgs["options"] = serializeValue(options) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withReferenceEnvironment", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRelationship adds a relationship to another resource using its builder.
+func (s *javaScriptAppResource) WithRelationship(resourceBuilder Resource, type_ string) JavaScriptAppResource {
+	if s.err != nil { return s }
+	if resourceBuilder != nil { if err := resourceBuilder.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["resourceBuilder"] = serializeValue(resourceBuilder)
+	reqArgs["type"] = serializeValue(type_)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withBuilderRelationship", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRemoteImageName sets the remote image name (without registry endpoint or tag) for container push operations.
+func (s *javaScriptAppResource) WithRemoteImageName(remoteImageName string) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["remoteImageName"] = serializeValue(remoteImageName)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withRemoteImageName", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRemoteImageTag sets the remote image tag for container push operations.
+func (s *javaScriptAppResource) WithRemoteImageTag(remoteImageTag string) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["remoteImageTag"] = serializeValue(remoteImageTag)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withRemoteImageTag", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRequiredCommand declares that a resource requires a specific command/executable to be available on the local machine PATH before it can start.
+func (s *javaScriptAppResource) WithRequiredCommand(command string, options ...*WithRequiredCommandOptions) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["command"] = serializeValue(command)
+	if len(options) > 0 {
+		merged := &WithRequiredCommandOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withRequiredCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRequiredCommandValidation declares that a resource requires a specific command/executable to be available on the local machine PATH before it can start, with custom validation logic.
+func (s *javaScriptAppResource) WithRequiredCommandValidation(command string, validationCallback func(arg RequiredCommandValidationContext) RequiredCommandValidationResult, options ...*WithRequiredCommandValidationOptions) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["command"] = serializeValue(command)
+	if validationCallback != nil {
+		cb := validationCallback
+		shim := func(args ...any) any {
+			return cb(callbackArg[RequiredCommandValidationContext](args, 0))
+		}
+		reqArgs["validationCallback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithRequiredCommandValidationOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withRequiredCommandValidation", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRunScript adds a run script annotation to the specified JavaScript application resource builder, specifying the script to execute and its arguments during run mode.
+func (s *javaScriptAppResource) WithRunScript(scriptName string, options ...*WithRunScriptOptions) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	reqArgs["scriptName"] = serializeValue(scriptName)
+	if len(options) > 0 {
+		merged := &WithRunScriptOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withRunScript", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithSessionLifetime configures a resource to use a session lifetime.
+func (s *javaScriptAppResource) WithSessionLifetime() JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withSessionLifetime", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithTerminal adds an interactive terminal session to a resource using the default terminal options.
+func (s *javaScriptAppResource) WithTerminal() JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withTerminal", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithUrl adds or modifies displayed URLs
+// Allowed types for parameter url: string, *ReferenceExpression.
+func (s *javaScriptAppResource) WithUrl(url any, options ...*WithUrlOptions) JavaScriptAppResource {
+	if s.err != nil { return s }
+	switch url.(type) {
+	case string, *ReferenceExpression:
+	default:
+		err := fmt.Errorf("aspire: WithUrl: parameter %q must be one of [string, *ReferenceExpression], got %T", "url", url)
+		s.setErr(err); return s
+	}
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if !isNil(url) { reqArgs["url"] = serializeValue(url) }
+	if len(options) > 0 {
+		merged := &WithUrlOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withUrl", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithUrlForEndpoint registers a callback to update the URL displayed for the endpoint with the specified name.
+func (s *javaScriptAppResource) WithUrlForEndpoint(endpointName string, callback func(obj *ResourceUrlAnnotation)) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["endpointName"] = serializeValue(endpointName)
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			arg0 := callbackArg[*ResourceUrlAnnotation](args, 0)
+			cb(arg0)
+			return map[string]any{
+				"p0": serializeValue(arg0),
+			}
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withUrlForEndpoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithUrls registers a callback to customize the URLs displayed for the resource.
+func (s *javaScriptAppResource) WithUrls(callback func(obj ResourceUrlsCallbackContext)) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ResourceUrlsCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withUrls", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithVolume adds a volume to an executable resource.
+func (s *javaScriptAppResource) WithVolume(target string, name string, env string, options ...*ExecutableResourceWithVolumeOptions) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	reqArgs["target"] = serializeValue(target)
+	reqArgs["name"] = serializeValue(name)
+	reqArgs["env"] = serializeValue(env)
+	if len(options) > 0 {
+		merged := &ExecutableResourceWithVolumeOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withExecutableVolume", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithWorkingDirectory sets the working directory for the executable resource.
+func (s *javaScriptAppResource) WithWorkingDirectory(workingDirectory string) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["workingDirectory"] = serializeValue(workingDirectory)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withWorkingDirectory", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithYarn configures the Node.js resource to use yarn as the package manager and optionally installs packages before the application starts.
+func (s *javaScriptAppResource) WithYarn(options ...*WithYarnOptions) JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithYarnOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withYarn", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithoutHttpsCertificate disable HTTPS/TLS server certificate configuration for the resource. No HTTPS/TLS termination configuration will be applied.
+func (s *javaScriptAppResource) WithoutHttpsCertificate() JavaScriptAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withoutHttpsCertificate", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WorkingDirectory gets the working directory for the executable resource.
+func (s *javaScriptAppResource) WorkingDirectory() (string, error) {
+	if s.err != nil { var zero string; return zero, s.err }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"context": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/JavaScriptAppResource.workingDirectory", reqArgs)
+	if err != nil {
+		var zero string
+		return zero, err
+	}
+	return decodeAs[string](result)
+}
+
 // LogFacade is the public interface for handle type LogFacade.
 type LogFacade interface {
 	handleReference
@@ -14262,6 +21214,3297 @@ func (s *loggerFactory) CreateLogger(categoryName string) Logger {
 		return &logger{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
 	}
 	return &logger{resourceBuilderBase: newResourceBuilderBase(href.getHandle(), s.client)}
+}
+
+// NextJsAppResource is the public interface for handle type NextJsAppResource.
+type NextJsAppResource interface {
+	handleReference
+	AsHttp2Service() NextJsAppResource
+	ClearContainerFilesSources() NextJsAppResource
+	Command() (string, error)
+	CreateExecutionConfiguration() ExecutionConfigurationBuilder
+	DisableBuildValidation() NextJsAppResource
+	ExcludeFromManifest() NextJsAppResource
+	ExcludeFromMcp() NextJsAppResource
+	GetEndpoint(name string) EndpointReference
+	GetResourceName() (string, error)
+	Name() (string, error)
+	OnBeforeResourceStarted(callback func(arg BeforeResourceStartedEvent)) NextJsAppResource
+	OnInitializeResource(callback func(arg InitializeResourceEvent)) NextJsAppResource
+	OnResourceEndpointsAllocated(callback func(arg ResourceEndpointsAllocatedEvent)) NextJsAppResource
+	OnResourceReady(callback func(arg ResourceReadyEvent)) NextJsAppResource
+	OnResourceStopped(callback func(arg ResourceStoppedEvent)) NextJsAppResource
+	PublishAsDockerFile(configure func(obj ContainerResource)) NextJsAppResource
+	PublishAsNodeServer(entryPoint string, options ...*PublishAsNodeServerOptions) NextJsAppResource
+	PublishAsPackageScript(options ...*PublishAsPackageScriptOptions) NextJsAppResource
+	PublishAsStaticWebsite(options ...*PublishAsStaticWebsiteOptions) NextJsAppResource
+	SubscribeHttpsEndpointsUpdate(callback func(obj HttpsEndpointUpdateCallbackContext)) NextJsAppResource
+	WaitFor(dependency Resource, options ...*WaitForOptions) NextJsAppResource
+	WaitForCompletion(dependency Resource, options ...*WaitForCompletionOptions) NextJsAppResource
+	WaitForStart(dependency Resource, options ...*WaitForStartOptions) NextJsAppResource
+	WithArgs(args []string) NextJsAppResource
+	WithArgsCallback(callback func(obj CommandLineArgsCallbackContext)) NextJsAppResource
+	WithBrowserDebugger(options ...*WithBrowserDebuggerOptions) NextJsAppResource
+	WithBuildScript(scriptName string, options ...*WithBuildScriptOptions) NextJsAppResource
+	WithBun(options ...*WithBunOptions) NextJsAppResource
+	WithCertificateTrustScope(scope CertificateTrustScope) NextJsAppResource
+	WithChildRelationship(child Resource) NextJsAppResource
+	WithCommand(name string, displayName string, executeCommand func(arg ExecuteCommandContext) *ExecuteCommandResult, options ...*WithCommandOptions) NextJsAppResource
+	WithComputeEnvironment(computeEnvironmentResource ComputeEnvironmentResource) NextJsAppResource
+	WithContainerBuildOptions(callback func(arg ContainerBuildOptionsCallbackContext)) NextJsAppResource
+	WithContainerFilesSource(sourcePath string) NextJsAppResource
+	WithContainerRegistry(registry Resource) NextJsAppResource
+	WithDeno(options ...*WithDenoOptions) NextJsAppResource
+	WithDeveloperCertificateTrust(trust bool) NextJsAppResource
+	WithDockerfileBaseImage(options ...*WithDockerfileBaseImageOptions) NextJsAppResource
+	WithEndpoint(options ...*WithEndpointOptions) NextJsAppResource
+	WithEndpointCallback(endpointName string, callback func(obj EndpointUpdateContext), options ...*WithEndpointCallbackOptions) NextJsAppResource
+	WithEndpointProxySupport(proxyEnabled bool) NextJsAppResource
+	WithEnvironment(name string, value any) NextJsAppResource
+	WithEnvironmentCallback(callback func(arg EnvironmentCallbackContext)) NextJsAppResource
+	WithExecutableCommand(command string) NextJsAppResource
+	WithExplicitStart() NextJsAppResource
+	WithExternalHttpEndpoints() NextJsAppResource
+	WithHealthCheck(key string) NextJsAppResource
+	WithHidden() NextJsAppResource
+	WithHiddenOnCompletion(options ...*WithHiddenOnCompletionOptions) NextJsAppResource
+	WithHttpCommand(path string, displayName string, options ...*HttpCommandExportOptions) NextJsAppResource
+	WithHttpEndpoint(options ...*WithHttpEndpointOptions) NextJsAppResource
+	WithHttpEndpointCallback(callback func(obj EndpointUpdateContext), options ...*WithHttpEndpointCallbackOptions) NextJsAppResource
+	WithHttpHealthCheck(options ...*WithHttpHealthCheckOptions) NextJsAppResource
+	WithHttpProbe(probeType ProbeType, options ...*WithHttpProbeOptions) NextJsAppResource
+	WithHttpsCertificateConfiguration(callback func(arg HttpsCertificateConfigurationCallbackAnnotationContext)) NextJsAppResource
+	WithHttpsDeveloperCertificate(options ...*WithHttpsDeveloperCertificateOptions) NextJsAppResource
+	WithHttpsEndpoint(options ...*WithHttpsEndpointOptions) NextJsAppResource
+	WithHttpsEndpointCallback(callback func(obj EndpointUpdateContext), options ...*WithHttpsEndpointCallbackOptions) NextJsAppResource
+	WithIconName(iconName string, options ...*WithIconNameOptions) NextJsAppResource
+	WithImagePushOptions(callback func(arg ContainerImagePushOptionsCallbackContext)) NextJsAppResource
+	WithLifetimeOf(sourceBuilder Resource) NextJsAppResource
+	WithMcpServer(options ...*WithMcpServerOptions) NextJsAppResource
+	WithNpm(options ...*WithNpmOptions) NextJsAppResource
+	WithOtlpExporter(options ...*WithOtlpExporterOptions) NextJsAppResource
+	WithParentProcessLifetime(parentProcessId float64) NextJsAppResource
+	WithParentRelationship(parent Resource) NextJsAppResource
+	WithPersistentLifetime() NextJsAppResource
+	WithPipelineConfiguration(callback func(obj PipelineConfigurationContext)) NextJsAppResource
+	WithPipelineStepFactory(stepName string, callback func(arg PipelineStepContext), options ...*WithPipelineStepFactoryOptions) NextJsAppResource
+	WithPnpm(options ...*WithPnpmOptions) NextJsAppResource
+	WithProcessCommand(commandName string, displayName string, options *ProcessCommandExportOptions) NextJsAppResource
+	WithProcessCommandFactory(commandName string, displayName string, createProcessSpec func(arg ExecuteCommandContext) *ProcessCommandSpecExportData, options ...*ProcessCommandResultExportOptions) NextJsAppResource
+	WithReference(source any, options ...*WithReferenceOptions) NextJsAppResource
+	WithReferenceEnvironment(options *ReferenceEnvironmentInjectionOptions) NextJsAppResource
+	WithRelationship(resourceBuilder Resource, type_ string) NextJsAppResource
+	WithRemoteImageName(remoteImageName string) NextJsAppResource
+	WithRemoteImageTag(remoteImageTag string) NextJsAppResource
+	WithRequiredCommand(command string, options ...*WithRequiredCommandOptions) NextJsAppResource
+	WithRequiredCommandValidation(command string, validationCallback func(arg RequiredCommandValidationContext) RequiredCommandValidationResult, options ...*WithRequiredCommandValidationOptions) NextJsAppResource
+	WithRunScript(scriptName string, options ...*WithRunScriptOptions) NextJsAppResource
+	WithSessionLifetime() NextJsAppResource
+	WithTerminal() NextJsAppResource
+	WithUrl(url any, options ...*WithUrlOptions) NextJsAppResource
+	WithUrlForEndpoint(endpointName string, callback func(obj *ResourceUrlAnnotation)) NextJsAppResource
+	WithUrls(callback func(obj ResourceUrlsCallbackContext)) NextJsAppResource
+	WithVolume(target string, name string, env string, options ...*ExecutableResourceWithVolumeOptions) NextJsAppResource
+	WithWorkingDirectory(workingDirectory string) NextJsAppResource
+	WithYarn(options ...*WithYarnOptions) NextJsAppResource
+	WithoutHttpsCertificate() NextJsAppResource
+	WorkingDirectory() (string, error)
+	Err() error
+}
+
+// nextJsAppResource is the unexported impl of NextJsAppResource.
+type nextJsAppResource struct {
+	*resourceBuilderBase
+}
+
+// newNextJsAppResourceFromHandle wraps an existing handle as NextJsAppResource.
+func newNextJsAppResourceFromHandle(h *handle, c *client) NextJsAppResource {
+	return &nextJsAppResource{resourceBuilderBase: newResourceBuilderBase(h, c)}
+}
+
+// AsHttp2Service configures a resource to mark all endpoints' transport as HTTP/2. This is useful for HTTP/2 services that need prior knowledge.
+func (s *nextJsAppResource) AsHttp2Service() NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/asHttp2Service", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// ClearContainerFilesSources removes any container files source annotation from the resource being built.
+func (s *nextJsAppResource) ClearContainerFilesSources() NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/clearContainerFilesSources", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// Command gets the command associated with this executable resource.
+func (s *nextJsAppResource) Command() (string, error) {
+	if s.err != nil { var zero string; return zero, s.err }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"context": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/JavaScriptAppResource.command", reqArgs)
+	if err != nil {
+		var zero string
+		return zero, err
+	}
+	return decodeAs[string](result)
+}
+
+// CreateExecutionConfiguration creates an execution configuration builder for the specified resource.
+func (s *nextJsAppResource) CreateExecutionConfiguration() ExecutionConfigurationBuilder {
+	if s.err != nil { return &executionConfigurationBuilder{resourceBuilderBase: newErroredResourceBuilder(s.err, s.client)} }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting/createExecutionConfiguration", reqArgs)
+	if err != nil {
+		return &executionConfigurationBuilder{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	href, ok := result.(handleReference)
+	if !ok {
+		err := fmt.Errorf("aspire: Aspire.Hosting/createExecutionConfiguration returned unexpected type %T", result)
+		return &executionConfigurationBuilder{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	return &executionConfigurationBuilder{resourceBuilderBase: newResourceBuilderBase(href.getHandle(), s.client)}
+}
+
+// DisableBuildValidation disables deploy-time build validation checks for the Next.js application.
+func (s *nextJsAppResource) DisableBuildValidation() NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/disableBuildValidation", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// ExcludeFromManifest excludes a resource from being published to the manifest.
+func (s *nextJsAppResource) ExcludeFromManifest() NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/excludeFromManifest", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// ExcludeFromMcp exclude the resource from MCP operations using the Aspire MCP server. The resource is excluded from results that return resources, console logs and telemetry.
+func (s *nextJsAppResource) ExcludeFromMcp() NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/excludeFromMcp", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// GetEndpoint gets an endpoint reference
+func (s *nextJsAppResource) GetEndpoint(name string) EndpointReference {
+	if s.err != nil { return &endpointReference{resourceBuilderBase: newErroredResourceBuilder(s.err, s.client)} }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting/getEndpoint", reqArgs)
+	if err != nil {
+		return &endpointReference{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	href, ok := result.(handleReference)
+	if !ok {
+		err := fmt.Errorf("aspire: Aspire.Hosting/getEndpoint returned unexpected type %T", result)
+		return &endpointReference{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	return &endpointReference{resourceBuilderBase: newResourceBuilderBase(href.getHandle(), s.client)}
+}
+
+// GetResourceName gets the name of the resource from a builder.
+func (s *nextJsAppResource) GetResourceName() (string, error) {
+	if s.err != nil { var zero string; return zero, s.err }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting/getResourceName", reqArgs)
+	if err != nil {
+		var zero string
+		return zero, err
+	}
+	return decodeAs[string](result)
+}
+
+// Name gets the name of the resource.
+func (s *nextJsAppResource) Name() (string, error) {
+	if s.err != nil { var zero string; return zero, s.err }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"context": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/JavaScriptAppResource.name", reqArgs)
+	if err != nil {
+		var zero string
+		return zero, err
+	}
+	return decodeAs[string](result)
+}
+
+// OnBeforeResourceStarted subscribes to the BeforeResourceStarted event.
+func (s *nextJsAppResource) OnBeforeResourceStarted(callback func(arg BeforeResourceStartedEvent)) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[BeforeResourceStartedEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onBeforeResourceStarted", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// OnInitializeResource subscribes to the InitializeResource event.
+func (s *nextJsAppResource) OnInitializeResource(callback func(arg InitializeResourceEvent)) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[InitializeResourceEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onInitializeResource", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// OnResourceEndpointsAllocated subscribes to the ResourceEndpointsAllocated event.
+func (s *nextJsAppResource) OnResourceEndpointsAllocated(callback func(arg ResourceEndpointsAllocatedEvent)) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ResourceEndpointsAllocatedEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onResourceEndpointsAllocated", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// OnResourceReady subscribes to the ResourceReady event.
+func (s *nextJsAppResource) OnResourceReady(callback func(arg ResourceReadyEvent)) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ResourceReadyEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onResourceReady", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// OnResourceStopped subscribes to the ResourceStopped event.
+func (s *nextJsAppResource) OnResourceStopped(callback func(arg ResourceStoppedEvent)) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ResourceStoppedEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onResourceStopped", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// PublishAsDockerFile publishes an executable as a Docker file
+func (s *nextJsAppResource) PublishAsDockerFile(configure func(obj ContainerResource)) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if configure != nil {
+		cb := configure
+		shim := func(args ...any) any {
+			cb(callbackArg[ContainerResource](args, 0))
+			return nil
+		}
+		reqArgs["configure"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/publishAsDockerFile", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// PublishAsNodeServer configures the JavaScript application to publish as a standalone Node.js server that runs a built artifact directly.
+func (s *nextJsAppResource) PublishAsNodeServer(entryPoint string, options ...*PublishAsNodeServerOptions) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["entryPoint"] = serializeValue(entryPoint)
+	if len(options) > 0 {
+		merged := &PublishAsNodeServerOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/publishAsNodeServer", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// PublishAsPackageScript configures the JavaScript application to publish as a server that runs a package manager script at runtime.
+func (s *nextJsAppResource) PublishAsPackageScript(options ...*PublishAsPackageScriptOptions) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &PublishAsPackageScriptOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/publishAsPackageScript", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// PublishAsStaticWebsite publishes the JavaScript application as a standalone static website using YARP.
+func (s *nextJsAppResource) PublishAsStaticWebsite(options ...*PublishAsStaticWebsiteOptions) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &PublishAsStaticWebsiteOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/publishAsStaticWebsite", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// SubscribeHttpsEndpointsUpdate subscribes to the `BeforeStartEvent` and invokes the specified callback when an HTTPS certificate is determined to be available for the resource. This is used to conditionally update endpoint URI schemes or perform other HTTPS-related configuration at startup.
+func (s *nextJsAppResource) SubscribeHttpsEndpointsUpdate(callback func(obj HttpsEndpointUpdateCallbackContext)) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[HttpsEndpointUpdateCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/subscribeHttpsEndpointsUpdate", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WaitFor waits for another resource to be ready
+func (s *nextJsAppResource) WaitFor(dependency Resource, options ...*WaitForOptions) NextJsAppResource {
+	if s.err != nil { return s }
+	if dependency != nil { if err := dependency.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["dependency"] = serializeValue(dependency)
+	if len(options) > 0 {
+		merged := &WaitForOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/waitFor", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WaitForCompletion waits for the dependency resource to enter the Exited or Finished state before starting the resource.
+func (s *nextJsAppResource) WaitForCompletion(dependency Resource, options ...*WaitForCompletionOptions) NextJsAppResource {
+	if s.err != nil { return s }
+	if dependency != nil { if err := dependency.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["dependency"] = serializeValue(dependency)
+	if len(options) > 0 {
+		merged := &WaitForCompletionOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/waitForResourceCompletion", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WaitForStart waits for another resource to start
+func (s *nextJsAppResource) WaitForStart(dependency Resource, options ...*WaitForStartOptions) NextJsAppResource {
+	if s.err != nil { return s }
+	if dependency != nil { if err := dependency.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["dependency"] = serializeValue(dependency)
+	if len(options) > 0 {
+		merged := &WaitForStartOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/waitForStart", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithArgs adds arguments to be passed to a resource that supports arguments when it is launched.
+func (s *nextJsAppResource) WithArgs(args []string) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if args != nil { reqArgs["args"] = serializeValue(args) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withArgs", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithArgsCallback adds a callback to be executed with a list of command-line arguments when a resource is started.
+func (s *nextJsAppResource) WithArgsCallback(callback func(obj CommandLineArgsCallbackContext)) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[CommandLineArgsCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withArgsCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithBrowserDebugger configures a browser debugger for the JavaScript application resource, enabling browser-based debugging through a child resource that launches when the parent application is ready.
+func (s *nextJsAppResource) WithBrowserDebugger(options ...*WithBrowserDebuggerOptions) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithBrowserDebuggerOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withBrowserDebugger", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithBuildScript adds a build script annotation to the resource builder using the specified command-line arguments.
+func (s *nextJsAppResource) WithBuildScript(scriptName string, options ...*WithBuildScriptOptions) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	reqArgs["scriptName"] = serializeValue(scriptName)
+	if len(options) > 0 {
+		merged := &WithBuildScriptOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withBuildScript", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithBun configures the JavaScript resource to use Bun as the package manager and optionally installs packages before the application starts.
+func (s *nextJsAppResource) WithBun(options ...*WithBunOptions) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithBunOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withBun", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithCertificateTrustScope sets the certificate trust scope
+func (s *nextJsAppResource) WithCertificateTrustScope(scope CertificateTrustScope) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["scope"] = serializeValue(scope)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withCertificateTrustScope", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithChildRelationship sets a child relationship
+func (s *nextJsAppResource) WithChildRelationship(child Resource) NextJsAppResource {
+	if s.err != nil { return s }
+	if child != nil { if err := child.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["child"] = serializeValue(child)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withBuilderChildRelationship", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithCommand adds a resource command
+func (s *nextJsAppResource) WithCommand(name string, displayName string, executeCommand func(arg ExecuteCommandContext) *ExecuteCommandResult, options ...*WithCommandOptions) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	reqArgs["displayName"] = serializeValue(displayName)
+	if executeCommand != nil {
+		cb := executeCommand
+		shim := func(args ...any) any {
+			return cb(callbackArg[ExecuteCommandContext](args, 0))
+		}
+		reqArgs["executeCommand"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithCommandOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithComputeEnvironment configures the compute environment for the compute resource.
+func (s *nextJsAppResource) WithComputeEnvironment(computeEnvironmentResource ComputeEnvironmentResource) NextJsAppResource {
+	if s.err != nil { return s }
+	if computeEnvironmentResource != nil { if err := computeEnvironmentResource.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["computeEnvironmentResource"] = serializeValue(computeEnvironmentResource)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withComputeEnvironment", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerBuildOptions configures container build options for a compute resource using an async callback.
+func (s *nextJsAppResource) WithContainerBuildOptions(callback func(arg ContainerBuildOptionsCallbackContext)) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ContainerBuildOptionsCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerBuildOptions", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerFilesSource adds a container files source annotation to the resource being built, specifying the path to the container files source.
+func (s *nextJsAppResource) WithContainerFilesSource(sourcePath string) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["sourcePath"] = serializeValue(sourcePath)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerFilesSource", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerRegistry configures the resource to use the specified container registry for container image operations.
+func (s *nextJsAppResource) WithContainerRegistry(registry Resource) NextJsAppResource {
+	if s.err != nil { return s }
+	if registry != nil { if err := registry.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["registry"] = serializeValue(registry)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerRegistry", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDeno configures the JavaScript resource to use Deno as the package manager.
+func (s *nextJsAppResource) WithDeno(options ...*WithDenoOptions) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithDenoOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withDeno", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDeveloperCertificateTrust indicates whether developer certificates should be treated as trusted certificate authorities for the resource at run time. Currently this indicates trust for the ASP.NET Core developer certificate. The developer certificate will only be trusted when running in local development scenarios; in publish mode resources will use their default certificate trust.
+func (s *nextJsAppResource) WithDeveloperCertificateTrust(trust bool) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["trust"] = serializeValue(trust)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withDeveloperCertificateTrust", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDockerfileBaseImage configures custom base images for generated Dockerfiles.
+func (s *nextJsAppResource) WithDockerfileBaseImage(options ...*WithDockerfileBaseImageOptions) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithDockerfileBaseImageOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withDockerfileBaseImage", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEndpoint adds a network endpoint
+func (s *nextJsAppResource) WithEndpoint(options ...*WithEndpointOptions) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithEndpointOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEndpoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEndpointCallback updates a named endpoint via callback
+func (s *nextJsAppResource) WithEndpointCallback(endpointName string, callback func(obj EndpointUpdateContext), options ...*WithEndpointCallbackOptions) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["endpointName"] = serializeValue(endpointName)
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[EndpointUpdateContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithEndpointCallbackOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEndpointCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEndpointProxySupport set whether a resource can use proxied endpoints or whether they should be disabled for all endpoints belonging to the resource. If set to `false`, endpoints belonging to the resource will ignore the configured proxy settings and run proxy-less.
+func (s *nextJsAppResource) WithEndpointProxySupport(proxyEnabled bool) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["proxyEnabled"] = serializeValue(proxyEnabled)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEndpointProxySupport", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEnvironment sets an environment variable
+// Allowed types for parameter value: string, *ReferenceExpression, EndpointReference, ParameterResource, ExternalServiceResource, ResourceWithConnectionString, ExpressionValue.
+func (s *nextJsAppResource) WithEnvironment(name string, value any) NextJsAppResource {
+	if s.err != nil { return s }
+	switch value.(type) {
+	case string, *ReferenceExpression, EndpointReference, ParameterResource, ExternalServiceResource, ResourceWithConnectionString, ExpressionValue:
+	default:
+		err := fmt.Errorf("aspire: WithEnvironment: parameter %q must be one of [string, *ReferenceExpression, EndpointReference, ParameterResource, ExternalServiceResource, ResourceWithConnectionString, ExpressionValue], got %T", "value", value)
+		s.setErr(err); return s
+	}
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	if !isNil(value) { reqArgs["value"] = serializeValue(value) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEnvironment", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEnvironmentCallback allows for the population of environment variables on a resource.
+func (s *nextJsAppResource) WithEnvironmentCallback(callback func(arg EnvironmentCallbackContext)) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[EnvironmentCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEnvironmentCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithExecutableCommand sets the command for the executable resource.
+func (s *nextJsAppResource) WithExecutableCommand(command string) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["command"] = serializeValue(command)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withExecutableCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithExplicitStart prevents resource from starting automatically
+func (s *nextJsAppResource) WithExplicitStart() NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withExplicitStart", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithExternalHttpEndpoints marks existing http or https endpoints on a resource as external.
+func (s *nextJsAppResource) WithExternalHttpEndpoints() NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withExternalHttpEndpoints", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHealthCheck adds a health check by key
+func (s *nextJsAppResource) WithHealthCheck(key string) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["key"] = serializeValue(key)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHealthCheck", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHidden hides the resource from default resource lists
+func (s *nextJsAppResource) WithHidden() NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHidden", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHiddenOnCompletion hides the resource from default resource lists after successful completion
+func (s *nextJsAppResource) WithHiddenOnCompletion(options ...*WithHiddenOnCompletionOptions) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHiddenOnCompletionOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHiddenOnCompletion", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpCommand adds an HTTP resource command
+func (s *nextJsAppResource) WithHttpCommand(path string, displayName string, options ...*HttpCommandExportOptions) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["path"] = serializeValue(path)
+	reqArgs["displayName"] = serializeValue(displayName)
+	if len(options) > 0 {
+		merged := &HttpCommandExportOptions{}
+		applied := false
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt); applied = true }
+		}
+		if applied { reqArgs["options"] = serializeValue(merged) }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpEndpoint adds an HTTP endpoint
+func (s *nextJsAppResource) WithHttpEndpoint(options ...*WithHttpEndpointOptions) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHttpEndpointOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpEndpoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpEndpointCallback updates an HTTP endpoint via callback
+func (s *nextJsAppResource) WithHttpEndpointCallback(callback func(obj EndpointUpdateContext), options ...*WithHttpEndpointCallbackOptions) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[EndpointUpdateContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithHttpEndpointCallbackOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpEndpointCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpHealthCheck adds a health check to the resource which is mapped to a specific endpoint.
+func (s *nextJsAppResource) WithHttpHealthCheck(options ...*WithHttpHealthCheckOptions) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHttpHealthCheckOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpHealthCheck", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpProbe adds an HTTP health probe to the resource
+func (s *nextJsAppResource) WithHttpProbe(probeType ProbeType, options ...*WithHttpProbeOptions) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["probeType"] = serializeValue(probeType)
+	if len(options) > 0 {
+		merged := &WithHttpProbeOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpProbe", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpsCertificateConfiguration adds a callback that allows configuring the resource to use a specific HTTPS/TLS certificate key pair for server authentication.
+func (s *nextJsAppResource) WithHttpsCertificateConfiguration(callback func(arg HttpsCertificateConfigurationCallbackAnnotationContext)) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[HttpsCertificateConfigurationCallbackAnnotationContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpsCertificateConfiguration", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpsDeveloperCertificate indicates that a resource should use the developer certificate key pair for HTTPS endpoints at run time. Currently this indicates use of the ASP.NET Core developer certificate. The developer certificate will only be used when running in local development scenarios; in publish mode resources will use their default certificate configuration.
+func (s *nextJsAppResource) WithHttpsDeveloperCertificate(options ...*WithHttpsDeveloperCertificateOptions) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHttpsDeveloperCertificateOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withParameterHttpsDeveloperCertificate", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpsEndpoint adds an HTTPS endpoint
+func (s *nextJsAppResource) WithHttpsEndpoint(options ...*WithHttpsEndpointOptions) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHttpsEndpointOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpsEndpoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpsEndpointCallback updates an HTTPS endpoint via callback
+func (s *nextJsAppResource) WithHttpsEndpointCallback(callback func(obj EndpointUpdateContext), options ...*WithHttpsEndpointCallbackOptions) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[EndpointUpdateContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithHttpsEndpointCallbackOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpsEndpointCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithIconName specifies the icon to use when displaying the resource in the dashboard.
+func (s *nextJsAppResource) WithIconName(iconName string, options ...*WithIconNameOptions) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["iconName"] = serializeValue(iconName)
+	if len(options) > 0 {
+		merged := &WithIconNameOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withIconName", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithImagePushOptions adds an asynchronous callback to configure container image push options for the resource.
+func (s *nextJsAppResource) WithImagePushOptions(callback func(arg ContainerImagePushOptionsCallbackContext)) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ContainerImagePushOptionsCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withImagePushOptions", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithLifetimeOf configures a resource to match the lifetime of another resource.
+func (s *nextJsAppResource) WithLifetimeOf(sourceBuilder Resource) NextJsAppResource {
+	if s.err != nil { return s }
+	if sourceBuilder != nil { if err := sourceBuilder.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["sourceBuilder"] = serializeValue(sourceBuilder)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withLifetimeOf", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithMcpServer marks the resource as hosting a Model Context Protocol (MCP) server on the specified endpoint.
+func (s *nextJsAppResource) WithMcpServer(options ...*WithMcpServerOptions) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithMcpServerOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withMcpServer", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithNpm configures the Node.js resource to use npm as the package manager and optionally installs packages before the application starts.
+func (s *nextJsAppResource) WithNpm(options ...*WithNpmOptions) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithNpmOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withNpm", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithOtlpExporter configures OTLP telemetry export
+func (s *nextJsAppResource) WithOtlpExporter(options ...*WithOtlpExporterOptions) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithOtlpExporterOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withOtlpExporter", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithParentProcessLifetime configures a resource to use a persistent lifetime that ends when a parent process exits.
+func (s *nextJsAppResource) WithParentProcessLifetime(parentProcessId float64) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["parentProcessId"] = serializeValue(parentProcessId)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withParentProcessLifetime", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithParentRelationship sets the parent relationship
+func (s *nextJsAppResource) WithParentRelationship(parent Resource) NextJsAppResource {
+	if s.err != nil { return s }
+	if parent != nil { if err := parent.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["parent"] = serializeValue(parent)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withBuilderParentRelationship", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithPersistentLifetime configures a resource to use a persistent lifetime.
+func (s *nextJsAppResource) WithPersistentLifetime() NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withPersistentLifetime", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithPipelineConfiguration registers a callback to be executed during the pipeline configuration phase, allowing modification of step dependencies and relationships.
+func (s *nextJsAppResource) WithPipelineConfiguration(callback func(obj PipelineConfigurationContext)) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[PipelineConfigurationContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withPipelineConfiguration", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithPipelineStepFactory adds a pipeline step to the resource that will be executed during deployment.
+func (s *nextJsAppResource) WithPipelineStepFactory(stepName string, callback func(arg PipelineStepContext), options ...*WithPipelineStepFactoryOptions) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["stepName"] = serializeValue(stepName)
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[PipelineStepContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithPipelineStepFactoryOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withPipelineStepFactory", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithPnpm configures the Node.js resource to use pnpm as the package manager and optionally installs packages before the application starts.
+func (s *nextJsAppResource) WithPnpm(options ...*WithPnpmOptions) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithPnpmOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withPnpm", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithProcessCommand adds a command to the resource that starts a local process when invoked.
+func (s *nextJsAppResource) WithProcessCommand(commandName string, displayName string, options *ProcessCommandExportOptions) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["commandName"] = serializeValue(commandName)
+	reqArgs["displayName"] = serializeValue(displayName)
+	if options != nil { reqArgs["options"] = serializeValue(options) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withProcessCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithProcessCommandFactory adds a command to the resource that starts a local process created by a callback when invoked.
+func (s *nextJsAppResource) WithProcessCommandFactory(commandName string, displayName string, createProcessSpec func(arg ExecuteCommandContext) *ProcessCommandSpecExportData, options ...*ProcessCommandResultExportOptions) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["commandName"] = serializeValue(commandName)
+	reqArgs["displayName"] = serializeValue(displayName)
+	if createProcessSpec != nil {
+		cb := createProcessSpec
+		shim := func(args ...any) any {
+			return cb(callbackArg[ExecuteCommandContext](args, 0))
+		}
+		reqArgs["createProcessSpec"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &ProcessCommandResultExportOptions{}
+		applied := false
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt); applied = true }
+		}
+		if applied { reqArgs["options"] = serializeValue(merged) }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withProcessCommandFactory", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithReference adds a reference to another resource
+// Allowed types for parameter source: Resource, EndpointReference, string.
+func (s *nextJsAppResource) WithReference(source any, options ...*WithReferenceOptions) NextJsAppResource {
+	if s.err != nil { return s }
+	switch source.(type) {
+	case Resource, EndpointReference, string:
+	default:
+		err := fmt.Errorf("aspire: WithReference: parameter %q must be one of [Resource, EndpointReference, string], got %T", "source", source)
+		s.setErr(err); return s
+	}
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if !isNil(source) { reqArgs["source"] = serializeValue(source) }
+	if len(options) > 0 {
+		merged := &WithReferenceOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withReference", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithReferenceEnvironment configures how information is injected into environment variables when the resource references other resources.
+func (s *nextJsAppResource) WithReferenceEnvironment(options *ReferenceEnvironmentInjectionOptions) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if options != nil { reqArgs["options"] = serializeValue(options) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withReferenceEnvironment", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRelationship adds a relationship to another resource using its builder.
+func (s *nextJsAppResource) WithRelationship(resourceBuilder Resource, type_ string) NextJsAppResource {
+	if s.err != nil { return s }
+	if resourceBuilder != nil { if err := resourceBuilder.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["resourceBuilder"] = serializeValue(resourceBuilder)
+	reqArgs["type"] = serializeValue(type_)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withBuilderRelationship", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRemoteImageName sets the remote image name (without registry endpoint or tag) for container push operations.
+func (s *nextJsAppResource) WithRemoteImageName(remoteImageName string) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["remoteImageName"] = serializeValue(remoteImageName)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withRemoteImageName", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRemoteImageTag sets the remote image tag for container push operations.
+func (s *nextJsAppResource) WithRemoteImageTag(remoteImageTag string) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["remoteImageTag"] = serializeValue(remoteImageTag)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withRemoteImageTag", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRequiredCommand declares that a resource requires a specific command/executable to be available on the local machine PATH before it can start.
+func (s *nextJsAppResource) WithRequiredCommand(command string, options ...*WithRequiredCommandOptions) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["command"] = serializeValue(command)
+	if len(options) > 0 {
+		merged := &WithRequiredCommandOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withRequiredCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRequiredCommandValidation declares that a resource requires a specific command/executable to be available on the local machine PATH before it can start, with custom validation logic.
+func (s *nextJsAppResource) WithRequiredCommandValidation(command string, validationCallback func(arg RequiredCommandValidationContext) RequiredCommandValidationResult, options ...*WithRequiredCommandValidationOptions) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["command"] = serializeValue(command)
+	if validationCallback != nil {
+		cb := validationCallback
+		shim := func(args ...any) any {
+			return cb(callbackArg[RequiredCommandValidationContext](args, 0))
+		}
+		reqArgs["validationCallback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithRequiredCommandValidationOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withRequiredCommandValidation", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRunScript adds a run script annotation to the specified JavaScript application resource builder, specifying the script to execute and its arguments during run mode.
+func (s *nextJsAppResource) WithRunScript(scriptName string, options ...*WithRunScriptOptions) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	reqArgs["scriptName"] = serializeValue(scriptName)
+	if len(options) > 0 {
+		merged := &WithRunScriptOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withRunScript", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithSessionLifetime configures a resource to use a session lifetime.
+func (s *nextJsAppResource) WithSessionLifetime() NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withSessionLifetime", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithTerminal adds an interactive terminal session to a resource using the default terminal options.
+func (s *nextJsAppResource) WithTerminal() NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withTerminal", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithUrl adds or modifies displayed URLs
+// Allowed types for parameter url: string, *ReferenceExpression.
+func (s *nextJsAppResource) WithUrl(url any, options ...*WithUrlOptions) NextJsAppResource {
+	if s.err != nil { return s }
+	switch url.(type) {
+	case string, *ReferenceExpression:
+	default:
+		err := fmt.Errorf("aspire: WithUrl: parameter %q must be one of [string, *ReferenceExpression], got %T", "url", url)
+		s.setErr(err); return s
+	}
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if !isNil(url) { reqArgs["url"] = serializeValue(url) }
+	if len(options) > 0 {
+		merged := &WithUrlOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withUrl", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithUrlForEndpoint registers a callback to update the URL displayed for the endpoint with the specified name.
+func (s *nextJsAppResource) WithUrlForEndpoint(endpointName string, callback func(obj *ResourceUrlAnnotation)) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["endpointName"] = serializeValue(endpointName)
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			arg0 := callbackArg[*ResourceUrlAnnotation](args, 0)
+			cb(arg0)
+			return map[string]any{
+				"p0": serializeValue(arg0),
+			}
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withUrlForEndpoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithUrls registers a callback to customize the URLs displayed for the resource.
+func (s *nextJsAppResource) WithUrls(callback func(obj ResourceUrlsCallbackContext)) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ResourceUrlsCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withUrls", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithVolume adds a volume to an executable resource.
+func (s *nextJsAppResource) WithVolume(target string, name string, env string, options ...*ExecutableResourceWithVolumeOptions) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	reqArgs["target"] = serializeValue(target)
+	reqArgs["name"] = serializeValue(name)
+	reqArgs["env"] = serializeValue(env)
+	if len(options) > 0 {
+		merged := &ExecutableResourceWithVolumeOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withExecutableVolume", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithWorkingDirectory sets the working directory for the executable resource.
+func (s *nextJsAppResource) WithWorkingDirectory(workingDirectory string) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["workingDirectory"] = serializeValue(workingDirectory)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withWorkingDirectory", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithYarn configures the Node.js resource to use yarn as the package manager and optionally installs packages before the application starts.
+func (s *nextJsAppResource) WithYarn(options ...*WithYarnOptions) NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithYarnOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withYarn", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithoutHttpsCertificate disable HTTPS/TLS server certificate configuration for the resource. No HTTPS/TLS termination configuration will be applied.
+func (s *nextJsAppResource) WithoutHttpsCertificate() NextJsAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withoutHttpsCertificate", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WorkingDirectory gets the working directory for the executable resource.
+func (s *nextJsAppResource) WorkingDirectory() (string, error) {
+	if s.err != nil { var zero string; return zero, s.err }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"context": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/JavaScriptAppResource.workingDirectory", reqArgs)
+	if err != nil {
+		var zero string
+		return zero, err
+	}
+	return decodeAs[string](result)
+}
+
+// NodeAppResource is the public interface for handle type NodeAppResource.
+type NodeAppResource interface {
+	handleReference
+	AsHttp2Service() NodeAppResource
+	ClearContainerFilesSources() NodeAppResource
+	Command() (string, error)
+	CreateExecutionConfiguration() ExecutionConfigurationBuilder
+	ExcludeFromManifest() NodeAppResource
+	ExcludeFromMcp() NodeAppResource
+	GetEndpoint(name string) EndpointReference
+	GetResourceName() (string, error)
+	Name() (string, error)
+	OnBeforeResourceStarted(callback func(arg BeforeResourceStartedEvent)) NodeAppResource
+	OnInitializeResource(callback func(arg InitializeResourceEvent)) NodeAppResource
+	OnResourceEndpointsAllocated(callback func(arg ResourceEndpointsAllocatedEvent)) NodeAppResource
+	OnResourceReady(callback func(arg ResourceReadyEvent)) NodeAppResource
+	OnResourceStopped(callback func(arg ResourceStoppedEvent)) NodeAppResource
+	PublishAsDockerFile(configure func(obj ContainerResource)) NodeAppResource
+	PublishAsNodeServer(entryPoint string, options ...*PublishAsNodeServerOptions) NodeAppResource
+	PublishAsPackageScript(options ...*PublishAsPackageScriptOptions) NodeAppResource
+	PublishAsStaticWebsite(options ...*PublishAsStaticWebsiteOptions) NodeAppResource
+	PublishWithContainerFiles(source ResourceWithContainerFiles, destinationPath string) NodeAppResource
+	SubscribeHttpsEndpointsUpdate(callback func(obj HttpsEndpointUpdateCallbackContext)) NodeAppResource
+	WaitFor(dependency Resource, options ...*WaitForOptions) NodeAppResource
+	WaitForCompletion(dependency Resource, options ...*WaitForCompletionOptions) NodeAppResource
+	WaitForStart(dependency Resource, options ...*WaitForStartOptions) NodeAppResource
+	WithArgs(args []string) NodeAppResource
+	WithArgsCallback(callback func(obj CommandLineArgsCallbackContext)) NodeAppResource
+	WithBrowserDebugger(options ...*WithBrowserDebuggerOptions) NodeAppResource
+	WithBuildScript(scriptName string, options ...*WithBuildScriptOptions) NodeAppResource
+	WithBun(options ...*WithBunOptions) NodeAppResource
+	WithCertificateTrustScope(scope CertificateTrustScope) NodeAppResource
+	WithChildRelationship(child Resource) NodeAppResource
+	WithCommand(name string, displayName string, executeCommand func(arg ExecuteCommandContext) *ExecuteCommandResult, options ...*WithCommandOptions) NodeAppResource
+	WithComputeEnvironment(computeEnvironmentResource ComputeEnvironmentResource) NodeAppResource
+	WithContainerBuildOptions(callback func(arg ContainerBuildOptionsCallbackContext)) NodeAppResource
+	WithContainerFilesSource(sourcePath string) NodeAppResource
+	WithContainerRegistry(registry Resource) NodeAppResource
+	WithDeno(options ...*WithDenoOptions) NodeAppResource
+	WithDeveloperCertificateTrust(trust bool) NodeAppResource
+	WithDockerfileBaseImage(options ...*WithDockerfileBaseImageOptions) NodeAppResource
+	WithEndpoint(options ...*WithEndpointOptions) NodeAppResource
+	WithEndpointCallback(endpointName string, callback func(obj EndpointUpdateContext), options ...*WithEndpointCallbackOptions) NodeAppResource
+	WithEndpointProxySupport(proxyEnabled bool) NodeAppResource
+	WithEnvironment(name string, value any) NodeAppResource
+	WithEnvironmentCallback(callback func(arg EnvironmentCallbackContext)) NodeAppResource
+	WithExecutableCommand(command string) NodeAppResource
+	WithExplicitStart() NodeAppResource
+	WithExternalHttpEndpoints() NodeAppResource
+	WithHealthCheck(key string) NodeAppResource
+	WithHidden() NodeAppResource
+	WithHiddenOnCompletion(options ...*WithHiddenOnCompletionOptions) NodeAppResource
+	WithHttpCommand(path string, displayName string, options ...*HttpCommandExportOptions) NodeAppResource
+	WithHttpEndpoint(options ...*WithHttpEndpointOptions) NodeAppResource
+	WithHttpEndpointCallback(callback func(obj EndpointUpdateContext), options ...*WithHttpEndpointCallbackOptions) NodeAppResource
+	WithHttpHealthCheck(options ...*WithHttpHealthCheckOptions) NodeAppResource
+	WithHttpProbe(probeType ProbeType, options ...*WithHttpProbeOptions) NodeAppResource
+	WithHttpsCertificateConfiguration(callback func(arg HttpsCertificateConfigurationCallbackAnnotationContext)) NodeAppResource
+	WithHttpsDeveloperCertificate(options ...*WithHttpsDeveloperCertificateOptions) NodeAppResource
+	WithHttpsEndpoint(options ...*WithHttpsEndpointOptions) NodeAppResource
+	WithHttpsEndpointCallback(callback func(obj EndpointUpdateContext), options ...*WithHttpsEndpointCallbackOptions) NodeAppResource
+	WithIconName(iconName string, options ...*WithIconNameOptions) NodeAppResource
+	WithImagePushOptions(callback func(arg ContainerImagePushOptionsCallbackContext)) NodeAppResource
+	WithLifetimeOf(sourceBuilder Resource) NodeAppResource
+	WithMcpServer(options ...*WithMcpServerOptions) NodeAppResource
+	WithNpm(options ...*WithNpmOptions) NodeAppResource
+	WithOtlpExporter(options ...*WithOtlpExporterOptions) NodeAppResource
+	WithParentProcessLifetime(parentProcessId float64) NodeAppResource
+	WithParentRelationship(parent Resource) NodeAppResource
+	WithPersistentLifetime() NodeAppResource
+	WithPipelineConfiguration(callback func(obj PipelineConfigurationContext)) NodeAppResource
+	WithPipelineStepFactory(stepName string, callback func(arg PipelineStepContext), options ...*WithPipelineStepFactoryOptions) NodeAppResource
+	WithPnpm(options ...*WithPnpmOptions) NodeAppResource
+	WithProcessCommand(commandName string, displayName string, options *ProcessCommandExportOptions) NodeAppResource
+	WithProcessCommandFactory(commandName string, displayName string, createProcessSpec func(arg ExecuteCommandContext) *ProcessCommandSpecExportData, options ...*ProcessCommandResultExportOptions) NodeAppResource
+	WithReference(source any, options ...*WithReferenceOptions) NodeAppResource
+	WithReferenceEnvironment(options *ReferenceEnvironmentInjectionOptions) NodeAppResource
+	WithRelationship(resourceBuilder Resource, type_ string) NodeAppResource
+	WithRemoteImageName(remoteImageName string) NodeAppResource
+	WithRemoteImageTag(remoteImageTag string) NodeAppResource
+	WithRequiredCommand(command string, options ...*WithRequiredCommandOptions) NodeAppResource
+	WithRequiredCommandValidation(command string, validationCallback func(arg RequiredCommandValidationContext) RequiredCommandValidationResult, options ...*WithRequiredCommandValidationOptions) NodeAppResource
+	WithRunScript(scriptName string, options ...*WithRunScriptOptions) NodeAppResource
+	WithSessionLifetime() NodeAppResource
+	WithTerminal() NodeAppResource
+	WithUrl(url any, options ...*WithUrlOptions) NodeAppResource
+	WithUrlForEndpoint(endpointName string, callback func(obj *ResourceUrlAnnotation)) NodeAppResource
+	WithUrls(callback func(obj ResourceUrlsCallbackContext)) NodeAppResource
+	WithVolume(target string, name string, env string, options ...*ExecutableResourceWithVolumeOptions) NodeAppResource
+	WithWorkingDirectory(workingDirectory string) NodeAppResource
+	WithYarn(options ...*WithYarnOptions) NodeAppResource
+	WithoutHttpsCertificate() NodeAppResource
+	WorkingDirectory() (string, error)
+	Err() error
+}
+
+// nodeAppResource is the unexported impl of NodeAppResource.
+type nodeAppResource struct {
+	*resourceBuilderBase
+}
+
+// newNodeAppResourceFromHandle wraps an existing handle as NodeAppResource.
+func newNodeAppResourceFromHandle(h *handle, c *client) NodeAppResource {
+	return &nodeAppResource{resourceBuilderBase: newResourceBuilderBase(h, c)}
+}
+
+// AsHttp2Service configures a resource to mark all endpoints' transport as HTTP/2. This is useful for HTTP/2 services that need prior knowledge.
+func (s *nodeAppResource) AsHttp2Service() NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/asHttp2Service", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// ClearContainerFilesSources removes any container files source annotation from the resource being built.
+func (s *nodeAppResource) ClearContainerFilesSources() NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/clearContainerFilesSources", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// Command gets the command associated with this executable resource.
+func (s *nodeAppResource) Command() (string, error) {
+	if s.err != nil { var zero string; return zero, s.err }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"context": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/JavaScriptAppResource.command", reqArgs)
+	if err != nil {
+		var zero string
+		return zero, err
+	}
+	return decodeAs[string](result)
+}
+
+// CreateExecutionConfiguration creates an execution configuration builder for the specified resource.
+func (s *nodeAppResource) CreateExecutionConfiguration() ExecutionConfigurationBuilder {
+	if s.err != nil { return &executionConfigurationBuilder{resourceBuilderBase: newErroredResourceBuilder(s.err, s.client)} }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting/createExecutionConfiguration", reqArgs)
+	if err != nil {
+		return &executionConfigurationBuilder{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	href, ok := result.(handleReference)
+	if !ok {
+		err := fmt.Errorf("aspire: Aspire.Hosting/createExecutionConfiguration returned unexpected type %T", result)
+		return &executionConfigurationBuilder{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	return &executionConfigurationBuilder{resourceBuilderBase: newResourceBuilderBase(href.getHandle(), s.client)}
+}
+
+// ExcludeFromManifest excludes a resource from being published to the manifest.
+func (s *nodeAppResource) ExcludeFromManifest() NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/excludeFromManifest", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// ExcludeFromMcp exclude the resource from MCP operations using the Aspire MCP server. The resource is excluded from results that return resources, console logs and telemetry.
+func (s *nodeAppResource) ExcludeFromMcp() NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/excludeFromMcp", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// GetEndpoint gets an endpoint reference
+func (s *nodeAppResource) GetEndpoint(name string) EndpointReference {
+	if s.err != nil { return &endpointReference{resourceBuilderBase: newErroredResourceBuilder(s.err, s.client)} }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting/getEndpoint", reqArgs)
+	if err != nil {
+		return &endpointReference{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	href, ok := result.(handleReference)
+	if !ok {
+		err := fmt.Errorf("aspire: Aspire.Hosting/getEndpoint returned unexpected type %T", result)
+		return &endpointReference{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	return &endpointReference{resourceBuilderBase: newResourceBuilderBase(href.getHandle(), s.client)}
+}
+
+// GetResourceName gets the name of the resource from a builder.
+func (s *nodeAppResource) GetResourceName() (string, error) {
+	if s.err != nil { var zero string; return zero, s.err }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting/getResourceName", reqArgs)
+	if err != nil {
+		var zero string
+		return zero, err
+	}
+	return decodeAs[string](result)
+}
+
+// Name gets the name of the resource.
+func (s *nodeAppResource) Name() (string, error) {
+	if s.err != nil { var zero string; return zero, s.err }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"context": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/JavaScriptAppResource.name", reqArgs)
+	if err != nil {
+		var zero string
+		return zero, err
+	}
+	return decodeAs[string](result)
+}
+
+// OnBeforeResourceStarted subscribes to the BeforeResourceStarted event.
+func (s *nodeAppResource) OnBeforeResourceStarted(callback func(arg BeforeResourceStartedEvent)) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[BeforeResourceStartedEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onBeforeResourceStarted", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// OnInitializeResource subscribes to the InitializeResource event.
+func (s *nodeAppResource) OnInitializeResource(callback func(arg InitializeResourceEvent)) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[InitializeResourceEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onInitializeResource", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// OnResourceEndpointsAllocated subscribes to the ResourceEndpointsAllocated event.
+func (s *nodeAppResource) OnResourceEndpointsAllocated(callback func(arg ResourceEndpointsAllocatedEvent)) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ResourceEndpointsAllocatedEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onResourceEndpointsAllocated", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// OnResourceReady subscribes to the ResourceReady event.
+func (s *nodeAppResource) OnResourceReady(callback func(arg ResourceReadyEvent)) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ResourceReadyEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onResourceReady", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// OnResourceStopped subscribes to the ResourceStopped event.
+func (s *nodeAppResource) OnResourceStopped(callback func(arg ResourceStoppedEvent)) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ResourceStoppedEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onResourceStopped", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// PublishAsDockerFile publishes an executable as a Docker file
+func (s *nodeAppResource) PublishAsDockerFile(configure func(obj ContainerResource)) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if configure != nil {
+		cb := configure
+		shim := func(args ...any) any {
+			cb(callbackArg[ContainerResource](args, 0))
+			return nil
+		}
+		reqArgs["configure"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/publishAsDockerFile", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// PublishAsNodeServer configures the JavaScript application to publish as a standalone Node.js server that runs a built artifact directly.
+func (s *nodeAppResource) PublishAsNodeServer(entryPoint string, options ...*PublishAsNodeServerOptions) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["entryPoint"] = serializeValue(entryPoint)
+	if len(options) > 0 {
+		merged := &PublishAsNodeServerOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/publishAsNodeServer", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// PublishAsPackageScript configures the JavaScript application to publish as a server that runs a package manager script at runtime.
+func (s *nodeAppResource) PublishAsPackageScript(options ...*PublishAsPackageScriptOptions) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &PublishAsPackageScriptOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/publishAsPackageScript", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// PublishAsStaticWebsite publishes the JavaScript application as a standalone static website using YARP.
+func (s *nodeAppResource) PublishAsStaticWebsite(options ...*PublishAsStaticWebsiteOptions) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &PublishAsStaticWebsiteOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/publishAsStaticWebsite", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// PublishWithContainerFiles configures the resource to copy container files from the specified source resource during publishing.
+func (s *nodeAppResource) PublishWithContainerFiles(source ResourceWithContainerFiles, destinationPath string) NodeAppResource {
+	if s.err != nil { return s }
+	if source != nil { if err := source.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["source"] = serializeValue(source)
+	reqArgs["destinationPath"] = serializeValue(destinationPath)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/publishWithContainerFilesFromResource", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// SubscribeHttpsEndpointsUpdate subscribes to the `BeforeStartEvent` and invokes the specified callback when an HTTPS certificate is determined to be available for the resource. This is used to conditionally update endpoint URI schemes or perform other HTTPS-related configuration at startup.
+func (s *nodeAppResource) SubscribeHttpsEndpointsUpdate(callback func(obj HttpsEndpointUpdateCallbackContext)) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[HttpsEndpointUpdateCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/subscribeHttpsEndpointsUpdate", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WaitFor waits for another resource to be ready
+func (s *nodeAppResource) WaitFor(dependency Resource, options ...*WaitForOptions) NodeAppResource {
+	if s.err != nil { return s }
+	if dependency != nil { if err := dependency.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["dependency"] = serializeValue(dependency)
+	if len(options) > 0 {
+		merged := &WaitForOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/waitFor", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WaitForCompletion waits for the dependency resource to enter the Exited or Finished state before starting the resource.
+func (s *nodeAppResource) WaitForCompletion(dependency Resource, options ...*WaitForCompletionOptions) NodeAppResource {
+	if s.err != nil { return s }
+	if dependency != nil { if err := dependency.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["dependency"] = serializeValue(dependency)
+	if len(options) > 0 {
+		merged := &WaitForCompletionOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/waitForResourceCompletion", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WaitForStart waits for another resource to start
+func (s *nodeAppResource) WaitForStart(dependency Resource, options ...*WaitForStartOptions) NodeAppResource {
+	if s.err != nil { return s }
+	if dependency != nil { if err := dependency.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["dependency"] = serializeValue(dependency)
+	if len(options) > 0 {
+		merged := &WaitForStartOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/waitForStart", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithArgs adds arguments to be passed to a resource that supports arguments when it is launched.
+func (s *nodeAppResource) WithArgs(args []string) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if args != nil { reqArgs["args"] = serializeValue(args) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withArgs", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithArgsCallback adds a callback to be executed with a list of command-line arguments when a resource is started.
+func (s *nodeAppResource) WithArgsCallback(callback func(obj CommandLineArgsCallbackContext)) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[CommandLineArgsCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withArgsCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithBrowserDebugger configures a browser debugger for the JavaScript application resource, enabling browser-based debugging through a child resource that launches when the parent application is ready.
+func (s *nodeAppResource) WithBrowserDebugger(options ...*WithBrowserDebuggerOptions) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithBrowserDebuggerOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withBrowserDebugger", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithBuildScript adds a build script annotation to the resource builder using the specified command-line arguments.
+func (s *nodeAppResource) WithBuildScript(scriptName string, options ...*WithBuildScriptOptions) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	reqArgs["scriptName"] = serializeValue(scriptName)
+	if len(options) > 0 {
+		merged := &WithBuildScriptOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withBuildScript", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithBun configures the JavaScript resource to use Bun as the package manager and optionally installs packages before the application starts.
+func (s *nodeAppResource) WithBun(options ...*WithBunOptions) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithBunOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withBun", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithCertificateTrustScope sets the certificate trust scope
+func (s *nodeAppResource) WithCertificateTrustScope(scope CertificateTrustScope) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["scope"] = serializeValue(scope)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withCertificateTrustScope", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithChildRelationship sets a child relationship
+func (s *nodeAppResource) WithChildRelationship(child Resource) NodeAppResource {
+	if s.err != nil { return s }
+	if child != nil { if err := child.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["child"] = serializeValue(child)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withBuilderChildRelationship", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithCommand adds a resource command
+func (s *nodeAppResource) WithCommand(name string, displayName string, executeCommand func(arg ExecuteCommandContext) *ExecuteCommandResult, options ...*WithCommandOptions) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	reqArgs["displayName"] = serializeValue(displayName)
+	if executeCommand != nil {
+		cb := executeCommand
+		shim := func(args ...any) any {
+			return cb(callbackArg[ExecuteCommandContext](args, 0))
+		}
+		reqArgs["executeCommand"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithCommandOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithComputeEnvironment configures the compute environment for the compute resource.
+func (s *nodeAppResource) WithComputeEnvironment(computeEnvironmentResource ComputeEnvironmentResource) NodeAppResource {
+	if s.err != nil { return s }
+	if computeEnvironmentResource != nil { if err := computeEnvironmentResource.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["computeEnvironmentResource"] = serializeValue(computeEnvironmentResource)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withComputeEnvironment", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerBuildOptions configures container build options for a compute resource using an async callback.
+func (s *nodeAppResource) WithContainerBuildOptions(callback func(arg ContainerBuildOptionsCallbackContext)) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ContainerBuildOptionsCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerBuildOptions", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerFilesSource adds a container files source annotation to the resource being built, specifying the path to the container files source.
+func (s *nodeAppResource) WithContainerFilesSource(sourcePath string) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["sourcePath"] = serializeValue(sourcePath)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerFilesSource", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerRegistry configures the resource to use the specified container registry for container image operations.
+func (s *nodeAppResource) WithContainerRegistry(registry Resource) NodeAppResource {
+	if s.err != nil { return s }
+	if registry != nil { if err := registry.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["registry"] = serializeValue(registry)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerRegistry", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDeno configures the JavaScript resource to use Deno as the package manager.
+func (s *nodeAppResource) WithDeno(options ...*WithDenoOptions) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithDenoOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withDeno", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDeveloperCertificateTrust indicates whether developer certificates should be treated as trusted certificate authorities for the resource at run time. Currently this indicates trust for the ASP.NET Core developer certificate. The developer certificate will only be trusted when running in local development scenarios; in publish mode resources will use their default certificate trust.
+func (s *nodeAppResource) WithDeveloperCertificateTrust(trust bool) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["trust"] = serializeValue(trust)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withDeveloperCertificateTrust", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDockerfileBaseImage configures custom base images for generated Dockerfiles.
+func (s *nodeAppResource) WithDockerfileBaseImage(options ...*WithDockerfileBaseImageOptions) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithDockerfileBaseImageOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withDockerfileBaseImage", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEndpoint adds a network endpoint
+func (s *nodeAppResource) WithEndpoint(options ...*WithEndpointOptions) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithEndpointOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEndpoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEndpointCallback updates a named endpoint via callback
+func (s *nodeAppResource) WithEndpointCallback(endpointName string, callback func(obj EndpointUpdateContext), options ...*WithEndpointCallbackOptions) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["endpointName"] = serializeValue(endpointName)
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[EndpointUpdateContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithEndpointCallbackOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEndpointCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEndpointProxySupport set whether a resource can use proxied endpoints or whether they should be disabled for all endpoints belonging to the resource. If set to `false`, endpoints belonging to the resource will ignore the configured proxy settings and run proxy-less.
+func (s *nodeAppResource) WithEndpointProxySupport(proxyEnabled bool) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["proxyEnabled"] = serializeValue(proxyEnabled)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEndpointProxySupport", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEnvironment sets an environment variable
+// Allowed types for parameter value: string, *ReferenceExpression, EndpointReference, ParameterResource, ExternalServiceResource, ResourceWithConnectionString, ExpressionValue.
+func (s *nodeAppResource) WithEnvironment(name string, value any) NodeAppResource {
+	if s.err != nil { return s }
+	switch value.(type) {
+	case string, *ReferenceExpression, EndpointReference, ParameterResource, ExternalServiceResource, ResourceWithConnectionString, ExpressionValue:
+	default:
+		err := fmt.Errorf("aspire: WithEnvironment: parameter %q must be one of [string, *ReferenceExpression, EndpointReference, ParameterResource, ExternalServiceResource, ResourceWithConnectionString, ExpressionValue], got %T", "value", value)
+		s.setErr(err); return s
+	}
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	if !isNil(value) { reqArgs["value"] = serializeValue(value) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEnvironment", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEnvironmentCallback allows for the population of environment variables on a resource.
+func (s *nodeAppResource) WithEnvironmentCallback(callback func(arg EnvironmentCallbackContext)) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[EnvironmentCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEnvironmentCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithExecutableCommand sets the command for the executable resource.
+func (s *nodeAppResource) WithExecutableCommand(command string) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["command"] = serializeValue(command)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withExecutableCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithExplicitStart prevents resource from starting automatically
+func (s *nodeAppResource) WithExplicitStart() NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withExplicitStart", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithExternalHttpEndpoints marks existing http or https endpoints on a resource as external.
+func (s *nodeAppResource) WithExternalHttpEndpoints() NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withExternalHttpEndpoints", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHealthCheck adds a health check by key
+func (s *nodeAppResource) WithHealthCheck(key string) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["key"] = serializeValue(key)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHealthCheck", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHidden hides the resource from default resource lists
+func (s *nodeAppResource) WithHidden() NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHidden", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHiddenOnCompletion hides the resource from default resource lists after successful completion
+func (s *nodeAppResource) WithHiddenOnCompletion(options ...*WithHiddenOnCompletionOptions) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHiddenOnCompletionOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHiddenOnCompletion", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpCommand adds an HTTP resource command
+func (s *nodeAppResource) WithHttpCommand(path string, displayName string, options ...*HttpCommandExportOptions) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["path"] = serializeValue(path)
+	reqArgs["displayName"] = serializeValue(displayName)
+	if len(options) > 0 {
+		merged := &HttpCommandExportOptions{}
+		applied := false
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt); applied = true }
+		}
+		if applied { reqArgs["options"] = serializeValue(merged) }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpEndpoint adds an HTTP endpoint
+func (s *nodeAppResource) WithHttpEndpoint(options ...*WithHttpEndpointOptions) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHttpEndpointOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpEndpoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpEndpointCallback updates an HTTP endpoint via callback
+func (s *nodeAppResource) WithHttpEndpointCallback(callback func(obj EndpointUpdateContext), options ...*WithHttpEndpointCallbackOptions) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[EndpointUpdateContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithHttpEndpointCallbackOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpEndpointCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpHealthCheck adds a health check to the resource which is mapped to a specific endpoint.
+func (s *nodeAppResource) WithHttpHealthCheck(options ...*WithHttpHealthCheckOptions) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHttpHealthCheckOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpHealthCheck", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpProbe adds an HTTP health probe to the resource
+func (s *nodeAppResource) WithHttpProbe(probeType ProbeType, options ...*WithHttpProbeOptions) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["probeType"] = serializeValue(probeType)
+	if len(options) > 0 {
+		merged := &WithHttpProbeOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpProbe", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpsCertificateConfiguration adds a callback that allows configuring the resource to use a specific HTTPS/TLS certificate key pair for server authentication.
+func (s *nodeAppResource) WithHttpsCertificateConfiguration(callback func(arg HttpsCertificateConfigurationCallbackAnnotationContext)) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[HttpsCertificateConfigurationCallbackAnnotationContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpsCertificateConfiguration", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpsDeveloperCertificate indicates that a resource should use the developer certificate key pair for HTTPS endpoints at run time. Currently this indicates use of the ASP.NET Core developer certificate. The developer certificate will only be used when running in local development scenarios; in publish mode resources will use their default certificate configuration.
+func (s *nodeAppResource) WithHttpsDeveloperCertificate(options ...*WithHttpsDeveloperCertificateOptions) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHttpsDeveloperCertificateOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withParameterHttpsDeveloperCertificate", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpsEndpoint adds an HTTPS endpoint
+func (s *nodeAppResource) WithHttpsEndpoint(options ...*WithHttpsEndpointOptions) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHttpsEndpointOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpsEndpoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpsEndpointCallback updates an HTTPS endpoint via callback
+func (s *nodeAppResource) WithHttpsEndpointCallback(callback func(obj EndpointUpdateContext), options ...*WithHttpsEndpointCallbackOptions) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[EndpointUpdateContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithHttpsEndpointCallbackOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpsEndpointCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithIconName specifies the icon to use when displaying the resource in the dashboard.
+func (s *nodeAppResource) WithIconName(iconName string, options ...*WithIconNameOptions) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["iconName"] = serializeValue(iconName)
+	if len(options) > 0 {
+		merged := &WithIconNameOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withIconName", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithImagePushOptions adds an asynchronous callback to configure container image push options for the resource.
+func (s *nodeAppResource) WithImagePushOptions(callback func(arg ContainerImagePushOptionsCallbackContext)) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ContainerImagePushOptionsCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withImagePushOptions", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithLifetimeOf configures a resource to match the lifetime of another resource.
+func (s *nodeAppResource) WithLifetimeOf(sourceBuilder Resource) NodeAppResource {
+	if s.err != nil { return s }
+	if sourceBuilder != nil { if err := sourceBuilder.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["sourceBuilder"] = serializeValue(sourceBuilder)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withLifetimeOf", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithMcpServer marks the resource as hosting a Model Context Protocol (MCP) server on the specified endpoint.
+func (s *nodeAppResource) WithMcpServer(options ...*WithMcpServerOptions) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithMcpServerOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withMcpServer", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithNpm configures the Node.js resource to use npm as the package manager and optionally installs packages before the application starts.
+func (s *nodeAppResource) WithNpm(options ...*WithNpmOptions) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithNpmOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withNpm", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithOtlpExporter configures OTLP telemetry export
+func (s *nodeAppResource) WithOtlpExporter(options ...*WithOtlpExporterOptions) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithOtlpExporterOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withOtlpExporter", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithParentProcessLifetime configures a resource to use a persistent lifetime that ends when a parent process exits.
+func (s *nodeAppResource) WithParentProcessLifetime(parentProcessId float64) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["parentProcessId"] = serializeValue(parentProcessId)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withParentProcessLifetime", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithParentRelationship sets the parent relationship
+func (s *nodeAppResource) WithParentRelationship(parent Resource) NodeAppResource {
+	if s.err != nil { return s }
+	if parent != nil { if err := parent.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["parent"] = serializeValue(parent)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withBuilderParentRelationship", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithPersistentLifetime configures a resource to use a persistent lifetime.
+func (s *nodeAppResource) WithPersistentLifetime() NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withPersistentLifetime", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithPipelineConfiguration registers a callback to be executed during the pipeline configuration phase, allowing modification of step dependencies and relationships.
+func (s *nodeAppResource) WithPipelineConfiguration(callback func(obj PipelineConfigurationContext)) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[PipelineConfigurationContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withPipelineConfiguration", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithPipelineStepFactory adds a pipeline step to the resource that will be executed during deployment.
+func (s *nodeAppResource) WithPipelineStepFactory(stepName string, callback func(arg PipelineStepContext), options ...*WithPipelineStepFactoryOptions) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["stepName"] = serializeValue(stepName)
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[PipelineStepContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithPipelineStepFactoryOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withPipelineStepFactory", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithPnpm configures the Node.js resource to use pnpm as the package manager and optionally installs packages before the application starts.
+func (s *nodeAppResource) WithPnpm(options ...*WithPnpmOptions) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithPnpmOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withPnpm", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithProcessCommand adds a command to the resource that starts a local process when invoked.
+func (s *nodeAppResource) WithProcessCommand(commandName string, displayName string, options *ProcessCommandExportOptions) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["commandName"] = serializeValue(commandName)
+	reqArgs["displayName"] = serializeValue(displayName)
+	if options != nil { reqArgs["options"] = serializeValue(options) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withProcessCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithProcessCommandFactory adds a command to the resource that starts a local process created by a callback when invoked.
+func (s *nodeAppResource) WithProcessCommandFactory(commandName string, displayName string, createProcessSpec func(arg ExecuteCommandContext) *ProcessCommandSpecExportData, options ...*ProcessCommandResultExportOptions) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["commandName"] = serializeValue(commandName)
+	reqArgs["displayName"] = serializeValue(displayName)
+	if createProcessSpec != nil {
+		cb := createProcessSpec
+		shim := func(args ...any) any {
+			return cb(callbackArg[ExecuteCommandContext](args, 0))
+		}
+		reqArgs["createProcessSpec"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &ProcessCommandResultExportOptions{}
+		applied := false
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt); applied = true }
+		}
+		if applied { reqArgs["options"] = serializeValue(merged) }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withProcessCommandFactory", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithReference adds a reference to another resource
+// Allowed types for parameter source: Resource, EndpointReference, string.
+func (s *nodeAppResource) WithReference(source any, options ...*WithReferenceOptions) NodeAppResource {
+	if s.err != nil { return s }
+	switch source.(type) {
+	case Resource, EndpointReference, string:
+	default:
+		err := fmt.Errorf("aspire: WithReference: parameter %q must be one of [Resource, EndpointReference, string], got %T", "source", source)
+		s.setErr(err); return s
+	}
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if !isNil(source) { reqArgs["source"] = serializeValue(source) }
+	if len(options) > 0 {
+		merged := &WithReferenceOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withReference", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithReferenceEnvironment configures how information is injected into environment variables when the resource references other resources.
+func (s *nodeAppResource) WithReferenceEnvironment(options *ReferenceEnvironmentInjectionOptions) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if options != nil { reqArgs["options"] = serializeValue(options) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withReferenceEnvironment", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRelationship adds a relationship to another resource using its builder.
+func (s *nodeAppResource) WithRelationship(resourceBuilder Resource, type_ string) NodeAppResource {
+	if s.err != nil { return s }
+	if resourceBuilder != nil { if err := resourceBuilder.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["resourceBuilder"] = serializeValue(resourceBuilder)
+	reqArgs["type"] = serializeValue(type_)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withBuilderRelationship", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRemoteImageName sets the remote image name (without registry endpoint or tag) for container push operations.
+func (s *nodeAppResource) WithRemoteImageName(remoteImageName string) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["remoteImageName"] = serializeValue(remoteImageName)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withRemoteImageName", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRemoteImageTag sets the remote image tag for container push operations.
+func (s *nodeAppResource) WithRemoteImageTag(remoteImageTag string) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["remoteImageTag"] = serializeValue(remoteImageTag)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withRemoteImageTag", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRequiredCommand declares that a resource requires a specific command/executable to be available on the local machine PATH before it can start.
+func (s *nodeAppResource) WithRequiredCommand(command string, options ...*WithRequiredCommandOptions) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["command"] = serializeValue(command)
+	if len(options) > 0 {
+		merged := &WithRequiredCommandOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withRequiredCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRequiredCommandValidation declares that a resource requires a specific command/executable to be available on the local machine PATH before it can start, with custom validation logic.
+func (s *nodeAppResource) WithRequiredCommandValidation(command string, validationCallback func(arg RequiredCommandValidationContext) RequiredCommandValidationResult, options ...*WithRequiredCommandValidationOptions) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["command"] = serializeValue(command)
+	if validationCallback != nil {
+		cb := validationCallback
+		shim := func(args ...any) any {
+			return cb(callbackArg[RequiredCommandValidationContext](args, 0))
+		}
+		reqArgs["validationCallback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithRequiredCommandValidationOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withRequiredCommandValidation", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRunScript adds a run script annotation to the specified JavaScript application resource builder, specifying the script to execute and its arguments during run mode.
+func (s *nodeAppResource) WithRunScript(scriptName string, options ...*WithRunScriptOptions) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	reqArgs["scriptName"] = serializeValue(scriptName)
+	if len(options) > 0 {
+		merged := &WithRunScriptOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withRunScript", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithSessionLifetime configures a resource to use a session lifetime.
+func (s *nodeAppResource) WithSessionLifetime() NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withSessionLifetime", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithTerminal adds an interactive terminal session to a resource using the default terminal options.
+func (s *nodeAppResource) WithTerminal() NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withTerminal", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithUrl adds or modifies displayed URLs
+// Allowed types for parameter url: string, *ReferenceExpression.
+func (s *nodeAppResource) WithUrl(url any, options ...*WithUrlOptions) NodeAppResource {
+	if s.err != nil { return s }
+	switch url.(type) {
+	case string, *ReferenceExpression:
+	default:
+		err := fmt.Errorf("aspire: WithUrl: parameter %q must be one of [string, *ReferenceExpression], got %T", "url", url)
+		s.setErr(err); return s
+	}
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if !isNil(url) { reqArgs["url"] = serializeValue(url) }
+	if len(options) > 0 {
+		merged := &WithUrlOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withUrl", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithUrlForEndpoint registers a callback to update the URL displayed for the endpoint with the specified name.
+func (s *nodeAppResource) WithUrlForEndpoint(endpointName string, callback func(obj *ResourceUrlAnnotation)) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["endpointName"] = serializeValue(endpointName)
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			arg0 := callbackArg[*ResourceUrlAnnotation](args, 0)
+			cb(arg0)
+			return map[string]any{
+				"p0": serializeValue(arg0),
+			}
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withUrlForEndpoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithUrls registers a callback to customize the URLs displayed for the resource.
+func (s *nodeAppResource) WithUrls(callback func(obj ResourceUrlsCallbackContext)) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ResourceUrlsCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withUrls", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithVolume adds a volume to an executable resource.
+func (s *nodeAppResource) WithVolume(target string, name string, env string, options ...*ExecutableResourceWithVolumeOptions) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	reqArgs["target"] = serializeValue(target)
+	reqArgs["name"] = serializeValue(name)
+	reqArgs["env"] = serializeValue(env)
+	if len(options) > 0 {
+		merged := &ExecutableResourceWithVolumeOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withExecutableVolume", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithWorkingDirectory sets the working directory for the executable resource.
+func (s *nodeAppResource) WithWorkingDirectory(workingDirectory string) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["workingDirectory"] = serializeValue(workingDirectory)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withWorkingDirectory", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithYarn configures the Node.js resource to use yarn as the package manager and optionally installs packages before the application starts.
+func (s *nodeAppResource) WithYarn(options ...*WithYarnOptions) NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithYarnOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withYarn", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithoutHttpsCertificate disable HTTPS/TLS server certificate configuration for the resource. No HTTPS/TLS termination configuration will be applied.
+func (s *nodeAppResource) WithoutHttpsCertificate() NodeAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withoutHttpsCertificate", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WorkingDirectory gets the working directory for the executable resource.
+func (s *nodeAppResource) WorkingDirectory() (string, error) {
+	if s.err != nil { var zero string; return zero, s.err }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"context": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/JavaScriptAppResource.workingDirectory", reqArgs)
+	if err != nil {
+		var zero string
+		return zero, err
+	}
+	return decodeAs[string](result)
 }
 
 // ParameterResource is the public interface for handle type ParameterResource.
@@ -14946,6 +25189,3354 @@ func (s *parameterResource) WithUrls(callback func(obj ResourceUrlsCallbackConte
 	return s
 }
 
+// PgAdminContainerResource is the public interface for handle type PgAdminContainerResource.
+type PgAdminContainerResource interface {
+	handleReference
+	AsHttp2Service() PgAdminContainerResource
+	CreateExecutionConfiguration() ExecutionConfigurationBuilder
+	ExcludeFromManifest() PgAdminContainerResource
+	ExcludeFromMcp() PgAdminContainerResource
+	GetEndpoint(name string) EndpointReference
+	GetResourceName() (string, error)
+	OnBeforeResourceStarted(callback func(arg BeforeResourceStartedEvent)) PgAdminContainerResource
+	OnInitializeResource(callback func(arg InitializeResourceEvent)) PgAdminContainerResource
+	OnResourceEndpointsAllocated(callback func(arg ResourceEndpointsAllocatedEvent)) PgAdminContainerResource
+	OnResourceReady(callback func(arg ResourceReadyEvent)) PgAdminContainerResource
+	OnResourceStopped(callback func(arg ResourceStoppedEvent)) PgAdminContainerResource
+	PublishAsConnectionString() PgAdminContainerResource
+	PublishAsContainer() PgAdminContainerResource
+	SubscribeHttpsEndpointsUpdate(callback func(obj HttpsEndpointUpdateCallbackContext)) PgAdminContainerResource
+	WaitFor(dependency Resource, options ...*WaitForOptions) PgAdminContainerResource
+	WaitForCompletion(dependency Resource, options ...*WaitForCompletionOptions) PgAdminContainerResource
+	WaitForStart(dependency Resource, options ...*WaitForStartOptions) PgAdminContainerResource
+	WithArgs(args []string) PgAdminContainerResource
+	WithArgsCallback(callback func(obj CommandLineArgsCallbackContext)) PgAdminContainerResource
+	WithBindMount(source string, target string, options ...*WithBindMountOptions) PgAdminContainerResource
+	WithBuildArg(name string, value any) PgAdminContainerResource
+	WithBuildSecret(name string, value ParameterResource) PgAdminContainerResource
+	WithCertificateTrustScope(scope CertificateTrustScope) PgAdminContainerResource
+	WithChildRelationship(child Resource) PgAdminContainerResource
+	WithCommand(name string, displayName string, executeCommand func(arg ExecuteCommandContext) *ExecuteCommandResult, options ...*WithCommandOptions) PgAdminContainerResource
+	WithComputeEnvironment(computeEnvironmentResource ComputeEnvironmentResource) PgAdminContainerResource
+	WithContainerBuildOptions(callback func(arg ContainerBuildOptionsCallbackContext)) PgAdminContainerResource
+	WithContainerCertificatePaths(options ...*WithContainerCertificatePathsOptions) PgAdminContainerResource
+	WithContainerFiles(destinationPath string, sourcePath string, options ...*ContainerFilesOptions) PgAdminContainerResource
+	WithContainerFilesCallback(destinationPath string, callback func(arg1 ContainerFileSystemCallbackContext, arg2 *CancellationToken) []ContainerFileSystemItem, options ...*ContainerFilesOptions) PgAdminContainerResource
+	WithContainerName(name string) PgAdminContainerResource
+	WithContainerNetworkAlias(alias string) PgAdminContainerResource
+	WithContainerRegistry(registry Resource) PgAdminContainerResource
+	WithContainerRuntimeArgs(args []string) PgAdminContainerResource
+	WithDeveloperCertificateTrust(trust bool) PgAdminContainerResource
+	WithDockerfile(contextPath string, options ...*WithDockerfileOptions) PgAdminContainerResource
+	WithDockerfileBaseImage(options ...*WithDockerfileBaseImageOptions) PgAdminContainerResource
+	WithDockerfileBuilder(contextPath string, callback func(arg DockerfileBuilderCallbackContext), options ...*WithDockerfileBuilderOptions) PgAdminContainerResource
+	WithDockerfileFactory(contextPath string, dockerfileFactory func(arg DockerfileFactoryContext) string, options ...*WithDockerfileFactoryOptions) PgAdminContainerResource
+	WithEndpoint(options ...*WithEndpointOptions) PgAdminContainerResource
+	WithEndpointCallback(endpointName string, callback func(obj EndpointUpdateContext), options ...*WithEndpointCallbackOptions) PgAdminContainerResource
+	WithEndpointProxySupport(proxyEnabled bool) PgAdminContainerResource
+	WithEntrypoint(entrypoint string) PgAdminContainerResource
+	WithEnvironment(name string, value any) PgAdminContainerResource
+	WithEnvironmentCallback(callback func(arg EnvironmentCallbackContext)) PgAdminContainerResource
+	WithExplicitStart() PgAdminContainerResource
+	WithExternalHttpEndpoints() PgAdminContainerResource
+	WithHealthCheck(key string) PgAdminContainerResource
+	WithHidden() PgAdminContainerResource
+	WithHiddenOnCompletion(options ...*WithHiddenOnCompletionOptions) PgAdminContainerResource
+	WithHostPort(port *float64) PgAdminContainerResource
+	WithHttpCommand(path string, displayName string, options ...*HttpCommandExportOptions) PgAdminContainerResource
+	WithHttpEndpoint(options ...*WithHttpEndpointOptions) PgAdminContainerResource
+	WithHttpEndpointCallback(callback func(obj EndpointUpdateContext), options ...*WithHttpEndpointCallbackOptions) PgAdminContainerResource
+	WithHttpHealthCheck(options ...*WithHttpHealthCheckOptions) PgAdminContainerResource
+	WithHttpProbe(probeType ProbeType, options ...*WithHttpProbeOptions) PgAdminContainerResource
+	WithHttpsCertificateConfiguration(callback func(arg HttpsCertificateConfigurationCallbackAnnotationContext)) PgAdminContainerResource
+	WithHttpsDeveloperCertificate(options ...*WithHttpsDeveloperCertificateOptions) PgAdminContainerResource
+	WithHttpsEndpoint(options ...*WithHttpsEndpointOptions) PgAdminContainerResource
+	WithHttpsEndpointCallback(callback func(obj EndpointUpdateContext), options ...*WithHttpsEndpointCallbackOptions) PgAdminContainerResource
+	WithIconName(iconName string, options ...*WithIconNameOptions) PgAdminContainerResource
+	WithImage(image string, options ...*WithImageOptions) PgAdminContainerResource
+	WithImagePullPolicy(pullPolicy ImagePullPolicy) PgAdminContainerResource
+	WithImagePushOptions(callback func(arg ContainerImagePushOptionsCallbackContext)) PgAdminContainerResource
+	WithImageRegistry(registry string) PgAdminContainerResource
+	WithImageSHA256(sha256 string) PgAdminContainerResource
+	WithImageTag(tag string) PgAdminContainerResource
+	WithLifetime(lifetime ContainerLifetime) PgAdminContainerResource
+	WithLifetimeOf(sourceBuilder Resource) PgAdminContainerResource
+	WithMcpServer(options ...*WithMcpServerOptions) PgAdminContainerResource
+	WithOtlpExporter(options ...*WithOtlpExporterOptions) PgAdminContainerResource
+	WithParentProcessLifetime(parentProcessId float64) PgAdminContainerResource
+	WithParentRelationship(parent Resource) PgAdminContainerResource
+	WithPersistentLifetime() PgAdminContainerResource
+	WithPipelineConfiguration(callback func(obj PipelineConfigurationContext)) PgAdminContainerResource
+	WithPipelineStepFactory(stepName string, callback func(arg PipelineStepContext), options ...*WithPipelineStepFactoryOptions) PgAdminContainerResource
+	WithProcessCommand(commandName string, displayName string, options *ProcessCommandExportOptions) PgAdminContainerResource
+	WithProcessCommandFactory(commandName string, displayName string, createProcessSpec func(arg ExecuteCommandContext) *ProcessCommandSpecExportData, options ...*ProcessCommandResultExportOptions) PgAdminContainerResource
+	WithReference(source any, options ...*WithReferenceOptions) PgAdminContainerResource
+	WithReferenceEnvironment(options *ReferenceEnvironmentInjectionOptions) PgAdminContainerResource
+	WithRelationship(resourceBuilder Resource, type_ string) PgAdminContainerResource
+	WithRemoteImageName(remoteImageName string) PgAdminContainerResource
+	WithRemoteImageTag(remoteImageTag string) PgAdminContainerResource
+	WithRequiredCommand(command string, options ...*WithRequiredCommandOptions) PgAdminContainerResource
+	WithRequiredCommandValidation(command string, validationCallback func(arg RequiredCommandValidationContext) RequiredCommandValidationResult, options ...*WithRequiredCommandValidationOptions) PgAdminContainerResource
+	WithSessionLifetime() PgAdminContainerResource
+	WithTerminal() PgAdminContainerResource
+	WithUrl(url any, options ...*WithUrlOptions) PgAdminContainerResource
+	WithUrlForEndpoint(endpointName string, callback func(obj *ResourceUrlAnnotation)) PgAdminContainerResource
+	WithUrls(callback func(obj ResourceUrlsCallbackContext)) PgAdminContainerResource
+	WithVolume(target string, options ...*WithVolumeOptions) PgAdminContainerResource
+	WithoutHttpsCertificate() PgAdminContainerResource
+	Err() error
+}
+
+// pgAdminContainerResource is the unexported impl of PgAdminContainerResource.
+type pgAdminContainerResource struct {
+	*resourceBuilderBase
+}
+
+// newPgAdminContainerResourceFromHandle wraps an existing handle as PgAdminContainerResource.
+func newPgAdminContainerResourceFromHandle(h *handle, c *client) PgAdminContainerResource {
+	return &pgAdminContainerResource{resourceBuilderBase: newResourceBuilderBase(h, c)}
+}
+
+// AsHttp2Service configures a resource to mark all endpoints' transport as HTTP/2. This is useful for HTTP/2 services that need prior knowledge.
+func (s *pgAdminContainerResource) AsHttp2Service() PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/asHttp2Service", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// CreateExecutionConfiguration creates an execution configuration builder for the specified resource.
+func (s *pgAdminContainerResource) CreateExecutionConfiguration() ExecutionConfigurationBuilder {
+	if s.err != nil { return &executionConfigurationBuilder{resourceBuilderBase: newErroredResourceBuilder(s.err, s.client)} }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting/createExecutionConfiguration", reqArgs)
+	if err != nil {
+		return &executionConfigurationBuilder{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	href, ok := result.(handleReference)
+	if !ok {
+		err := fmt.Errorf("aspire: Aspire.Hosting/createExecutionConfiguration returned unexpected type %T", result)
+		return &executionConfigurationBuilder{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	return &executionConfigurationBuilder{resourceBuilderBase: newResourceBuilderBase(href.getHandle(), s.client)}
+}
+
+// ExcludeFromManifest excludes a resource from being published to the manifest.
+func (s *pgAdminContainerResource) ExcludeFromManifest() PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/excludeFromManifest", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// ExcludeFromMcp exclude the resource from MCP operations using the Aspire MCP server. The resource is excluded from results that return resources, console logs and telemetry.
+func (s *pgAdminContainerResource) ExcludeFromMcp() PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/excludeFromMcp", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// GetEndpoint gets an endpoint reference
+func (s *pgAdminContainerResource) GetEndpoint(name string) EndpointReference {
+	if s.err != nil { return &endpointReference{resourceBuilderBase: newErroredResourceBuilder(s.err, s.client)} }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting/getEndpoint", reqArgs)
+	if err != nil {
+		return &endpointReference{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	href, ok := result.(handleReference)
+	if !ok {
+		err := fmt.Errorf("aspire: Aspire.Hosting/getEndpoint returned unexpected type %T", result)
+		return &endpointReference{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	return &endpointReference{resourceBuilderBase: newResourceBuilderBase(href.getHandle(), s.client)}
+}
+
+// GetResourceName gets the name of the resource from a builder.
+func (s *pgAdminContainerResource) GetResourceName() (string, error) {
+	if s.err != nil { var zero string; return zero, s.err }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting/getResourceName", reqArgs)
+	if err != nil {
+		var zero string
+		return zero, err
+	}
+	return decodeAs[string](result)
+}
+
+// OnBeforeResourceStarted subscribes to the BeforeResourceStarted event.
+func (s *pgAdminContainerResource) OnBeforeResourceStarted(callback func(arg BeforeResourceStartedEvent)) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[BeforeResourceStartedEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onBeforeResourceStarted", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// OnInitializeResource subscribes to the InitializeResource event.
+func (s *pgAdminContainerResource) OnInitializeResource(callback func(arg InitializeResourceEvent)) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[InitializeResourceEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onInitializeResource", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// OnResourceEndpointsAllocated subscribes to the ResourceEndpointsAllocated event.
+func (s *pgAdminContainerResource) OnResourceEndpointsAllocated(callback func(arg ResourceEndpointsAllocatedEvent)) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ResourceEndpointsAllocatedEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onResourceEndpointsAllocated", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// OnResourceReady subscribes to the ResourceReady event.
+func (s *pgAdminContainerResource) OnResourceReady(callback func(arg ResourceReadyEvent)) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ResourceReadyEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onResourceReady", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// OnResourceStopped subscribes to the ResourceStopped event.
+func (s *pgAdminContainerResource) OnResourceStopped(callback func(arg ResourceStoppedEvent)) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ResourceStoppedEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onResourceStopped", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// PublishAsConnectionString changes the resource to be published as a connection string reference in the manifest.
+func (s *pgAdminContainerResource) PublishAsConnectionString() PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/publishAsConnectionString", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// PublishAsContainer changes the resource to be published as a container in the manifest.
+func (s *pgAdminContainerResource) PublishAsContainer() PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/publishAsContainer", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// SubscribeHttpsEndpointsUpdate subscribes to the `BeforeStartEvent` and invokes the specified callback when an HTTPS certificate is determined to be available for the resource. This is used to conditionally update endpoint URI schemes or perform other HTTPS-related configuration at startup.
+func (s *pgAdminContainerResource) SubscribeHttpsEndpointsUpdate(callback func(obj HttpsEndpointUpdateCallbackContext)) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[HttpsEndpointUpdateCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/subscribeHttpsEndpointsUpdate", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WaitFor waits for another resource to be ready
+func (s *pgAdminContainerResource) WaitFor(dependency Resource, options ...*WaitForOptions) PgAdminContainerResource {
+	if s.err != nil { return s }
+	if dependency != nil { if err := dependency.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["dependency"] = serializeValue(dependency)
+	if len(options) > 0 {
+		merged := &WaitForOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/waitFor", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WaitForCompletion waits for the dependency resource to enter the Exited or Finished state before starting the resource.
+func (s *pgAdminContainerResource) WaitForCompletion(dependency Resource, options ...*WaitForCompletionOptions) PgAdminContainerResource {
+	if s.err != nil { return s }
+	if dependency != nil { if err := dependency.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["dependency"] = serializeValue(dependency)
+	if len(options) > 0 {
+		merged := &WaitForCompletionOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/waitForResourceCompletion", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WaitForStart waits for another resource to start
+func (s *pgAdminContainerResource) WaitForStart(dependency Resource, options ...*WaitForStartOptions) PgAdminContainerResource {
+	if s.err != nil { return s }
+	if dependency != nil { if err := dependency.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["dependency"] = serializeValue(dependency)
+	if len(options) > 0 {
+		merged := &WaitForStartOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/waitForStart", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithArgs adds arguments to be passed to a resource that supports arguments when it is launched.
+func (s *pgAdminContainerResource) WithArgs(args []string) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if args != nil { reqArgs["args"] = serializeValue(args) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withArgs", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithArgsCallback adds a callback to be executed with a list of command-line arguments when a resource is started.
+func (s *pgAdminContainerResource) WithArgsCallback(callback func(obj CommandLineArgsCallbackContext)) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[CommandLineArgsCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withArgsCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithBindMount adds a bind mount to a container resource.
+func (s *pgAdminContainerResource) WithBindMount(source string, target string, options ...*WithBindMountOptions) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["source"] = serializeValue(source)
+	reqArgs["target"] = serializeValue(target)
+	if len(options) > 0 {
+		merged := &WithBindMountOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withBindMount", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithBuildArg adds a build argument when the container is built from a Dockerfile.
+// Allowed types for parameter value: string, ParameterResource.
+func (s *pgAdminContainerResource) WithBuildArg(name string, value any) PgAdminContainerResource {
+	if s.err != nil { return s }
+	switch value.(type) {
+	case string, ParameterResource:
+	default:
+		err := fmt.Errorf("aspire: WithBuildArg: parameter %q must be one of [string, ParameterResource], got %T", "value", value)
+		s.setErr(err); return s
+	}
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	if !isNil(value) { reqArgs["value"] = serializeValue(value) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withBuildArg", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithBuildSecret adds a secret build argument when the container is built from a Dockerfile.
+func (s *pgAdminContainerResource) WithBuildSecret(name string, value ParameterResource) PgAdminContainerResource {
+	if s.err != nil { return s }
+	if value != nil { if err := value.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	reqArgs["value"] = serializeValue(value)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withParameterBuildSecret", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithCertificateTrustScope sets the certificate trust scope
+func (s *pgAdminContainerResource) WithCertificateTrustScope(scope CertificateTrustScope) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["scope"] = serializeValue(scope)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withCertificateTrustScope", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithChildRelationship sets a child relationship
+func (s *pgAdminContainerResource) WithChildRelationship(child Resource) PgAdminContainerResource {
+	if s.err != nil { return s }
+	if child != nil { if err := child.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["child"] = serializeValue(child)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withBuilderChildRelationship", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithCommand adds a resource command
+func (s *pgAdminContainerResource) WithCommand(name string, displayName string, executeCommand func(arg ExecuteCommandContext) *ExecuteCommandResult, options ...*WithCommandOptions) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	reqArgs["displayName"] = serializeValue(displayName)
+	if executeCommand != nil {
+		cb := executeCommand
+		shim := func(args ...any) any {
+			return cb(callbackArg[ExecuteCommandContext](args, 0))
+		}
+		reqArgs["executeCommand"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithCommandOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithComputeEnvironment configures the compute environment for the compute resource.
+func (s *pgAdminContainerResource) WithComputeEnvironment(computeEnvironmentResource ComputeEnvironmentResource) PgAdminContainerResource {
+	if s.err != nil { return s }
+	if computeEnvironmentResource != nil { if err := computeEnvironmentResource.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["computeEnvironmentResource"] = serializeValue(computeEnvironmentResource)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withComputeEnvironment", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerBuildOptions configures container build options for a compute resource using an async callback.
+func (s *pgAdminContainerResource) WithContainerBuildOptions(callback func(arg ContainerBuildOptionsCallbackContext)) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ContainerBuildOptionsCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerBuildOptions", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerCertificatePaths adds container certificate path overrides used for certificate trust at run time.
+func (s *pgAdminContainerResource) WithContainerCertificatePaths(options ...*WithContainerCertificatePathsOptions) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithContainerCertificatePathsOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerCertificatePaths", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerFiles creates or updates files and folders in a container by copying them from a source path on the host.
+func (s *pgAdminContainerResource) WithContainerFiles(destinationPath string, sourcePath string, options ...*ContainerFilesOptions) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["destinationPath"] = serializeValue(destinationPath)
+	reqArgs["sourcePath"] = serializeValue(sourcePath)
+	if len(options) > 0 {
+		merged := &ContainerFilesOptions{}
+		applied := false
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt); applied = true }
+		}
+		if applied { reqArgs["options"] = serializeValue(merged) }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerFiles", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerFilesCallback creates or updates files and/or folders at the destination path in the container using entries produced by a callback.
+func (s *pgAdminContainerResource) WithContainerFilesCallback(destinationPath string, callback func(arg1 ContainerFileSystemCallbackContext, arg2 *CancellationToken) []ContainerFileSystemItem, options ...*ContainerFilesOptions) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["destinationPath"] = serializeValue(destinationPath)
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			return cb(callbackArg[ContainerFileSystemCallbackContext](args, 0), callbackArg[*CancellationToken](args, 1))
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &ContainerFilesOptions{}
+		applied := false
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt); applied = true }
+		}
+		if applied { reqArgs["options"] = serializeValue(merged) }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerFilesCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerName overrides the default container name for this resource. By default Aspire generates a unique container name based on the resource name and a random postfix (or a postfix based on a hash of the AppHost project path for persistent container resources). This method allows you to override that behavior with a custom name, but could lead to naming conflicts if the specified name is not unique.
+func (s *pgAdminContainerResource) WithContainerName(name string) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerName", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerNetworkAlias adds a network alias to container resource.
+func (s *pgAdminContainerResource) WithContainerNetworkAlias(alias string) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["alias"] = serializeValue(alias)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerNetworkAlias", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerRegistry configures the resource to use the specified container registry for container image operations.
+func (s *pgAdminContainerResource) WithContainerRegistry(registry Resource) PgAdminContainerResource {
+	if s.err != nil { return s }
+	if registry != nil { if err := registry.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["registry"] = serializeValue(registry)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerRegistry", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerRuntimeArgs adds a callback to be executed with a list of arguments to add to the container runtime run command when a container resource is started.
+func (s *pgAdminContainerResource) WithContainerRuntimeArgs(args []string) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if args != nil { reqArgs["args"] = serializeValue(args) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerRuntimeArgs", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDeveloperCertificateTrust indicates whether developer certificates should be treated as trusted certificate authorities for the resource at run time. Currently this indicates trust for the ASP.NET Core developer certificate. The developer certificate will only be trusted when running in local development scenarios; in publish mode resources will use their default certificate trust.
+func (s *pgAdminContainerResource) WithDeveloperCertificateTrust(trust bool) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["trust"] = serializeValue(trust)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withDeveloperCertificateTrust", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDockerfile causes Aspire to build the specified container image from a Dockerfile.
+func (s *pgAdminContainerResource) WithDockerfile(contextPath string, options ...*WithDockerfileOptions) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["contextPath"] = serializeValue(contextPath)
+	if len(options) > 0 {
+		merged := &WithDockerfileOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withDockerfile", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDockerfileBaseImage configures custom base images for generated Dockerfiles.
+func (s *pgAdminContainerResource) WithDockerfileBaseImage(options ...*WithDockerfileBaseImageOptions) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithDockerfileBaseImageOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withDockerfileBaseImage", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDockerfileBuilder configures the resource to use a programmatically generated Dockerfile
+func (s *pgAdminContainerResource) WithDockerfileBuilder(contextPath string, callback func(arg DockerfileBuilderCallbackContext), options ...*WithDockerfileBuilderOptions) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["contextPath"] = serializeValue(contextPath)
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[DockerfileBuilderCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithDockerfileBuilderOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withDockerfileBuilder", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDockerfileFactory builds the specified container image from a Dockerfile generated by an asynchronous factory function.
+func (s *pgAdminContainerResource) WithDockerfileFactory(contextPath string, dockerfileFactory func(arg DockerfileFactoryContext) string, options ...*WithDockerfileFactoryOptions) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["contextPath"] = serializeValue(contextPath)
+	if dockerfileFactory != nil {
+		cb := dockerfileFactory
+		shim := func(args ...any) any {
+			return cb(callbackArg[DockerfileFactoryContext](args, 0))
+		}
+		reqArgs["dockerfileFactory"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithDockerfileFactoryOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withDockerfileFactory", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEndpoint adds a network endpoint
+func (s *pgAdminContainerResource) WithEndpoint(options ...*WithEndpointOptions) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithEndpointOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEndpoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEndpointCallback updates a named endpoint via callback
+func (s *pgAdminContainerResource) WithEndpointCallback(endpointName string, callback func(obj EndpointUpdateContext), options ...*WithEndpointCallbackOptions) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["endpointName"] = serializeValue(endpointName)
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[EndpointUpdateContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithEndpointCallbackOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEndpointCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEndpointProxySupport set whether a resource can use proxied endpoints or whether they should be disabled for all endpoints belonging to the resource. If set to `false`, endpoints belonging to the resource will ignore the configured proxy settings and run proxy-less.
+func (s *pgAdminContainerResource) WithEndpointProxySupport(proxyEnabled bool) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["proxyEnabled"] = serializeValue(proxyEnabled)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEndpointProxySupport", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEntrypoint sets the Entrypoint for the container.
+func (s *pgAdminContainerResource) WithEntrypoint(entrypoint string) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["entrypoint"] = serializeValue(entrypoint)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEntrypoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEnvironment sets an environment variable
+// Allowed types for parameter value: string, *ReferenceExpression, EndpointReference, ParameterResource, ExternalServiceResource, ResourceWithConnectionString, ExpressionValue.
+func (s *pgAdminContainerResource) WithEnvironment(name string, value any) PgAdminContainerResource {
+	if s.err != nil { return s }
+	switch value.(type) {
+	case string, *ReferenceExpression, EndpointReference, ParameterResource, ExternalServiceResource, ResourceWithConnectionString, ExpressionValue:
+	default:
+		err := fmt.Errorf("aspire: WithEnvironment: parameter %q must be one of [string, *ReferenceExpression, EndpointReference, ParameterResource, ExternalServiceResource, ResourceWithConnectionString, ExpressionValue], got %T", "value", value)
+		s.setErr(err); return s
+	}
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	if !isNil(value) { reqArgs["value"] = serializeValue(value) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEnvironment", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEnvironmentCallback allows for the population of environment variables on a resource.
+func (s *pgAdminContainerResource) WithEnvironmentCallback(callback func(arg EnvironmentCallbackContext)) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[EnvironmentCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEnvironmentCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithExplicitStart prevents resource from starting automatically
+func (s *pgAdminContainerResource) WithExplicitStart() PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withExplicitStart", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithExternalHttpEndpoints marks existing http or https endpoints on a resource as external.
+func (s *pgAdminContainerResource) WithExternalHttpEndpoints() PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withExternalHttpEndpoints", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHealthCheck adds a health check by key
+func (s *pgAdminContainerResource) WithHealthCheck(key string) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["key"] = serializeValue(key)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHealthCheck", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHidden hides the resource from default resource lists
+func (s *pgAdminContainerResource) WithHidden() PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHidden", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHiddenOnCompletion hides the resource from default resource lists after successful completion
+func (s *pgAdminContainerResource) WithHiddenOnCompletion(options ...*WithHiddenOnCompletionOptions) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHiddenOnCompletionOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHiddenOnCompletion", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHostPort configures the host port that the PGAdmin resource is exposed on instead of using randomly assigned port.
+func (s *pgAdminContainerResource) WithHostPort(port *float64) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["port"] = serializeValue(port)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.PostgreSQL/withPgAdminHostPort", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpCommand adds an HTTP resource command
+func (s *pgAdminContainerResource) WithHttpCommand(path string, displayName string, options ...*HttpCommandExportOptions) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["path"] = serializeValue(path)
+	reqArgs["displayName"] = serializeValue(displayName)
+	if len(options) > 0 {
+		merged := &HttpCommandExportOptions{}
+		applied := false
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt); applied = true }
+		}
+		if applied { reqArgs["options"] = serializeValue(merged) }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpEndpoint adds an HTTP endpoint
+func (s *pgAdminContainerResource) WithHttpEndpoint(options ...*WithHttpEndpointOptions) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHttpEndpointOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpEndpoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpEndpointCallback updates an HTTP endpoint via callback
+func (s *pgAdminContainerResource) WithHttpEndpointCallback(callback func(obj EndpointUpdateContext), options ...*WithHttpEndpointCallbackOptions) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[EndpointUpdateContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithHttpEndpointCallbackOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpEndpointCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpHealthCheck adds a health check to the resource which is mapped to a specific endpoint.
+func (s *pgAdminContainerResource) WithHttpHealthCheck(options ...*WithHttpHealthCheckOptions) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHttpHealthCheckOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpHealthCheck", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpProbe adds an HTTP health probe to the resource
+func (s *pgAdminContainerResource) WithHttpProbe(probeType ProbeType, options ...*WithHttpProbeOptions) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["probeType"] = serializeValue(probeType)
+	if len(options) > 0 {
+		merged := &WithHttpProbeOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpProbe", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpsCertificateConfiguration adds a callback that allows configuring the resource to use a specific HTTPS/TLS certificate key pair for server authentication.
+func (s *pgAdminContainerResource) WithHttpsCertificateConfiguration(callback func(arg HttpsCertificateConfigurationCallbackAnnotationContext)) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[HttpsCertificateConfigurationCallbackAnnotationContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpsCertificateConfiguration", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpsDeveloperCertificate indicates that a resource should use the developer certificate key pair for HTTPS endpoints at run time. Currently this indicates use of the ASP.NET Core developer certificate. The developer certificate will only be used when running in local development scenarios; in publish mode resources will use their default certificate configuration.
+func (s *pgAdminContainerResource) WithHttpsDeveloperCertificate(options ...*WithHttpsDeveloperCertificateOptions) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHttpsDeveloperCertificateOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withParameterHttpsDeveloperCertificate", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpsEndpoint adds an HTTPS endpoint
+func (s *pgAdminContainerResource) WithHttpsEndpoint(options ...*WithHttpsEndpointOptions) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHttpsEndpointOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpsEndpoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpsEndpointCallback updates an HTTPS endpoint via callback
+func (s *pgAdminContainerResource) WithHttpsEndpointCallback(callback func(obj EndpointUpdateContext), options ...*WithHttpsEndpointCallbackOptions) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[EndpointUpdateContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithHttpsEndpointCallbackOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpsEndpointCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithIconName specifies the icon to use when displaying the resource in the dashboard.
+func (s *pgAdminContainerResource) WithIconName(iconName string, options ...*WithIconNameOptions) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["iconName"] = serializeValue(iconName)
+	if len(options) > 0 {
+		merged := &WithIconNameOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withIconName", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithImage allows overriding the image on a container.
+func (s *pgAdminContainerResource) WithImage(image string, options ...*WithImageOptions) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["image"] = serializeValue(image)
+	if len(options) > 0 {
+		merged := &WithImageOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withImage", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithImagePullPolicy sets the pull policy for the container resource.
+func (s *pgAdminContainerResource) WithImagePullPolicy(pullPolicy ImagePullPolicy) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["pullPolicy"] = serializeValue(pullPolicy)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withImagePullPolicy", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithImagePushOptions adds an asynchronous callback to configure container image push options for the resource.
+func (s *pgAdminContainerResource) WithImagePushOptions(callback func(arg ContainerImagePushOptionsCallbackContext)) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ContainerImagePushOptionsCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withImagePushOptions", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithImageRegistry allows overriding the image registry on a container.
+func (s *pgAdminContainerResource) WithImageRegistry(registry string) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["registry"] = serializeValue(registry)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withImageRegistry", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithImageSHA256 allows setting the image to a specific sha256 on a container.
+func (s *pgAdminContainerResource) WithImageSHA256(sha256 string) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["sha256"] = serializeValue(sha256)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withImageSHA256", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithImageTag allows overriding the image tag on a container.
+func (s *pgAdminContainerResource) WithImageTag(tag string) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["tag"] = serializeValue(tag)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withImageTag", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithLifetime sets the lifetime behavior of the container resource.
+func (s *pgAdminContainerResource) WithLifetime(lifetime ContainerLifetime) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["lifetime"] = serializeValue(lifetime)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withLifetime", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithLifetimeOf configures a resource to match the lifetime of another resource.
+func (s *pgAdminContainerResource) WithLifetimeOf(sourceBuilder Resource) PgAdminContainerResource {
+	if s.err != nil { return s }
+	if sourceBuilder != nil { if err := sourceBuilder.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["sourceBuilder"] = serializeValue(sourceBuilder)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withLifetimeOf", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithMcpServer marks the resource as hosting a Model Context Protocol (MCP) server on the specified endpoint.
+func (s *pgAdminContainerResource) WithMcpServer(options ...*WithMcpServerOptions) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithMcpServerOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withMcpServer", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithOtlpExporter configures OTLP telemetry export
+func (s *pgAdminContainerResource) WithOtlpExporter(options ...*WithOtlpExporterOptions) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithOtlpExporterOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withOtlpExporter", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithParentProcessLifetime configures a resource to use a persistent lifetime that ends when a parent process exits.
+func (s *pgAdminContainerResource) WithParentProcessLifetime(parentProcessId float64) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["parentProcessId"] = serializeValue(parentProcessId)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withParentProcessLifetime", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithParentRelationship sets the parent relationship
+func (s *pgAdminContainerResource) WithParentRelationship(parent Resource) PgAdminContainerResource {
+	if s.err != nil { return s }
+	if parent != nil { if err := parent.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["parent"] = serializeValue(parent)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withBuilderParentRelationship", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithPersistentLifetime configures a resource to use a persistent lifetime.
+func (s *pgAdminContainerResource) WithPersistentLifetime() PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withPersistentLifetime", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithPipelineConfiguration registers a callback to be executed during the pipeline configuration phase, allowing modification of step dependencies and relationships.
+func (s *pgAdminContainerResource) WithPipelineConfiguration(callback func(obj PipelineConfigurationContext)) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[PipelineConfigurationContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withPipelineConfiguration", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithPipelineStepFactory adds a pipeline step to the resource that will be executed during deployment.
+func (s *pgAdminContainerResource) WithPipelineStepFactory(stepName string, callback func(arg PipelineStepContext), options ...*WithPipelineStepFactoryOptions) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["stepName"] = serializeValue(stepName)
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[PipelineStepContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithPipelineStepFactoryOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withPipelineStepFactory", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithProcessCommand adds a command to the resource that starts a local process when invoked.
+func (s *pgAdminContainerResource) WithProcessCommand(commandName string, displayName string, options *ProcessCommandExportOptions) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["commandName"] = serializeValue(commandName)
+	reqArgs["displayName"] = serializeValue(displayName)
+	if options != nil { reqArgs["options"] = serializeValue(options) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withProcessCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithProcessCommandFactory adds a command to the resource that starts a local process created by a callback when invoked.
+func (s *pgAdminContainerResource) WithProcessCommandFactory(commandName string, displayName string, createProcessSpec func(arg ExecuteCommandContext) *ProcessCommandSpecExportData, options ...*ProcessCommandResultExportOptions) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["commandName"] = serializeValue(commandName)
+	reqArgs["displayName"] = serializeValue(displayName)
+	if createProcessSpec != nil {
+		cb := createProcessSpec
+		shim := func(args ...any) any {
+			return cb(callbackArg[ExecuteCommandContext](args, 0))
+		}
+		reqArgs["createProcessSpec"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &ProcessCommandResultExportOptions{}
+		applied := false
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt); applied = true }
+		}
+		if applied { reqArgs["options"] = serializeValue(merged) }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withProcessCommandFactory", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithReference adds a reference to another resource
+// Allowed types for parameter source: Resource, EndpointReference, string.
+func (s *pgAdminContainerResource) WithReference(source any, options ...*WithReferenceOptions) PgAdminContainerResource {
+	if s.err != nil { return s }
+	switch source.(type) {
+	case Resource, EndpointReference, string:
+	default:
+		err := fmt.Errorf("aspire: WithReference: parameter %q must be one of [Resource, EndpointReference, string], got %T", "source", source)
+		s.setErr(err); return s
+	}
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if !isNil(source) { reqArgs["source"] = serializeValue(source) }
+	if len(options) > 0 {
+		merged := &WithReferenceOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withReference", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithReferenceEnvironment configures how information is injected into environment variables when the resource references other resources.
+func (s *pgAdminContainerResource) WithReferenceEnvironment(options *ReferenceEnvironmentInjectionOptions) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if options != nil { reqArgs["options"] = serializeValue(options) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withReferenceEnvironment", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRelationship adds a relationship to another resource using its builder.
+func (s *pgAdminContainerResource) WithRelationship(resourceBuilder Resource, type_ string) PgAdminContainerResource {
+	if s.err != nil { return s }
+	if resourceBuilder != nil { if err := resourceBuilder.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["resourceBuilder"] = serializeValue(resourceBuilder)
+	reqArgs["type"] = serializeValue(type_)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withBuilderRelationship", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRemoteImageName sets the remote image name (without registry endpoint or tag) for container push operations.
+func (s *pgAdminContainerResource) WithRemoteImageName(remoteImageName string) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["remoteImageName"] = serializeValue(remoteImageName)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withRemoteImageName", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRemoteImageTag sets the remote image tag for container push operations.
+func (s *pgAdminContainerResource) WithRemoteImageTag(remoteImageTag string) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["remoteImageTag"] = serializeValue(remoteImageTag)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withRemoteImageTag", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRequiredCommand declares that a resource requires a specific command/executable to be available on the local machine PATH before it can start.
+func (s *pgAdminContainerResource) WithRequiredCommand(command string, options ...*WithRequiredCommandOptions) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["command"] = serializeValue(command)
+	if len(options) > 0 {
+		merged := &WithRequiredCommandOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withRequiredCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRequiredCommandValidation declares that a resource requires a specific command/executable to be available on the local machine PATH before it can start, with custom validation logic.
+func (s *pgAdminContainerResource) WithRequiredCommandValidation(command string, validationCallback func(arg RequiredCommandValidationContext) RequiredCommandValidationResult, options ...*WithRequiredCommandValidationOptions) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["command"] = serializeValue(command)
+	if validationCallback != nil {
+		cb := validationCallback
+		shim := func(args ...any) any {
+			return cb(callbackArg[RequiredCommandValidationContext](args, 0))
+		}
+		reqArgs["validationCallback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithRequiredCommandValidationOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withRequiredCommandValidation", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithSessionLifetime configures a resource to use a session lifetime.
+func (s *pgAdminContainerResource) WithSessionLifetime() PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withSessionLifetime", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithTerminal adds an interactive terminal session to a resource using the default terminal options.
+func (s *pgAdminContainerResource) WithTerminal() PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withTerminal", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithUrl adds or modifies displayed URLs
+// Allowed types for parameter url: string, *ReferenceExpression.
+func (s *pgAdminContainerResource) WithUrl(url any, options ...*WithUrlOptions) PgAdminContainerResource {
+	if s.err != nil { return s }
+	switch url.(type) {
+	case string, *ReferenceExpression:
+	default:
+		err := fmt.Errorf("aspire: WithUrl: parameter %q must be one of [string, *ReferenceExpression], got %T", "url", url)
+		s.setErr(err); return s
+	}
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if !isNil(url) { reqArgs["url"] = serializeValue(url) }
+	if len(options) > 0 {
+		merged := &WithUrlOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withUrl", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithUrlForEndpoint registers a callback to update the URL displayed for the endpoint with the specified name.
+func (s *pgAdminContainerResource) WithUrlForEndpoint(endpointName string, callback func(obj *ResourceUrlAnnotation)) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["endpointName"] = serializeValue(endpointName)
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			arg0 := callbackArg[*ResourceUrlAnnotation](args, 0)
+			cb(arg0)
+			return map[string]any{
+				"p0": serializeValue(arg0),
+			}
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withUrlForEndpoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithUrls registers a callback to customize the URLs displayed for the resource.
+func (s *pgAdminContainerResource) WithUrls(callback func(obj ResourceUrlsCallbackContext)) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ResourceUrlsCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withUrls", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithVolume adds a volume to a container resource.
+func (s *pgAdminContainerResource) WithVolume(target string, options ...*WithVolumeOptions) PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	reqArgs["target"] = serializeValue(target)
+	if len(options) > 0 {
+		merged := &WithVolumeOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withVolume", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithoutHttpsCertificate disable HTTPS/TLS server certificate configuration for the resource. No HTTPS/TLS termination configuration will be applied.
+func (s *pgAdminContainerResource) WithoutHttpsCertificate() PgAdminContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withoutHttpsCertificate", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// PgWebContainerResource is the public interface for handle type PgWebContainerResource.
+type PgWebContainerResource interface {
+	handleReference
+	AsHttp2Service() PgWebContainerResource
+	CreateExecutionConfiguration() ExecutionConfigurationBuilder
+	ExcludeFromManifest() PgWebContainerResource
+	ExcludeFromMcp() PgWebContainerResource
+	GetEndpoint(name string) EndpointReference
+	GetResourceName() (string, error)
+	OnBeforeResourceStarted(callback func(arg BeforeResourceStartedEvent)) PgWebContainerResource
+	OnInitializeResource(callback func(arg InitializeResourceEvent)) PgWebContainerResource
+	OnResourceEndpointsAllocated(callback func(arg ResourceEndpointsAllocatedEvent)) PgWebContainerResource
+	OnResourceReady(callback func(arg ResourceReadyEvent)) PgWebContainerResource
+	OnResourceStopped(callback func(arg ResourceStoppedEvent)) PgWebContainerResource
+	PublishAsConnectionString() PgWebContainerResource
+	PublishAsContainer() PgWebContainerResource
+	SubscribeHttpsEndpointsUpdate(callback func(obj HttpsEndpointUpdateCallbackContext)) PgWebContainerResource
+	WaitFor(dependency Resource, options ...*WaitForOptions) PgWebContainerResource
+	WaitForCompletion(dependency Resource, options ...*WaitForCompletionOptions) PgWebContainerResource
+	WaitForStart(dependency Resource, options ...*WaitForStartOptions) PgWebContainerResource
+	WithArgs(args []string) PgWebContainerResource
+	WithArgsCallback(callback func(obj CommandLineArgsCallbackContext)) PgWebContainerResource
+	WithBindMount(source string, target string, options ...*WithBindMountOptions) PgWebContainerResource
+	WithBuildArg(name string, value any) PgWebContainerResource
+	WithBuildSecret(name string, value ParameterResource) PgWebContainerResource
+	WithCertificateTrustScope(scope CertificateTrustScope) PgWebContainerResource
+	WithChildRelationship(child Resource) PgWebContainerResource
+	WithCommand(name string, displayName string, executeCommand func(arg ExecuteCommandContext) *ExecuteCommandResult, options ...*WithCommandOptions) PgWebContainerResource
+	WithComputeEnvironment(computeEnvironmentResource ComputeEnvironmentResource) PgWebContainerResource
+	WithContainerBuildOptions(callback func(arg ContainerBuildOptionsCallbackContext)) PgWebContainerResource
+	WithContainerCertificatePaths(options ...*WithContainerCertificatePathsOptions) PgWebContainerResource
+	WithContainerFiles(destinationPath string, sourcePath string, options ...*ContainerFilesOptions) PgWebContainerResource
+	WithContainerFilesCallback(destinationPath string, callback func(arg1 ContainerFileSystemCallbackContext, arg2 *CancellationToken) []ContainerFileSystemItem, options ...*ContainerFilesOptions) PgWebContainerResource
+	WithContainerName(name string) PgWebContainerResource
+	WithContainerNetworkAlias(alias string) PgWebContainerResource
+	WithContainerRegistry(registry Resource) PgWebContainerResource
+	WithContainerRuntimeArgs(args []string) PgWebContainerResource
+	WithDeveloperCertificateTrust(trust bool) PgWebContainerResource
+	WithDockerfile(contextPath string, options ...*WithDockerfileOptions) PgWebContainerResource
+	WithDockerfileBaseImage(options ...*WithDockerfileBaseImageOptions) PgWebContainerResource
+	WithDockerfileBuilder(contextPath string, callback func(arg DockerfileBuilderCallbackContext), options ...*WithDockerfileBuilderOptions) PgWebContainerResource
+	WithDockerfileFactory(contextPath string, dockerfileFactory func(arg DockerfileFactoryContext) string, options ...*WithDockerfileFactoryOptions) PgWebContainerResource
+	WithEndpoint(options ...*WithEndpointOptions) PgWebContainerResource
+	WithEndpointCallback(endpointName string, callback func(obj EndpointUpdateContext), options ...*WithEndpointCallbackOptions) PgWebContainerResource
+	WithEndpointProxySupport(proxyEnabled bool) PgWebContainerResource
+	WithEntrypoint(entrypoint string) PgWebContainerResource
+	WithEnvironment(name string, value any) PgWebContainerResource
+	WithEnvironmentCallback(callback func(arg EnvironmentCallbackContext)) PgWebContainerResource
+	WithExplicitStart() PgWebContainerResource
+	WithExternalHttpEndpoints() PgWebContainerResource
+	WithHealthCheck(key string) PgWebContainerResource
+	WithHidden() PgWebContainerResource
+	WithHiddenOnCompletion(options ...*WithHiddenOnCompletionOptions) PgWebContainerResource
+	WithHostPort(port *float64) PgWebContainerResource
+	WithHttpCommand(path string, displayName string, options ...*HttpCommandExportOptions) PgWebContainerResource
+	WithHttpEndpoint(options ...*WithHttpEndpointOptions) PgWebContainerResource
+	WithHttpEndpointCallback(callback func(obj EndpointUpdateContext), options ...*WithHttpEndpointCallbackOptions) PgWebContainerResource
+	WithHttpHealthCheck(options ...*WithHttpHealthCheckOptions) PgWebContainerResource
+	WithHttpProbe(probeType ProbeType, options ...*WithHttpProbeOptions) PgWebContainerResource
+	WithHttpsCertificateConfiguration(callback func(arg HttpsCertificateConfigurationCallbackAnnotationContext)) PgWebContainerResource
+	WithHttpsDeveloperCertificate(options ...*WithHttpsDeveloperCertificateOptions) PgWebContainerResource
+	WithHttpsEndpoint(options ...*WithHttpsEndpointOptions) PgWebContainerResource
+	WithHttpsEndpointCallback(callback func(obj EndpointUpdateContext), options ...*WithHttpsEndpointCallbackOptions) PgWebContainerResource
+	WithIconName(iconName string, options ...*WithIconNameOptions) PgWebContainerResource
+	WithImage(image string, options ...*WithImageOptions) PgWebContainerResource
+	WithImagePullPolicy(pullPolicy ImagePullPolicy) PgWebContainerResource
+	WithImagePushOptions(callback func(arg ContainerImagePushOptionsCallbackContext)) PgWebContainerResource
+	WithImageRegistry(registry string) PgWebContainerResource
+	WithImageSHA256(sha256 string) PgWebContainerResource
+	WithImageTag(tag string) PgWebContainerResource
+	WithLifetime(lifetime ContainerLifetime) PgWebContainerResource
+	WithLifetimeOf(sourceBuilder Resource) PgWebContainerResource
+	WithMcpServer(options ...*WithMcpServerOptions) PgWebContainerResource
+	WithOtlpExporter(options ...*WithOtlpExporterOptions) PgWebContainerResource
+	WithParentProcessLifetime(parentProcessId float64) PgWebContainerResource
+	WithParentRelationship(parent Resource) PgWebContainerResource
+	WithPersistentLifetime() PgWebContainerResource
+	WithPipelineConfiguration(callback func(obj PipelineConfigurationContext)) PgWebContainerResource
+	WithPipelineStepFactory(stepName string, callback func(arg PipelineStepContext), options ...*WithPipelineStepFactoryOptions) PgWebContainerResource
+	WithProcessCommand(commandName string, displayName string, options *ProcessCommandExportOptions) PgWebContainerResource
+	WithProcessCommandFactory(commandName string, displayName string, createProcessSpec func(arg ExecuteCommandContext) *ProcessCommandSpecExportData, options ...*ProcessCommandResultExportOptions) PgWebContainerResource
+	WithReference(source any, options ...*WithReferenceOptions) PgWebContainerResource
+	WithReferenceEnvironment(options *ReferenceEnvironmentInjectionOptions) PgWebContainerResource
+	WithRelationship(resourceBuilder Resource, type_ string) PgWebContainerResource
+	WithRemoteImageName(remoteImageName string) PgWebContainerResource
+	WithRemoteImageTag(remoteImageTag string) PgWebContainerResource
+	WithRequiredCommand(command string, options ...*WithRequiredCommandOptions) PgWebContainerResource
+	WithRequiredCommandValidation(command string, validationCallback func(arg RequiredCommandValidationContext) RequiredCommandValidationResult, options ...*WithRequiredCommandValidationOptions) PgWebContainerResource
+	WithSessionLifetime() PgWebContainerResource
+	WithTerminal() PgWebContainerResource
+	WithUrl(url any, options ...*WithUrlOptions) PgWebContainerResource
+	WithUrlForEndpoint(endpointName string, callback func(obj *ResourceUrlAnnotation)) PgWebContainerResource
+	WithUrls(callback func(obj ResourceUrlsCallbackContext)) PgWebContainerResource
+	WithVolume(target string, options ...*WithVolumeOptions) PgWebContainerResource
+	WithoutHttpsCertificate() PgWebContainerResource
+	Err() error
+}
+
+// pgWebContainerResource is the unexported impl of PgWebContainerResource.
+type pgWebContainerResource struct {
+	*resourceBuilderBase
+}
+
+// newPgWebContainerResourceFromHandle wraps an existing handle as PgWebContainerResource.
+func newPgWebContainerResourceFromHandle(h *handle, c *client) PgWebContainerResource {
+	return &pgWebContainerResource{resourceBuilderBase: newResourceBuilderBase(h, c)}
+}
+
+// AsHttp2Service configures a resource to mark all endpoints' transport as HTTP/2. This is useful for HTTP/2 services that need prior knowledge.
+func (s *pgWebContainerResource) AsHttp2Service() PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/asHttp2Service", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// CreateExecutionConfiguration creates an execution configuration builder for the specified resource.
+func (s *pgWebContainerResource) CreateExecutionConfiguration() ExecutionConfigurationBuilder {
+	if s.err != nil { return &executionConfigurationBuilder{resourceBuilderBase: newErroredResourceBuilder(s.err, s.client)} }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting/createExecutionConfiguration", reqArgs)
+	if err != nil {
+		return &executionConfigurationBuilder{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	href, ok := result.(handleReference)
+	if !ok {
+		err := fmt.Errorf("aspire: Aspire.Hosting/createExecutionConfiguration returned unexpected type %T", result)
+		return &executionConfigurationBuilder{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	return &executionConfigurationBuilder{resourceBuilderBase: newResourceBuilderBase(href.getHandle(), s.client)}
+}
+
+// ExcludeFromManifest excludes a resource from being published to the manifest.
+func (s *pgWebContainerResource) ExcludeFromManifest() PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/excludeFromManifest", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// ExcludeFromMcp exclude the resource from MCP operations using the Aspire MCP server. The resource is excluded from results that return resources, console logs and telemetry.
+func (s *pgWebContainerResource) ExcludeFromMcp() PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/excludeFromMcp", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// GetEndpoint gets an endpoint reference
+func (s *pgWebContainerResource) GetEndpoint(name string) EndpointReference {
+	if s.err != nil { return &endpointReference{resourceBuilderBase: newErroredResourceBuilder(s.err, s.client)} }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting/getEndpoint", reqArgs)
+	if err != nil {
+		return &endpointReference{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	href, ok := result.(handleReference)
+	if !ok {
+		err := fmt.Errorf("aspire: Aspire.Hosting/getEndpoint returned unexpected type %T", result)
+		return &endpointReference{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	return &endpointReference{resourceBuilderBase: newResourceBuilderBase(href.getHandle(), s.client)}
+}
+
+// GetResourceName gets the name of the resource from a builder.
+func (s *pgWebContainerResource) GetResourceName() (string, error) {
+	if s.err != nil { var zero string; return zero, s.err }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting/getResourceName", reqArgs)
+	if err != nil {
+		var zero string
+		return zero, err
+	}
+	return decodeAs[string](result)
+}
+
+// OnBeforeResourceStarted subscribes to the BeforeResourceStarted event.
+func (s *pgWebContainerResource) OnBeforeResourceStarted(callback func(arg BeforeResourceStartedEvent)) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[BeforeResourceStartedEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onBeforeResourceStarted", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// OnInitializeResource subscribes to the InitializeResource event.
+func (s *pgWebContainerResource) OnInitializeResource(callback func(arg InitializeResourceEvent)) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[InitializeResourceEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onInitializeResource", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// OnResourceEndpointsAllocated subscribes to the ResourceEndpointsAllocated event.
+func (s *pgWebContainerResource) OnResourceEndpointsAllocated(callback func(arg ResourceEndpointsAllocatedEvent)) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ResourceEndpointsAllocatedEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onResourceEndpointsAllocated", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// OnResourceReady subscribes to the ResourceReady event.
+func (s *pgWebContainerResource) OnResourceReady(callback func(arg ResourceReadyEvent)) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ResourceReadyEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onResourceReady", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// OnResourceStopped subscribes to the ResourceStopped event.
+func (s *pgWebContainerResource) OnResourceStopped(callback func(arg ResourceStoppedEvent)) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ResourceStoppedEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onResourceStopped", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// PublishAsConnectionString changes the resource to be published as a connection string reference in the manifest.
+func (s *pgWebContainerResource) PublishAsConnectionString() PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/publishAsConnectionString", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// PublishAsContainer changes the resource to be published as a container in the manifest.
+func (s *pgWebContainerResource) PublishAsContainer() PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/publishAsContainer", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// SubscribeHttpsEndpointsUpdate subscribes to the `BeforeStartEvent` and invokes the specified callback when an HTTPS certificate is determined to be available for the resource. This is used to conditionally update endpoint URI schemes or perform other HTTPS-related configuration at startup.
+func (s *pgWebContainerResource) SubscribeHttpsEndpointsUpdate(callback func(obj HttpsEndpointUpdateCallbackContext)) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[HttpsEndpointUpdateCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/subscribeHttpsEndpointsUpdate", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WaitFor waits for another resource to be ready
+func (s *pgWebContainerResource) WaitFor(dependency Resource, options ...*WaitForOptions) PgWebContainerResource {
+	if s.err != nil { return s }
+	if dependency != nil { if err := dependency.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["dependency"] = serializeValue(dependency)
+	if len(options) > 0 {
+		merged := &WaitForOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/waitFor", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WaitForCompletion waits for the dependency resource to enter the Exited or Finished state before starting the resource.
+func (s *pgWebContainerResource) WaitForCompletion(dependency Resource, options ...*WaitForCompletionOptions) PgWebContainerResource {
+	if s.err != nil { return s }
+	if dependency != nil { if err := dependency.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["dependency"] = serializeValue(dependency)
+	if len(options) > 0 {
+		merged := &WaitForCompletionOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/waitForResourceCompletion", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WaitForStart waits for another resource to start
+func (s *pgWebContainerResource) WaitForStart(dependency Resource, options ...*WaitForStartOptions) PgWebContainerResource {
+	if s.err != nil { return s }
+	if dependency != nil { if err := dependency.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["dependency"] = serializeValue(dependency)
+	if len(options) > 0 {
+		merged := &WaitForStartOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/waitForStart", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithArgs adds arguments to be passed to a resource that supports arguments when it is launched.
+func (s *pgWebContainerResource) WithArgs(args []string) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if args != nil { reqArgs["args"] = serializeValue(args) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withArgs", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithArgsCallback adds a callback to be executed with a list of command-line arguments when a resource is started.
+func (s *pgWebContainerResource) WithArgsCallback(callback func(obj CommandLineArgsCallbackContext)) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[CommandLineArgsCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withArgsCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithBindMount adds a bind mount to a container resource.
+func (s *pgWebContainerResource) WithBindMount(source string, target string, options ...*WithBindMountOptions) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["source"] = serializeValue(source)
+	reqArgs["target"] = serializeValue(target)
+	if len(options) > 0 {
+		merged := &WithBindMountOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withBindMount", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithBuildArg adds a build argument when the container is built from a Dockerfile.
+// Allowed types for parameter value: string, ParameterResource.
+func (s *pgWebContainerResource) WithBuildArg(name string, value any) PgWebContainerResource {
+	if s.err != nil { return s }
+	switch value.(type) {
+	case string, ParameterResource:
+	default:
+		err := fmt.Errorf("aspire: WithBuildArg: parameter %q must be one of [string, ParameterResource], got %T", "value", value)
+		s.setErr(err); return s
+	}
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	if !isNil(value) { reqArgs["value"] = serializeValue(value) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withBuildArg", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithBuildSecret adds a secret build argument when the container is built from a Dockerfile.
+func (s *pgWebContainerResource) WithBuildSecret(name string, value ParameterResource) PgWebContainerResource {
+	if s.err != nil { return s }
+	if value != nil { if err := value.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	reqArgs["value"] = serializeValue(value)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withParameterBuildSecret", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithCertificateTrustScope sets the certificate trust scope
+func (s *pgWebContainerResource) WithCertificateTrustScope(scope CertificateTrustScope) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["scope"] = serializeValue(scope)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withCertificateTrustScope", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithChildRelationship sets a child relationship
+func (s *pgWebContainerResource) WithChildRelationship(child Resource) PgWebContainerResource {
+	if s.err != nil { return s }
+	if child != nil { if err := child.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["child"] = serializeValue(child)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withBuilderChildRelationship", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithCommand adds a resource command
+func (s *pgWebContainerResource) WithCommand(name string, displayName string, executeCommand func(arg ExecuteCommandContext) *ExecuteCommandResult, options ...*WithCommandOptions) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	reqArgs["displayName"] = serializeValue(displayName)
+	if executeCommand != nil {
+		cb := executeCommand
+		shim := func(args ...any) any {
+			return cb(callbackArg[ExecuteCommandContext](args, 0))
+		}
+		reqArgs["executeCommand"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithCommandOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithComputeEnvironment configures the compute environment for the compute resource.
+func (s *pgWebContainerResource) WithComputeEnvironment(computeEnvironmentResource ComputeEnvironmentResource) PgWebContainerResource {
+	if s.err != nil { return s }
+	if computeEnvironmentResource != nil { if err := computeEnvironmentResource.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["computeEnvironmentResource"] = serializeValue(computeEnvironmentResource)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withComputeEnvironment", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerBuildOptions configures container build options for a compute resource using an async callback.
+func (s *pgWebContainerResource) WithContainerBuildOptions(callback func(arg ContainerBuildOptionsCallbackContext)) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ContainerBuildOptionsCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerBuildOptions", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerCertificatePaths adds container certificate path overrides used for certificate trust at run time.
+func (s *pgWebContainerResource) WithContainerCertificatePaths(options ...*WithContainerCertificatePathsOptions) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithContainerCertificatePathsOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerCertificatePaths", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerFiles creates or updates files and folders in a container by copying them from a source path on the host.
+func (s *pgWebContainerResource) WithContainerFiles(destinationPath string, sourcePath string, options ...*ContainerFilesOptions) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["destinationPath"] = serializeValue(destinationPath)
+	reqArgs["sourcePath"] = serializeValue(sourcePath)
+	if len(options) > 0 {
+		merged := &ContainerFilesOptions{}
+		applied := false
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt); applied = true }
+		}
+		if applied { reqArgs["options"] = serializeValue(merged) }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerFiles", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerFilesCallback creates or updates files and/or folders at the destination path in the container using entries produced by a callback.
+func (s *pgWebContainerResource) WithContainerFilesCallback(destinationPath string, callback func(arg1 ContainerFileSystemCallbackContext, arg2 *CancellationToken) []ContainerFileSystemItem, options ...*ContainerFilesOptions) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["destinationPath"] = serializeValue(destinationPath)
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			return cb(callbackArg[ContainerFileSystemCallbackContext](args, 0), callbackArg[*CancellationToken](args, 1))
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &ContainerFilesOptions{}
+		applied := false
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt); applied = true }
+		}
+		if applied { reqArgs["options"] = serializeValue(merged) }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerFilesCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerName overrides the default container name for this resource. By default Aspire generates a unique container name based on the resource name and a random postfix (or a postfix based on a hash of the AppHost project path for persistent container resources). This method allows you to override that behavior with a custom name, but could lead to naming conflicts if the specified name is not unique.
+func (s *pgWebContainerResource) WithContainerName(name string) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerName", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerNetworkAlias adds a network alias to container resource.
+func (s *pgWebContainerResource) WithContainerNetworkAlias(alias string) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["alias"] = serializeValue(alias)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerNetworkAlias", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerRegistry configures the resource to use the specified container registry for container image operations.
+func (s *pgWebContainerResource) WithContainerRegistry(registry Resource) PgWebContainerResource {
+	if s.err != nil { return s }
+	if registry != nil { if err := registry.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["registry"] = serializeValue(registry)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerRegistry", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerRuntimeArgs adds a callback to be executed with a list of arguments to add to the container runtime run command when a container resource is started.
+func (s *pgWebContainerResource) WithContainerRuntimeArgs(args []string) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if args != nil { reqArgs["args"] = serializeValue(args) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerRuntimeArgs", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDeveloperCertificateTrust indicates whether developer certificates should be treated as trusted certificate authorities for the resource at run time. Currently this indicates trust for the ASP.NET Core developer certificate. The developer certificate will only be trusted when running in local development scenarios; in publish mode resources will use their default certificate trust.
+func (s *pgWebContainerResource) WithDeveloperCertificateTrust(trust bool) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["trust"] = serializeValue(trust)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withDeveloperCertificateTrust", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDockerfile causes Aspire to build the specified container image from a Dockerfile.
+func (s *pgWebContainerResource) WithDockerfile(contextPath string, options ...*WithDockerfileOptions) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["contextPath"] = serializeValue(contextPath)
+	if len(options) > 0 {
+		merged := &WithDockerfileOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withDockerfile", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDockerfileBaseImage configures custom base images for generated Dockerfiles.
+func (s *pgWebContainerResource) WithDockerfileBaseImage(options ...*WithDockerfileBaseImageOptions) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithDockerfileBaseImageOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withDockerfileBaseImage", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDockerfileBuilder configures the resource to use a programmatically generated Dockerfile
+func (s *pgWebContainerResource) WithDockerfileBuilder(contextPath string, callback func(arg DockerfileBuilderCallbackContext), options ...*WithDockerfileBuilderOptions) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["contextPath"] = serializeValue(contextPath)
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[DockerfileBuilderCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithDockerfileBuilderOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withDockerfileBuilder", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDockerfileFactory builds the specified container image from a Dockerfile generated by an asynchronous factory function.
+func (s *pgWebContainerResource) WithDockerfileFactory(contextPath string, dockerfileFactory func(arg DockerfileFactoryContext) string, options ...*WithDockerfileFactoryOptions) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["contextPath"] = serializeValue(contextPath)
+	if dockerfileFactory != nil {
+		cb := dockerfileFactory
+		shim := func(args ...any) any {
+			return cb(callbackArg[DockerfileFactoryContext](args, 0))
+		}
+		reqArgs["dockerfileFactory"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithDockerfileFactoryOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withDockerfileFactory", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEndpoint adds a network endpoint
+func (s *pgWebContainerResource) WithEndpoint(options ...*WithEndpointOptions) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithEndpointOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEndpoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEndpointCallback updates a named endpoint via callback
+func (s *pgWebContainerResource) WithEndpointCallback(endpointName string, callback func(obj EndpointUpdateContext), options ...*WithEndpointCallbackOptions) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["endpointName"] = serializeValue(endpointName)
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[EndpointUpdateContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithEndpointCallbackOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEndpointCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEndpointProxySupport set whether a resource can use proxied endpoints or whether they should be disabled for all endpoints belonging to the resource. If set to `false`, endpoints belonging to the resource will ignore the configured proxy settings and run proxy-less.
+func (s *pgWebContainerResource) WithEndpointProxySupport(proxyEnabled bool) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["proxyEnabled"] = serializeValue(proxyEnabled)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEndpointProxySupport", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEntrypoint sets the Entrypoint for the container.
+func (s *pgWebContainerResource) WithEntrypoint(entrypoint string) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["entrypoint"] = serializeValue(entrypoint)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEntrypoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEnvironment sets an environment variable
+// Allowed types for parameter value: string, *ReferenceExpression, EndpointReference, ParameterResource, ExternalServiceResource, ResourceWithConnectionString, ExpressionValue.
+func (s *pgWebContainerResource) WithEnvironment(name string, value any) PgWebContainerResource {
+	if s.err != nil { return s }
+	switch value.(type) {
+	case string, *ReferenceExpression, EndpointReference, ParameterResource, ExternalServiceResource, ResourceWithConnectionString, ExpressionValue:
+	default:
+		err := fmt.Errorf("aspire: WithEnvironment: parameter %q must be one of [string, *ReferenceExpression, EndpointReference, ParameterResource, ExternalServiceResource, ResourceWithConnectionString, ExpressionValue], got %T", "value", value)
+		s.setErr(err); return s
+	}
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	if !isNil(value) { reqArgs["value"] = serializeValue(value) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEnvironment", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEnvironmentCallback allows for the population of environment variables on a resource.
+func (s *pgWebContainerResource) WithEnvironmentCallback(callback func(arg EnvironmentCallbackContext)) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[EnvironmentCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEnvironmentCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithExplicitStart prevents resource from starting automatically
+func (s *pgWebContainerResource) WithExplicitStart() PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withExplicitStart", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithExternalHttpEndpoints marks existing http or https endpoints on a resource as external.
+func (s *pgWebContainerResource) WithExternalHttpEndpoints() PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withExternalHttpEndpoints", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHealthCheck adds a health check by key
+func (s *pgWebContainerResource) WithHealthCheck(key string) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["key"] = serializeValue(key)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHealthCheck", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHidden hides the resource from default resource lists
+func (s *pgWebContainerResource) WithHidden() PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHidden", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHiddenOnCompletion hides the resource from default resource lists after successful completion
+func (s *pgWebContainerResource) WithHiddenOnCompletion(options ...*WithHiddenOnCompletionOptions) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHiddenOnCompletionOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHiddenOnCompletion", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHostPort configures the host port that the pgweb resource is exposed on instead of using randomly assigned port.
+func (s *pgWebContainerResource) WithHostPort(port *float64) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["port"] = serializeValue(port)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.PostgreSQL/withPgWebHostPort", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpCommand adds an HTTP resource command
+func (s *pgWebContainerResource) WithHttpCommand(path string, displayName string, options ...*HttpCommandExportOptions) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["path"] = serializeValue(path)
+	reqArgs["displayName"] = serializeValue(displayName)
+	if len(options) > 0 {
+		merged := &HttpCommandExportOptions{}
+		applied := false
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt); applied = true }
+		}
+		if applied { reqArgs["options"] = serializeValue(merged) }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpEndpoint adds an HTTP endpoint
+func (s *pgWebContainerResource) WithHttpEndpoint(options ...*WithHttpEndpointOptions) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHttpEndpointOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpEndpoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpEndpointCallback updates an HTTP endpoint via callback
+func (s *pgWebContainerResource) WithHttpEndpointCallback(callback func(obj EndpointUpdateContext), options ...*WithHttpEndpointCallbackOptions) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[EndpointUpdateContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithHttpEndpointCallbackOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpEndpointCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpHealthCheck adds a health check to the resource which is mapped to a specific endpoint.
+func (s *pgWebContainerResource) WithHttpHealthCheck(options ...*WithHttpHealthCheckOptions) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHttpHealthCheckOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpHealthCheck", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpProbe adds an HTTP health probe to the resource
+func (s *pgWebContainerResource) WithHttpProbe(probeType ProbeType, options ...*WithHttpProbeOptions) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["probeType"] = serializeValue(probeType)
+	if len(options) > 0 {
+		merged := &WithHttpProbeOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpProbe", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpsCertificateConfiguration adds a callback that allows configuring the resource to use a specific HTTPS/TLS certificate key pair for server authentication.
+func (s *pgWebContainerResource) WithHttpsCertificateConfiguration(callback func(arg HttpsCertificateConfigurationCallbackAnnotationContext)) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[HttpsCertificateConfigurationCallbackAnnotationContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpsCertificateConfiguration", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpsDeveloperCertificate indicates that a resource should use the developer certificate key pair for HTTPS endpoints at run time. Currently this indicates use of the ASP.NET Core developer certificate. The developer certificate will only be used when running in local development scenarios; in publish mode resources will use their default certificate configuration.
+func (s *pgWebContainerResource) WithHttpsDeveloperCertificate(options ...*WithHttpsDeveloperCertificateOptions) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHttpsDeveloperCertificateOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withParameterHttpsDeveloperCertificate", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpsEndpoint adds an HTTPS endpoint
+func (s *pgWebContainerResource) WithHttpsEndpoint(options ...*WithHttpsEndpointOptions) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHttpsEndpointOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpsEndpoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpsEndpointCallback updates an HTTPS endpoint via callback
+func (s *pgWebContainerResource) WithHttpsEndpointCallback(callback func(obj EndpointUpdateContext), options ...*WithHttpsEndpointCallbackOptions) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[EndpointUpdateContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithHttpsEndpointCallbackOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpsEndpointCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithIconName specifies the icon to use when displaying the resource in the dashboard.
+func (s *pgWebContainerResource) WithIconName(iconName string, options ...*WithIconNameOptions) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["iconName"] = serializeValue(iconName)
+	if len(options) > 0 {
+		merged := &WithIconNameOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withIconName", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithImage allows overriding the image on a container.
+func (s *pgWebContainerResource) WithImage(image string, options ...*WithImageOptions) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["image"] = serializeValue(image)
+	if len(options) > 0 {
+		merged := &WithImageOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withImage", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithImagePullPolicy sets the pull policy for the container resource.
+func (s *pgWebContainerResource) WithImagePullPolicy(pullPolicy ImagePullPolicy) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["pullPolicy"] = serializeValue(pullPolicy)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withImagePullPolicy", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithImagePushOptions adds an asynchronous callback to configure container image push options for the resource.
+func (s *pgWebContainerResource) WithImagePushOptions(callback func(arg ContainerImagePushOptionsCallbackContext)) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ContainerImagePushOptionsCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withImagePushOptions", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithImageRegistry allows overriding the image registry on a container.
+func (s *pgWebContainerResource) WithImageRegistry(registry string) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["registry"] = serializeValue(registry)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withImageRegistry", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithImageSHA256 allows setting the image to a specific sha256 on a container.
+func (s *pgWebContainerResource) WithImageSHA256(sha256 string) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["sha256"] = serializeValue(sha256)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withImageSHA256", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithImageTag allows overriding the image tag on a container.
+func (s *pgWebContainerResource) WithImageTag(tag string) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["tag"] = serializeValue(tag)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withImageTag", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithLifetime sets the lifetime behavior of the container resource.
+func (s *pgWebContainerResource) WithLifetime(lifetime ContainerLifetime) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["lifetime"] = serializeValue(lifetime)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withLifetime", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithLifetimeOf configures a resource to match the lifetime of another resource.
+func (s *pgWebContainerResource) WithLifetimeOf(sourceBuilder Resource) PgWebContainerResource {
+	if s.err != nil { return s }
+	if sourceBuilder != nil { if err := sourceBuilder.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["sourceBuilder"] = serializeValue(sourceBuilder)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withLifetimeOf", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithMcpServer marks the resource as hosting a Model Context Protocol (MCP) server on the specified endpoint.
+func (s *pgWebContainerResource) WithMcpServer(options ...*WithMcpServerOptions) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithMcpServerOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withMcpServer", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithOtlpExporter configures OTLP telemetry export
+func (s *pgWebContainerResource) WithOtlpExporter(options ...*WithOtlpExporterOptions) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithOtlpExporterOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withOtlpExporter", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithParentProcessLifetime configures a resource to use a persistent lifetime that ends when a parent process exits.
+func (s *pgWebContainerResource) WithParentProcessLifetime(parentProcessId float64) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["parentProcessId"] = serializeValue(parentProcessId)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withParentProcessLifetime", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithParentRelationship sets the parent relationship
+func (s *pgWebContainerResource) WithParentRelationship(parent Resource) PgWebContainerResource {
+	if s.err != nil { return s }
+	if parent != nil { if err := parent.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["parent"] = serializeValue(parent)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withBuilderParentRelationship", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithPersistentLifetime configures a resource to use a persistent lifetime.
+func (s *pgWebContainerResource) WithPersistentLifetime() PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withPersistentLifetime", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithPipelineConfiguration registers a callback to be executed during the pipeline configuration phase, allowing modification of step dependencies and relationships.
+func (s *pgWebContainerResource) WithPipelineConfiguration(callback func(obj PipelineConfigurationContext)) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[PipelineConfigurationContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withPipelineConfiguration", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithPipelineStepFactory adds a pipeline step to the resource that will be executed during deployment.
+func (s *pgWebContainerResource) WithPipelineStepFactory(stepName string, callback func(arg PipelineStepContext), options ...*WithPipelineStepFactoryOptions) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["stepName"] = serializeValue(stepName)
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[PipelineStepContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithPipelineStepFactoryOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withPipelineStepFactory", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithProcessCommand adds a command to the resource that starts a local process when invoked.
+func (s *pgWebContainerResource) WithProcessCommand(commandName string, displayName string, options *ProcessCommandExportOptions) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["commandName"] = serializeValue(commandName)
+	reqArgs["displayName"] = serializeValue(displayName)
+	if options != nil { reqArgs["options"] = serializeValue(options) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withProcessCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithProcessCommandFactory adds a command to the resource that starts a local process created by a callback when invoked.
+func (s *pgWebContainerResource) WithProcessCommandFactory(commandName string, displayName string, createProcessSpec func(arg ExecuteCommandContext) *ProcessCommandSpecExportData, options ...*ProcessCommandResultExportOptions) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["commandName"] = serializeValue(commandName)
+	reqArgs["displayName"] = serializeValue(displayName)
+	if createProcessSpec != nil {
+		cb := createProcessSpec
+		shim := func(args ...any) any {
+			return cb(callbackArg[ExecuteCommandContext](args, 0))
+		}
+		reqArgs["createProcessSpec"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &ProcessCommandResultExportOptions{}
+		applied := false
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt); applied = true }
+		}
+		if applied { reqArgs["options"] = serializeValue(merged) }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withProcessCommandFactory", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithReference adds a reference to another resource
+// Allowed types for parameter source: Resource, EndpointReference, string.
+func (s *pgWebContainerResource) WithReference(source any, options ...*WithReferenceOptions) PgWebContainerResource {
+	if s.err != nil { return s }
+	switch source.(type) {
+	case Resource, EndpointReference, string:
+	default:
+		err := fmt.Errorf("aspire: WithReference: parameter %q must be one of [Resource, EndpointReference, string], got %T", "source", source)
+		s.setErr(err); return s
+	}
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if !isNil(source) { reqArgs["source"] = serializeValue(source) }
+	if len(options) > 0 {
+		merged := &WithReferenceOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withReference", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithReferenceEnvironment configures how information is injected into environment variables when the resource references other resources.
+func (s *pgWebContainerResource) WithReferenceEnvironment(options *ReferenceEnvironmentInjectionOptions) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if options != nil { reqArgs["options"] = serializeValue(options) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withReferenceEnvironment", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRelationship adds a relationship to another resource using its builder.
+func (s *pgWebContainerResource) WithRelationship(resourceBuilder Resource, type_ string) PgWebContainerResource {
+	if s.err != nil { return s }
+	if resourceBuilder != nil { if err := resourceBuilder.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["resourceBuilder"] = serializeValue(resourceBuilder)
+	reqArgs["type"] = serializeValue(type_)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withBuilderRelationship", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRemoteImageName sets the remote image name (without registry endpoint or tag) for container push operations.
+func (s *pgWebContainerResource) WithRemoteImageName(remoteImageName string) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["remoteImageName"] = serializeValue(remoteImageName)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withRemoteImageName", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRemoteImageTag sets the remote image tag for container push operations.
+func (s *pgWebContainerResource) WithRemoteImageTag(remoteImageTag string) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["remoteImageTag"] = serializeValue(remoteImageTag)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withRemoteImageTag", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRequiredCommand declares that a resource requires a specific command/executable to be available on the local machine PATH before it can start.
+func (s *pgWebContainerResource) WithRequiredCommand(command string, options ...*WithRequiredCommandOptions) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["command"] = serializeValue(command)
+	if len(options) > 0 {
+		merged := &WithRequiredCommandOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withRequiredCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRequiredCommandValidation declares that a resource requires a specific command/executable to be available on the local machine PATH before it can start, with custom validation logic.
+func (s *pgWebContainerResource) WithRequiredCommandValidation(command string, validationCallback func(arg RequiredCommandValidationContext) RequiredCommandValidationResult, options ...*WithRequiredCommandValidationOptions) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["command"] = serializeValue(command)
+	if validationCallback != nil {
+		cb := validationCallback
+		shim := func(args ...any) any {
+			return cb(callbackArg[RequiredCommandValidationContext](args, 0))
+		}
+		reqArgs["validationCallback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithRequiredCommandValidationOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withRequiredCommandValidation", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithSessionLifetime configures a resource to use a session lifetime.
+func (s *pgWebContainerResource) WithSessionLifetime() PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withSessionLifetime", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithTerminal adds an interactive terminal session to a resource using the default terminal options.
+func (s *pgWebContainerResource) WithTerminal() PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withTerminal", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithUrl adds or modifies displayed URLs
+// Allowed types for parameter url: string, *ReferenceExpression.
+func (s *pgWebContainerResource) WithUrl(url any, options ...*WithUrlOptions) PgWebContainerResource {
+	if s.err != nil { return s }
+	switch url.(type) {
+	case string, *ReferenceExpression:
+	default:
+		err := fmt.Errorf("aspire: WithUrl: parameter %q must be one of [string, *ReferenceExpression], got %T", "url", url)
+		s.setErr(err); return s
+	}
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if !isNil(url) { reqArgs["url"] = serializeValue(url) }
+	if len(options) > 0 {
+		merged := &WithUrlOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withUrl", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithUrlForEndpoint registers a callback to update the URL displayed for the endpoint with the specified name.
+func (s *pgWebContainerResource) WithUrlForEndpoint(endpointName string, callback func(obj *ResourceUrlAnnotation)) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["endpointName"] = serializeValue(endpointName)
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			arg0 := callbackArg[*ResourceUrlAnnotation](args, 0)
+			cb(arg0)
+			return map[string]any{
+				"p0": serializeValue(arg0),
+			}
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withUrlForEndpoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithUrls registers a callback to customize the URLs displayed for the resource.
+func (s *pgWebContainerResource) WithUrls(callback func(obj ResourceUrlsCallbackContext)) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ResourceUrlsCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withUrls", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithVolume adds a volume to a container resource.
+func (s *pgWebContainerResource) WithVolume(target string, options ...*WithVolumeOptions) PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	reqArgs["target"] = serializeValue(target)
+	if len(options) > 0 {
+		merged := &WithVolumeOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withVolume", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithoutHttpsCertificate disable HTTPS/TLS server certificate configuration for the resource. No HTTPS/TLS termination configuration will be applied.
+func (s *pgWebContainerResource) WithoutHttpsCertificate() PgWebContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withoutHttpsCertificate", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
 // PipelineConfigurationContext is the public interface for handle type PipelineConfigurationContext.
 type PipelineConfigurationContext interface {
 	handleReference
@@ -15610,6 +29201,4720 @@ func (s *pipelineSummary) AddMarkdown(key string, markdownString string) error {
 	reqArgs["markdownString"] = serializeValue(markdownString)
 	_, err := s.client.invokeCapability(ctx, "Aspire.Hosting/addMarkdown", reqArgs)
 	return err
+}
+
+// PostgresDatabaseResource is the public interface for handle type PostgresDatabaseResource.
+type PostgresDatabaseResource interface {
+	handleReference
+	ConnectionStringExpression() *ReferenceExpression
+	CreateExecutionConfiguration() ExecutionConfigurationBuilder
+	DatabaseName() (string, error)
+	ExcludeFromManifest() PostgresDatabaseResource
+	ExcludeFromMcp() PostgresDatabaseResource
+	GetConnectionProperty(key string) *ReferenceExpression
+	GetResourceName() (string, error)
+	JdbcConnectionString() *ReferenceExpression
+	Name() (string, error)
+	OnBeforeResourceStarted(callback func(arg BeforeResourceStartedEvent)) PostgresDatabaseResource
+	OnConnectionStringAvailable(callback func(arg ConnectionStringAvailableEvent)) PostgresDatabaseResource
+	OnInitializeResource(callback func(arg InitializeResourceEvent)) PostgresDatabaseResource
+	OnResourceReady(callback func(arg ResourceReadyEvent)) PostgresDatabaseResource
+	OnResourceStopped(callback func(arg ResourceStoppedEvent)) PostgresDatabaseResource
+	Parent() PostgresServerResource
+	SubscribeHttpsEndpointsUpdate(callback func(obj HttpsEndpointUpdateCallbackContext)) PostgresDatabaseResource
+	UriExpression() *ReferenceExpression
+	WithChildRelationship(child Resource) PostgresDatabaseResource
+	WithCommand(name string, displayName string, executeCommand func(arg ExecuteCommandContext) *ExecuteCommandResult, options ...*WithCommandOptions) PostgresDatabaseResource
+	WithConnectionProperty(name string, value any) PostgresDatabaseResource
+	WithContainerBuildOptions(callback func(arg ContainerBuildOptionsCallbackContext)) PostgresDatabaseResource
+	WithContainerRegistry(registry Resource) PostgresDatabaseResource
+	WithCreationScript(script string) PostgresDatabaseResource
+	WithDockerfileBaseImage(options ...*WithDockerfileBaseImageOptions) PostgresDatabaseResource
+	WithExplicitStart() PostgresDatabaseResource
+	WithHealthCheck(key string) PostgresDatabaseResource
+	WithHidden() PostgresDatabaseResource
+	WithHiddenOnCompletion(options ...*WithHiddenOnCompletionOptions) PostgresDatabaseResource
+	WithIconName(iconName string, options ...*WithIconNameOptions) PostgresDatabaseResource
+	WithLifetimeOf(sourceBuilder Resource) PostgresDatabaseResource
+	WithParentProcessLifetime(parentProcessId float64) PostgresDatabaseResource
+	WithParentRelationship(parent Resource) PostgresDatabaseResource
+	WithPersistentLifetime() PostgresDatabaseResource
+	WithPipelineConfiguration(callback func(obj PipelineConfigurationContext)) PostgresDatabaseResource
+	WithPipelineStepFactory(stepName string, callback func(arg PipelineStepContext), options ...*WithPipelineStepFactoryOptions) PostgresDatabaseResource
+	WithPostgresMcp(options ...*WithPostgresMcpOptions) PostgresDatabaseResource
+	WithProcessCommand(commandName string, displayName string, options *ProcessCommandExportOptions) PostgresDatabaseResource
+	WithProcessCommandFactory(commandName string, displayName string, createProcessSpec func(arg ExecuteCommandContext) *ProcessCommandSpecExportData, options ...*ProcessCommandResultExportOptions) PostgresDatabaseResource
+	WithRelationship(resourceBuilder Resource, type_ string) PostgresDatabaseResource
+	WithRequiredCommand(command string, options ...*WithRequiredCommandOptions) PostgresDatabaseResource
+	WithRequiredCommandValidation(command string, validationCallback func(arg RequiredCommandValidationContext) RequiredCommandValidationResult, options ...*WithRequiredCommandValidationOptions) PostgresDatabaseResource
+	WithSessionLifetime() PostgresDatabaseResource
+	WithTerminal() PostgresDatabaseResource
+	WithUrl(url any, options ...*WithUrlOptions) PostgresDatabaseResource
+	WithUrlForEndpoint(endpointName string, callback func(obj *ResourceUrlAnnotation)) PostgresDatabaseResource
+	WithUrls(callback func(obj ResourceUrlsCallbackContext)) PostgresDatabaseResource
+	Err() error
+}
+
+// postgresDatabaseResource is the unexported impl of PostgresDatabaseResource.
+type postgresDatabaseResource struct {
+	*resourceBuilderBase
+}
+
+// newPostgresDatabaseResourceFromHandle wraps an existing handle as PostgresDatabaseResource.
+func newPostgresDatabaseResourceFromHandle(h *handle, c *client) PostgresDatabaseResource {
+	return &postgresDatabaseResource{resourceBuilderBase: newResourceBuilderBase(h, c)}
+}
+
+// ConnectionStringExpression gets the connection string expression for the Postgres database.
+func (s *postgresDatabaseResource) ConnectionStringExpression() *ReferenceExpression {
+	if s.err != nil { return nil }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"context": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting.ApplicationModel/PostgresDatabaseResource.connectionStringExpression", reqArgs)
+	if err != nil { s.setErr(err); return nil }
+	typed, ok := result.(*ReferenceExpression)
+	if !ok {
+		s.setErr(fmt.Errorf("aspire: Aspire.Hosting.ApplicationModel/PostgresDatabaseResource.connectionStringExpression returned unexpected type %T", result))
+		return nil
+	}
+	return typed
+}
+
+// CreateExecutionConfiguration creates an execution configuration builder for the specified resource.
+func (s *postgresDatabaseResource) CreateExecutionConfiguration() ExecutionConfigurationBuilder {
+	if s.err != nil { return &executionConfigurationBuilder{resourceBuilderBase: newErroredResourceBuilder(s.err, s.client)} }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting/createExecutionConfiguration", reqArgs)
+	if err != nil {
+		return &executionConfigurationBuilder{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	href, ok := result.(handleReference)
+	if !ok {
+		err := fmt.Errorf("aspire: Aspire.Hosting/createExecutionConfiguration returned unexpected type %T", result)
+		return &executionConfigurationBuilder{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	return &executionConfigurationBuilder{resourceBuilderBase: newResourceBuilderBase(href.getHandle(), s.client)}
+}
+
+// DatabaseName gets the database name.
+func (s *postgresDatabaseResource) DatabaseName() (string, error) {
+	if s.err != nil { var zero string; return zero, s.err }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"context": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting.ApplicationModel/PostgresDatabaseResource.databaseName", reqArgs)
+	if err != nil {
+		var zero string
+		return zero, err
+	}
+	return decodeAs[string](result)
+}
+
+// ExcludeFromManifest excludes a resource from being published to the manifest.
+func (s *postgresDatabaseResource) ExcludeFromManifest() PostgresDatabaseResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/excludeFromManifest", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// ExcludeFromMcp exclude the resource from MCP operations using the Aspire MCP server. The resource is excluded from results that return resources, console logs and telemetry.
+func (s *postgresDatabaseResource) ExcludeFromMcp() PostgresDatabaseResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/excludeFromMcp", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// GetConnectionProperty retrieves the value of a specified connection property from the resource's connection properties.
+func (s *postgresDatabaseResource) GetConnectionProperty(key string) *ReferenceExpression {
+	if s.err != nil { return nil }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	reqArgs["key"] = serializeValue(key)
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting/getConnectionProperty", reqArgs)
+	if err != nil { s.setErr(err); return nil }
+	typed, ok := result.(*ReferenceExpression)
+	if !ok {
+		s.setErr(fmt.Errorf("aspire: Aspire.Hosting/getConnectionProperty returned unexpected type %T", result))
+		return nil
+	}
+	return typed
+}
+
+// GetResourceName gets the name of the resource from a builder.
+func (s *postgresDatabaseResource) GetResourceName() (string, error) {
+	if s.err != nil { var zero string; return zero, s.err }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting/getResourceName", reqArgs)
+	if err != nil {
+		var zero string
+		return zero, err
+	}
+	return decodeAs[string](result)
+}
+
+// JdbcConnectionString gets the JDBC connection string for the PostgreSQL database.
+func (s *postgresDatabaseResource) JdbcConnectionString() *ReferenceExpression {
+	if s.err != nil { return nil }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"context": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting.ApplicationModel/PostgresDatabaseResource.jdbcConnectionString", reqArgs)
+	if err != nil { s.setErr(err); return nil }
+	typed, ok := result.(*ReferenceExpression)
+	if !ok {
+		s.setErr(fmt.Errorf("aspire: Aspire.Hosting.ApplicationModel/PostgresDatabaseResource.jdbcConnectionString returned unexpected type %T", result))
+		return nil
+	}
+	return typed
+}
+
+// Name gets the name of the resource.
+func (s *postgresDatabaseResource) Name() (string, error) {
+	if s.err != nil { var zero string; return zero, s.err }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"context": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting.ApplicationModel/PostgresDatabaseResource.name", reqArgs)
+	if err != nil {
+		var zero string
+		return zero, err
+	}
+	return decodeAs[string](result)
+}
+
+// OnBeforeResourceStarted subscribes to the BeforeResourceStarted event.
+func (s *postgresDatabaseResource) OnBeforeResourceStarted(callback func(arg BeforeResourceStartedEvent)) PostgresDatabaseResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[BeforeResourceStartedEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onBeforeResourceStarted", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// OnConnectionStringAvailable subscribes to the ConnectionStringAvailable event.
+func (s *postgresDatabaseResource) OnConnectionStringAvailable(callback func(arg ConnectionStringAvailableEvent)) PostgresDatabaseResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ConnectionStringAvailableEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onConnectionStringAvailable", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// OnInitializeResource subscribes to the InitializeResource event.
+func (s *postgresDatabaseResource) OnInitializeResource(callback func(arg InitializeResourceEvent)) PostgresDatabaseResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[InitializeResourceEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onInitializeResource", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// OnResourceReady subscribes to the ResourceReady event.
+func (s *postgresDatabaseResource) OnResourceReady(callback func(arg ResourceReadyEvent)) PostgresDatabaseResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ResourceReadyEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onResourceReady", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// OnResourceStopped subscribes to the ResourceStopped event.
+func (s *postgresDatabaseResource) OnResourceStopped(callback func(arg ResourceStoppedEvent)) PostgresDatabaseResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ResourceStoppedEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onResourceStopped", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// Parent gets the parent PostgresSQL container resource.
+func (s *postgresDatabaseResource) Parent() PostgresServerResource {
+	if s.err != nil { return &postgresServerResource{resourceBuilderBase: newErroredResourceBuilder(s.err, s.client)} }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"context": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting.ApplicationModel/PostgresDatabaseResource.parent", reqArgs)
+	if err != nil {
+		return &postgresServerResource{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	href, ok := result.(handleReference)
+	if !ok {
+		err := fmt.Errorf("aspire: Aspire.Hosting.ApplicationModel/PostgresDatabaseResource.parent returned unexpected type %T", result)
+		return &postgresServerResource{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	return &postgresServerResource{resourceBuilderBase: newResourceBuilderBase(href.getHandle(), s.client)}
+}
+
+// SubscribeHttpsEndpointsUpdate subscribes to the `BeforeStartEvent` and invokes the specified callback when an HTTPS certificate is determined to be available for the resource. This is used to conditionally update endpoint URI schemes or perform other HTTPS-related configuration at startup.
+func (s *postgresDatabaseResource) SubscribeHttpsEndpointsUpdate(callback func(obj HttpsEndpointUpdateCallbackContext)) PostgresDatabaseResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[HttpsEndpointUpdateCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/subscribeHttpsEndpointsUpdate", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// UriExpression gets the connection URI expression for the PostgreSQL database.
+func (s *postgresDatabaseResource) UriExpression() *ReferenceExpression {
+	if s.err != nil { return nil }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"context": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting.ApplicationModel/PostgresDatabaseResource.uriExpression", reqArgs)
+	if err != nil { s.setErr(err); return nil }
+	typed, ok := result.(*ReferenceExpression)
+	if !ok {
+		s.setErr(fmt.Errorf("aspire: Aspire.Hosting.ApplicationModel/PostgresDatabaseResource.uriExpression returned unexpected type %T", result))
+		return nil
+	}
+	return typed
+}
+
+// WithChildRelationship sets a child relationship
+func (s *postgresDatabaseResource) WithChildRelationship(child Resource) PostgresDatabaseResource {
+	if s.err != nil { return s }
+	if child != nil { if err := child.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["child"] = serializeValue(child)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withBuilderChildRelationship", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithCommand adds a resource command
+func (s *postgresDatabaseResource) WithCommand(name string, displayName string, executeCommand func(arg ExecuteCommandContext) *ExecuteCommandResult, options ...*WithCommandOptions) PostgresDatabaseResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	reqArgs["displayName"] = serializeValue(displayName)
+	if executeCommand != nil {
+		cb := executeCommand
+		shim := func(args ...any) any {
+			return cb(callbackArg[ExecuteCommandContext](args, 0))
+		}
+		reqArgs["executeCommand"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithCommandOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithConnectionProperty adds a connection property annotation to the resource being built.
+// Allowed types for parameter value: string, *ReferenceExpression.
+func (s *postgresDatabaseResource) WithConnectionProperty(name string, value any) PostgresDatabaseResource {
+	if s.err != nil { return s }
+	switch value.(type) {
+	case string, *ReferenceExpression:
+	default:
+		err := fmt.Errorf("aspire: WithConnectionProperty: parameter %q must be one of [string, *ReferenceExpression], got %T", "value", value)
+		s.setErr(err); return s
+	}
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	if !isNil(value) { reqArgs["value"] = serializeValue(value) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withConnectionProperty", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerBuildOptions configures container build options for a compute resource using an async callback.
+func (s *postgresDatabaseResource) WithContainerBuildOptions(callback func(arg ContainerBuildOptionsCallbackContext)) PostgresDatabaseResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ContainerBuildOptionsCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerBuildOptions", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerRegistry configures the resource to use the specified container registry for container image operations.
+func (s *postgresDatabaseResource) WithContainerRegistry(registry Resource) PostgresDatabaseResource {
+	if s.err != nil { return s }
+	if registry != nil { if err := registry.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["registry"] = serializeValue(registry)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerRegistry", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithCreationScript defines the SQL script used to create the database.
+func (s *postgresDatabaseResource) WithCreationScript(script string) PostgresDatabaseResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["script"] = serializeValue(script)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.PostgreSQL/withCreationScript", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDockerfileBaseImage configures custom base images for generated Dockerfiles.
+func (s *postgresDatabaseResource) WithDockerfileBaseImage(options ...*WithDockerfileBaseImageOptions) PostgresDatabaseResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithDockerfileBaseImageOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withDockerfileBaseImage", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithExplicitStart prevents resource from starting automatically
+func (s *postgresDatabaseResource) WithExplicitStart() PostgresDatabaseResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withExplicitStart", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHealthCheck adds a health check by key
+func (s *postgresDatabaseResource) WithHealthCheck(key string) PostgresDatabaseResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["key"] = serializeValue(key)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHealthCheck", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHidden hides the resource from default resource lists
+func (s *postgresDatabaseResource) WithHidden() PostgresDatabaseResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHidden", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHiddenOnCompletion hides the resource from default resource lists after successful completion
+func (s *postgresDatabaseResource) WithHiddenOnCompletion(options ...*WithHiddenOnCompletionOptions) PostgresDatabaseResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHiddenOnCompletionOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHiddenOnCompletion", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithIconName specifies the icon to use when displaying the resource in the dashboard.
+func (s *postgresDatabaseResource) WithIconName(iconName string, options ...*WithIconNameOptions) PostgresDatabaseResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["iconName"] = serializeValue(iconName)
+	if len(options) > 0 {
+		merged := &WithIconNameOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withIconName", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithLifetimeOf configures a resource to match the lifetime of another resource.
+func (s *postgresDatabaseResource) WithLifetimeOf(sourceBuilder Resource) PostgresDatabaseResource {
+	if s.err != nil { return s }
+	if sourceBuilder != nil { if err := sourceBuilder.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["sourceBuilder"] = serializeValue(sourceBuilder)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withLifetimeOf", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithParentProcessLifetime configures a resource to use a persistent lifetime that ends when a parent process exits.
+func (s *postgresDatabaseResource) WithParentProcessLifetime(parentProcessId float64) PostgresDatabaseResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["parentProcessId"] = serializeValue(parentProcessId)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withParentProcessLifetime", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithParentRelationship sets the parent relationship
+func (s *postgresDatabaseResource) WithParentRelationship(parent Resource) PostgresDatabaseResource {
+	if s.err != nil { return s }
+	if parent != nil { if err := parent.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["parent"] = serializeValue(parent)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withBuilderParentRelationship", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithPersistentLifetime configures a resource to use a persistent lifetime.
+func (s *postgresDatabaseResource) WithPersistentLifetime() PostgresDatabaseResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withPersistentLifetime", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithPipelineConfiguration registers a callback to be executed during the pipeline configuration phase, allowing modification of step dependencies and relationships.
+func (s *postgresDatabaseResource) WithPipelineConfiguration(callback func(obj PipelineConfigurationContext)) PostgresDatabaseResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[PipelineConfigurationContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withPipelineConfiguration", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithPipelineStepFactory adds a pipeline step to the resource that will be executed during deployment.
+func (s *postgresDatabaseResource) WithPipelineStepFactory(stepName string, callback func(arg PipelineStepContext), options ...*WithPipelineStepFactoryOptions) PostgresDatabaseResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["stepName"] = serializeValue(stepName)
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[PipelineStepContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithPipelineStepFactoryOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withPipelineStepFactory", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithPostgresMcp adds a Postgres MCP server container and configures it to connect to the database represented by `builder`.
+func (s *postgresDatabaseResource) WithPostgresMcp(options ...*WithPostgresMcpOptions) PostgresDatabaseResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithPostgresMcpOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+		if merged.ConfigureContainer != nil {
+			cb := merged.ConfigureContainer
+			shim := func(args ...any) any {
+				cb(callbackArg[PostgresMcpContainerResource](args, 0))
+				return nil
+			}
+			reqArgs["configureContainer"] = s.client.registerCallback(shim)
+		}
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.PostgreSQL/withPostgresMcp", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithProcessCommand adds a command to the resource that starts a local process when invoked.
+func (s *postgresDatabaseResource) WithProcessCommand(commandName string, displayName string, options *ProcessCommandExportOptions) PostgresDatabaseResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["commandName"] = serializeValue(commandName)
+	reqArgs["displayName"] = serializeValue(displayName)
+	if options != nil { reqArgs["options"] = serializeValue(options) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withProcessCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithProcessCommandFactory adds a command to the resource that starts a local process created by a callback when invoked.
+func (s *postgresDatabaseResource) WithProcessCommandFactory(commandName string, displayName string, createProcessSpec func(arg ExecuteCommandContext) *ProcessCommandSpecExportData, options ...*ProcessCommandResultExportOptions) PostgresDatabaseResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["commandName"] = serializeValue(commandName)
+	reqArgs["displayName"] = serializeValue(displayName)
+	if createProcessSpec != nil {
+		cb := createProcessSpec
+		shim := func(args ...any) any {
+			return cb(callbackArg[ExecuteCommandContext](args, 0))
+		}
+		reqArgs["createProcessSpec"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &ProcessCommandResultExportOptions{}
+		applied := false
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt); applied = true }
+		}
+		if applied { reqArgs["options"] = serializeValue(merged) }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withProcessCommandFactory", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRelationship adds a relationship to another resource using its builder.
+func (s *postgresDatabaseResource) WithRelationship(resourceBuilder Resource, type_ string) PostgresDatabaseResource {
+	if s.err != nil { return s }
+	if resourceBuilder != nil { if err := resourceBuilder.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["resourceBuilder"] = serializeValue(resourceBuilder)
+	reqArgs["type"] = serializeValue(type_)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withBuilderRelationship", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRequiredCommand declares that a resource requires a specific command/executable to be available on the local machine PATH before it can start.
+func (s *postgresDatabaseResource) WithRequiredCommand(command string, options ...*WithRequiredCommandOptions) PostgresDatabaseResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["command"] = serializeValue(command)
+	if len(options) > 0 {
+		merged := &WithRequiredCommandOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withRequiredCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRequiredCommandValidation declares that a resource requires a specific command/executable to be available on the local machine PATH before it can start, with custom validation logic.
+func (s *postgresDatabaseResource) WithRequiredCommandValidation(command string, validationCallback func(arg RequiredCommandValidationContext) RequiredCommandValidationResult, options ...*WithRequiredCommandValidationOptions) PostgresDatabaseResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["command"] = serializeValue(command)
+	if validationCallback != nil {
+		cb := validationCallback
+		shim := func(args ...any) any {
+			return cb(callbackArg[RequiredCommandValidationContext](args, 0))
+		}
+		reqArgs["validationCallback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithRequiredCommandValidationOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withRequiredCommandValidation", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithSessionLifetime configures a resource to use a session lifetime.
+func (s *postgresDatabaseResource) WithSessionLifetime() PostgresDatabaseResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withSessionLifetime", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithTerminal adds an interactive terminal session to a resource using the default terminal options.
+func (s *postgresDatabaseResource) WithTerminal() PostgresDatabaseResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withTerminal", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithUrl adds or modifies displayed URLs
+// Allowed types for parameter url: string, *ReferenceExpression.
+func (s *postgresDatabaseResource) WithUrl(url any, options ...*WithUrlOptions) PostgresDatabaseResource {
+	if s.err != nil { return s }
+	switch url.(type) {
+	case string, *ReferenceExpression:
+	default:
+		err := fmt.Errorf("aspire: WithUrl: parameter %q must be one of [string, *ReferenceExpression], got %T", "url", url)
+		s.setErr(err); return s
+	}
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if !isNil(url) { reqArgs["url"] = serializeValue(url) }
+	if len(options) > 0 {
+		merged := &WithUrlOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withUrl", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithUrlForEndpoint registers a callback to update the URL displayed for the endpoint with the specified name.
+func (s *postgresDatabaseResource) WithUrlForEndpoint(endpointName string, callback func(obj *ResourceUrlAnnotation)) PostgresDatabaseResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["endpointName"] = serializeValue(endpointName)
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			arg0 := callbackArg[*ResourceUrlAnnotation](args, 0)
+			cb(arg0)
+			return map[string]any{
+				"p0": serializeValue(arg0),
+			}
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withUrlForEndpoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithUrls registers a callback to customize the URLs displayed for the resource.
+func (s *postgresDatabaseResource) WithUrls(callback func(obj ResourceUrlsCallbackContext)) PostgresDatabaseResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ResourceUrlsCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withUrls", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// PostgresMcpContainerResource is the public interface for handle type PostgresMcpContainerResource.
+type PostgresMcpContainerResource interface {
+	handleReference
+	AsHttp2Service() PostgresMcpContainerResource
+	CreateExecutionConfiguration() ExecutionConfigurationBuilder
+	ExcludeFromManifest() PostgresMcpContainerResource
+	ExcludeFromMcp() PostgresMcpContainerResource
+	GetEndpoint(name string) EndpointReference
+	GetResourceName() (string, error)
+	OnBeforeResourceStarted(callback func(arg BeforeResourceStartedEvent)) PostgresMcpContainerResource
+	OnInitializeResource(callback func(arg InitializeResourceEvent)) PostgresMcpContainerResource
+	OnResourceEndpointsAllocated(callback func(arg ResourceEndpointsAllocatedEvent)) PostgresMcpContainerResource
+	OnResourceReady(callback func(arg ResourceReadyEvent)) PostgresMcpContainerResource
+	OnResourceStopped(callback func(arg ResourceStoppedEvent)) PostgresMcpContainerResource
+	PublishAsConnectionString() PostgresMcpContainerResource
+	PublishAsContainer() PostgresMcpContainerResource
+	SubscribeHttpsEndpointsUpdate(callback func(obj HttpsEndpointUpdateCallbackContext)) PostgresMcpContainerResource
+	WaitFor(dependency Resource, options ...*WaitForOptions) PostgresMcpContainerResource
+	WaitForCompletion(dependency Resource, options ...*WaitForCompletionOptions) PostgresMcpContainerResource
+	WaitForStart(dependency Resource, options ...*WaitForStartOptions) PostgresMcpContainerResource
+	WithArgs(args []string) PostgresMcpContainerResource
+	WithArgsCallback(callback func(obj CommandLineArgsCallbackContext)) PostgresMcpContainerResource
+	WithBindMount(source string, target string, options ...*WithBindMountOptions) PostgresMcpContainerResource
+	WithBuildArg(name string, value any) PostgresMcpContainerResource
+	WithBuildSecret(name string, value ParameterResource) PostgresMcpContainerResource
+	WithCertificateTrustScope(scope CertificateTrustScope) PostgresMcpContainerResource
+	WithChildRelationship(child Resource) PostgresMcpContainerResource
+	WithCommand(name string, displayName string, executeCommand func(arg ExecuteCommandContext) *ExecuteCommandResult, options ...*WithCommandOptions) PostgresMcpContainerResource
+	WithComputeEnvironment(computeEnvironmentResource ComputeEnvironmentResource) PostgresMcpContainerResource
+	WithContainerBuildOptions(callback func(arg ContainerBuildOptionsCallbackContext)) PostgresMcpContainerResource
+	WithContainerCertificatePaths(options ...*WithContainerCertificatePathsOptions) PostgresMcpContainerResource
+	WithContainerFiles(destinationPath string, sourcePath string, options ...*ContainerFilesOptions) PostgresMcpContainerResource
+	WithContainerFilesCallback(destinationPath string, callback func(arg1 ContainerFileSystemCallbackContext, arg2 *CancellationToken) []ContainerFileSystemItem, options ...*ContainerFilesOptions) PostgresMcpContainerResource
+	WithContainerName(name string) PostgresMcpContainerResource
+	WithContainerNetworkAlias(alias string) PostgresMcpContainerResource
+	WithContainerRegistry(registry Resource) PostgresMcpContainerResource
+	WithContainerRuntimeArgs(args []string) PostgresMcpContainerResource
+	WithDeveloperCertificateTrust(trust bool) PostgresMcpContainerResource
+	WithDockerfile(contextPath string, options ...*WithDockerfileOptions) PostgresMcpContainerResource
+	WithDockerfileBaseImage(options ...*WithDockerfileBaseImageOptions) PostgresMcpContainerResource
+	WithDockerfileBuilder(contextPath string, callback func(arg DockerfileBuilderCallbackContext), options ...*WithDockerfileBuilderOptions) PostgresMcpContainerResource
+	WithDockerfileFactory(contextPath string, dockerfileFactory func(arg DockerfileFactoryContext) string, options ...*WithDockerfileFactoryOptions) PostgresMcpContainerResource
+	WithEndpoint(options ...*WithEndpointOptions) PostgresMcpContainerResource
+	WithEndpointCallback(endpointName string, callback func(obj EndpointUpdateContext), options ...*WithEndpointCallbackOptions) PostgresMcpContainerResource
+	WithEndpointProxySupport(proxyEnabled bool) PostgresMcpContainerResource
+	WithEntrypoint(entrypoint string) PostgresMcpContainerResource
+	WithEnvironment(name string, value any) PostgresMcpContainerResource
+	WithEnvironmentCallback(callback func(arg EnvironmentCallbackContext)) PostgresMcpContainerResource
+	WithExplicitStart() PostgresMcpContainerResource
+	WithExternalHttpEndpoints() PostgresMcpContainerResource
+	WithHealthCheck(key string) PostgresMcpContainerResource
+	WithHidden() PostgresMcpContainerResource
+	WithHiddenOnCompletion(options ...*WithHiddenOnCompletionOptions) PostgresMcpContainerResource
+	WithHttpCommand(path string, displayName string, options ...*HttpCommandExportOptions) PostgresMcpContainerResource
+	WithHttpEndpoint(options ...*WithHttpEndpointOptions) PostgresMcpContainerResource
+	WithHttpEndpointCallback(callback func(obj EndpointUpdateContext), options ...*WithHttpEndpointCallbackOptions) PostgresMcpContainerResource
+	WithHttpHealthCheck(options ...*WithHttpHealthCheckOptions) PostgresMcpContainerResource
+	WithHttpProbe(probeType ProbeType, options ...*WithHttpProbeOptions) PostgresMcpContainerResource
+	WithHttpsCertificateConfiguration(callback func(arg HttpsCertificateConfigurationCallbackAnnotationContext)) PostgresMcpContainerResource
+	WithHttpsDeveloperCertificate(options ...*WithHttpsDeveloperCertificateOptions) PostgresMcpContainerResource
+	WithHttpsEndpoint(options ...*WithHttpsEndpointOptions) PostgresMcpContainerResource
+	WithHttpsEndpointCallback(callback func(obj EndpointUpdateContext), options ...*WithHttpsEndpointCallbackOptions) PostgresMcpContainerResource
+	WithIconName(iconName string, options ...*WithIconNameOptions) PostgresMcpContainerResource
+	WithImage(image string, options ...*WithImageOptions) PostgresMcpContainerResource
+	WithImagePullPolicy(pullPolicy ImagePullPolicy) PostgresMcpContainerResource
+	WithImagePushOptions(callback func(arg ContainerImagePushOptionsCallbackContext)) PostgresMcpContainerResource
+	WithImageRegistry(registry string) PostgresMcpContainerResource
+	WithImageSHA256(sha256 string) PostgresMcpContainerResource
+	WithImageTag(tag string) PostgresMcpContainerResource
+	WithLifetime(lifetime ContainerLifetime) PostgresMcpContainerResource
+	WithLifetimeOf(sourceBuilder Resource) PostgresMcpContainerResource
+	WithMcpServer(options ...*WithMcpServerOptions) PostgresMcpContainerResource
+	WithOtlpExporter(options ...*WithOtlpExporterOptions) PostgresMcpContainerResource
+	WithParentProcessLifetime(parentProcessId float64) PostgresMcpContainerResource
+	WithParentRelationship(parent Resource) PostgresMcpContainerResource
+	WithPersistentLifetime() PostgresMcpContainerResource
+	WithPipelineConfiguration(callback func(obj PipelineConfigurationContext)) PostgresMcpContainerResource
+	WithPipelineStepFactory(stepName string, callback func(arg PipelineStepContext), options ...*WithPipelineStepFactoryOptions) PostgresMcpContainerResource
+	WithProcessCommand(commandName string, displayName string, options *ProcessCommandExportOptions) PostgresMcpContainerResource
+	WithProcessCommandFactory(commandName string, displayName string, createProcessSpec func(arg ExecuteCommandContext) *ProcessCommandSpecExportData, options ...*ProcessCommandResultExportOptions) PostgresMcpContainerResource
+	WithReference(source any, options ...*WithReferenceOptions) PostgresMcpContainerResource
+	WithReferenceEnvironment(options *ReferenceEnvironmentInjectionOptions) PostgresMcpContainerResource
+	WithRelationship(resourceBuilder Resource, type_ string) PostgresMcpContainerResource
+	WithRemoteImageName(remoteImageName string) PostgresMcpContainerResource
+	WithRemoteImageTag(remoteImageTag string) PostgresMcpContainerResource
+	WithRequiredCommand(command string, options ...*WithRequiredCommandOptions) PostgresMcpContainerResource
+	WithRequiredCommandValidation(command string, validationCallback func(arg RequiredCommandValidationContext) RequiredCommandValidationResult, options ...*WithRequiredCommandValidationOptions) PostgresMcpContainerResource
+	WithSessionLifetime() PostgresMcpContainerResource
+	WithTerminal() PostgresMcpContainerResource
+	WithUrl(url any, options ...*WithUrlOptions) PostgresMcpContainerResource
+	WithUrlForEndpoint(endpointName string, callback func(obj *ResourceUrlAnnotation)) PostgresMcpContainerResource
+	WithUrls(callback func(obj ResourceUrlsCallbackContext)) PostgresMcpContainerResource
+	WithVolume(target string, options ...*WithVolumeOptions) PostgresMcpContainerResource
+	WithoutHttpsCertificate() PostgresMcpContainerResource
+	Err() error
+}
+
+// postgresMcpContainerResource is the unexported impl of PostgresMcpContainerResource.
+type postgresMcpContainerResource struct {
+	*resourceBuilderBase
+}
+
+// newPostgresMcpContainerResourceFromHandle wraps an existing handle as PostgresMcpContainerResource.
+func newPostgresMcpContainerResourceFromHandle(h *handle, c *client) PostgresMcpContainerResource {
+	return &postgresMcpContainerResource{resourceBuilderBase: newResourceBuilderBase(h, c)}
+}
+
+// AsHttp2Service configures a resource to mark all endpoints' transport as HTTP/2. This is useful for HTTP/2 services that need prior knowledge.
+func (s *postgresMcpContainerResource) AsHttp2Service() PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/asHttp2Service", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// CreateExecutionConfiguration creates an execution configuration builder for the specified resource.
+func (s *postgresMcpContainerResource) CreateExecutionConfiguration() ExecutionConfigurationBuilder {
+	if s.err != nil { return &executionConfigurationBuilder{resourceBuilderBase: newErroredResourceBuilder(s.err, s.client)} }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting/createExecutionConfiguration", reqArgs)
+	if err != nil {
+		return &executionConfigurationBuilder{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	href, ok := result.(handleReference)
+	if !ok {
+		err := fmt.Errorf("aspire: Aspire.Hosting/createExecutionConfiguration returned unexpected type %T", result)
+		return &executionConfigurationBuilder{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	return &executionConfigurationBuilder{resourceBuilderBase: newResourceBuilderBase(href.getHandle(), s.client)}
+}
+
+// ExcludeFromManifest excludes a resource from being published to the manifest.
+func (s *postgresMcpContainerResource) ExcludeFromManifest() PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/excludeFromManifest", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// ExcludeFromMcp exclude the resource from MCP operations using the Aspire MCP server. The resource is excluded from results that return resources, console logs and telemetry.
+func (s *postgresMcpContainerResource) ExcludeFromMcp() PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/excludeFromMcp", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// GetEndpoint gets an endpoint reference
+func (s *postgresMcpContainerResource) GetEndpoint(name string) EndpointReference {
+	if s.err != nil { return &endpointReference{resourceBuilderBase: newErroredResourceBuilder(s.err, s.client)} }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting/getEndpoint", reqArgs)
+	if err != nil {
+		return &endpointReference{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	href, ok := result.(handleReference)
+	if !ok {
+		err := fmt.Errorf("aspire: Aspire.Hosting/getEndpoint returned unexpected type %T", result)
+		return &endpointReference{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	return &endpointReference{resourceBuilderBase: newResourceBuilderBase(href.getHandle(), s.client)}
+}
+
+// GetResourceName gets the name of the resource from a builder.
+func (s *postgresMcpContainerResource) GetResourceName() (string, error) {
+	if s.err != nil { var zero string; return zero, s.err }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting/getResourceName", reqArgs)
+	if err != nil {
+		var zero string
+		return zero, err
+	}
+	return decodeAs[string](result)
+}
+
+// OnBeforeResourceStarted subscribes to the BeforeResourceStarted event.
+func (s *postgresMcpContainerResource) OnBeforeResourceStarted(callback func(arg BeforeResourceStartedEvent)) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[BeforeResourceStartedEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onBeforeResourceStarted", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// OnInitializeResource subscribes to the InitializeResource event.
+func (s *postgresMcpContainerResource) OnInitializeResource(callback func(arg InitializeResourceEvent)) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[InitializeResourceEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onInitializeResource", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// OnResourceEndpointsAllocated subscribes to the ResourceEndpointsAllocated event.
+func (s *postgresMcpContainerResource) OnResourceEndpointsAllocated(callback func(arg ResourceEndpointsAllocatedEvent)) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ResourceEndpointsAllocatedEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onResourceEndpointsAllocated", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// OnResourceReady subscribes to the ResourceReady event.
+func (s *postgresMcpContainerResource) OnResourceReady(callback func(arg ResourceReadyEvent)) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ResourceReadyEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onResourceReady", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// OnResourceStopped subscribes to the ResourceStopped event.
+func (s *postgresMcpContainerResource) OnResourceStopped(callback func(arg ResourceStoppedEvent)) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ResourceStoppedEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onResourceStopped", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// PublishAsConnectionString changes the resource to be published as a connection string reference in the manifest.
+func (s *postgresMcpContainerResource) PublishAsConnectionString() PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/publishAsConnectionString", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// PublishAsContainer changes the resource to be published as a container in the manifest.
+func (s *postgresMcpContainerResource) PublishAsContainer() PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/publishAsContainer", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// SubscribeHttpsEndpointsUpdate subscribes to the `BeforeStartEvent` and invokes the specified callback when an HTTPS certificate is determined to be available for the resource. This is used to conditionally update endpoint URI schemes or perform other HTTPS-related configuration at startup.
+func (s *postgresMcpContainerResource) SubscribeHttpsEndpointsUpdate(callback func(obj HttpsEndpointUpdateCallbackContext)) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[HttpsEndpointUpdateCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/subscribeHttpsEndpointsUpdate", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WaitFor waits for another resource to be ready
+func (s *postgresMcpContainerResource) WaitFor(dependency Resource, options ...*WaitForOptions) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	if dependency != nil { if err := dependency.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["dependency"] = serializeValue(dependency)
+	if len(options) > 0 {
+		merged := &WaitForOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/waitFor", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WaitForCompletion waits for the dependency resource to enter the Exited or Finished state before starting the resource.
+func (s *postgresMcpContainerResource) WaitForCompletion(dependency Resource, options ...*WaitForCompletionOptions) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	if dependency != nil { if err := dependency.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["dependency"] = serializeValue(dependency)
+	if len(options) > 0 {
+		merged := &WaitForCompletionOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/waitForResourceCompletion", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WaitForStart waits for another resource to start
+func (s *postgresMcpContainerResource) WaitForStart(dependency Resource, options ...*WaitForStartOptions) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	if dependency != nil { if err := dependency.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["dependency"] = serializeValue(dependency)
+	if len(options) > 0 {
+		merged := &WaitForStartOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/waitForStart", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithArgs adds arguments to be passed to a resource that supports arguments when it is launched.
+func (s *postgresMcpContainerResource) WithArgs(args []string) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if args != nil { reqArgs["args"] = serializeValue(args) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withArgs", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithArgsCallback adds a callback to be executed with a list of command-line arguments when a resource is started.
+func (s *postgresMcpContainerResource) WithArgsCallback(callback func(obj CommandLineArgsCallbackContext)) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[CommandLineArgsCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withArgsCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithBindMount adds a bind mount to a container resource.
+func (s *postgresMcpContainerResource) WithBindMount(source string, target string, options ...*WithBindMountOptions) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["source"] = serializeValue(source)
+	reqArgs["target"] = serializeValue(target)
+	if len(options) > 0 {
+		merged := &WithBindMountOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withBindMount", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithBuildArg adds a build argument when the container is built from a Dockerfile.
+// Allowed types for parameter value: string, ParameterResource.
+func (s *postgresMcpContainerResource) WithBuildArg(name string, value any) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	switch value.(type) {
+	case string, ParameterResource:
+	default:
+		err := fmt.Errorf("aspire: WithBuildArg: parameter %q must be one of [string, ParameterResource], got %T", "value", value)
+		s.setErr(err); return s
+	}
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	if !isNil(value) { reqArgs["value"] = serializeValue(value) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withBuildArg", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithBuildSecret adds a secret build argument when the container is built from a Dockerfile.
+func (s *postgresMcpContainerResource) WithBuildSecret(name string, value ParameterResource) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	if value != nil { if err := value.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	reqArgs["value"] = serializeValue(value)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withParameterBuildSecret", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithCertificateTrustScope sets the certificate trust scope
+func (s *postgresMcpContainerResource) WithCertificateTrustScope(scope CertificateTrustScope) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["scope"] = serializeValue(scope)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withCertificateTrustScope", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithChildRelationship sets a child relationship
+func (s *postgresMcpContainerResource) WithChildRelationship(child Resource) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	if child != nil { if err := child.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["child"] = serializeValue(child)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withBuilderChildRelationship", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithCommand adds a resource command
+func (s *postgresMcpContainerResource) WithCommand(name string, displayName string, executeCommand func(arg ExecuteCommandContext) *ExecuteCommandResult, options ...*WithCommandOptions) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	reqArgs["displayName"] = serializeValue(displayName)
+	if executeCommand != nil {
+		cb := executeCommand
+		shim := func(args ...any) any {
+			return cb(callbackArg[ExecuteCommandContext](args, 0))
+		}
+		reqArgs["executeCommand"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithCommandOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithComputeEnvironment configures the compute environment for the compute resource.
+func (s *postgresMcpContainerResource) WithComputeEnvironment(computeEnvironmentResource ComputeEnvironmentResource) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	if computeEnvironmentResource != nil { if err := computeEnvironmentResource.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["computeEnvironmentResource"] = serializeValue(computeEnvironmentResource)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withComputeEnvironment", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerBuildOptions configures container build options for a compute resource using an async callback.
+func (s *postgresMcpContainerResource) WithContainerBuildOptions(callback func(arg ContainerBuildOptionsCallbackContext)) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ContainerBuildOptionsCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerBuildOptions", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerCertificatePaths adds container certificate path overrides used for certificate trust at run time.
+func (s *postgresMcpContainerResource) WithContainerCertificatePaths(options ...*WithContainerCertificatePathsOptions) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithContainerCertificatePathsOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerCertificatePaths", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerFiles creates or updates files and folders in a container by copying them from a source path on the host.
+func (s *postgresMcpContainerResource) WithContainerFiles(destinationPath string, sourcePath string, options ...*ContainerFilesOptions) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["destinationPath"] = serializeValue(destinationPath)
+	reqArgs["sourcePath"] = serializeValue(sourcePath)
+	if len(options) > 0 {
+		merged := &ContainerFilesOptions{}
+		applied := false
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt); applied = true }
+		}
+		if applied { reqArgs["options"] = serializeValue(merged) }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerFiles", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerFilesCallback creates or updates files and/or folders at the destination path in the container using entries produced by a callback.
+func (s *postgresMcpContainerResource) WithContainerFilesCallback(destinationPath string, callback func(arg1 ContainerFileSystemCallbackContext, arg2 *CancellationToken) []ContainerFileSystemItem, options ...*ContainerFilesOptions) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["destinationPath"] = serializeValue(destinationPath)
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			return cb(callbackArg[ContainerFileSystemCallbackContext](args, 0), callbackArg[*CancellationToken](args, 1))
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &ContainerFilesOptions{}
+		applied := false
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt); applied = true }
+		}
+		if applied { reqArgs["options"] = serializeValue(merged) }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerFilesCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerName overrides the default container name for this resource. By default Aspire generates a unique container name based on the resource name and a random postfix (or a postfix based on a hash of the AppHost project path for persistent container resources). This method allows you to override that behavior with a custom name, but could lead to naming conflicts if the specified name is not unique.
+func (s *postgresMcpContainerResource) WithContainerName(name string) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerName", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerNetworkAlias adds a network alias to container resource.
+func (s *postgresMcpContainerResource) WithContainerNetworkAlias(alias string) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["alias"] = serializeValue(alias)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerNetworkAlias", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerRegistry configures the resource to use the specified container registry for container image operations.
+func (s *postgresMcpContainerResource) WithContainerRegistry(registry Resource) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	if registry != nil { if err := registry.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["registry"] = serializeValue(registry)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerRegistry", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerRuntimeArgs adds a callback to be executed with a list of arguments to add to the container runtime run command when a container resource is started.
+func (s *postgresMcpContainerResource) WithContainerRuntimeArgs(args []string) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if args != nil { reqArgs["args"] = serializeValue(args) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerRuntimeArgs", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDeveloperCertificateTrust indicates whether developer certificates should be treated as trusted certificate authorities for the resource at run time. Currently this indicates trust for the ASP.NET Core developer certificate. The developer certificate will only be trusted when running in local development scenarios; in publish mode resources will use their default certificate trust.
+func (s *postgresMcpContainerResource) WithDeveloperCertificateTrust(trust bool) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["trust"] = serializeValue(trust)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withDeveloperCertificateTrust", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDockerfile causes Aspire to build the specified container image from a Dockerfile.
+func (s *postgresMcpContainerResource) WithDockerfile(contextPath string, options ...*WithDockerfileOptions) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["contextPath"] = serializeValue(contextPath)
+	if len(options) > 0 {
+		merged := &WithDockerfileOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withDockerfile", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDockerfileBaseImage configures custom base images for generated Dockerfiles.
+func (s *postgresMcpContainerResource) WithDockerfileBaseImage(options ...*WithDockerfileBaseImageOptions) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithDockerfileBaseImageOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withDockerfileBaseImage", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDockerfileBuilder configures the resource to use a programmatically generated Dockerfile
+func (s *postgresMcpContainerResource) WithDockerfileBuilder(contextPath string, callback func(arg DockerfileBuilderCallbackContext), options ...*WithDockerfileBuilderOptions) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["contextPath"] = serializeValue(contextPath)
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[DockerfileBuilderCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithDockerfileBuilderOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withDockerfileBuilder", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDockerfileFactory builds the specified container image from a Dockerfile generated by an asynchronous factory function.
+func (s *postgresMcpContainerResource) WithDockerfileFactory(contextPath string, dockerfileFactory func(arg DockerfileFactoryContext) string, options ...*WithDockerfileFactoryOptions) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["contextPath"] = serializeValue(contextPath)
+	if dockerfileFactory != nil {
+		cb := dockerfileFactory
+		shim := func(args ...any) any {
+			return cb(callbackArg[DockerfileFactoryContext](args, 0))
+		}
+		reqArgs["dockerfileFactory"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithDockerfileFactoryOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withDockerfileFactory", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEndpoint adds a network endpoint
+func (s *postgresMcpContainerResource) WithEndpoint(options ...*WithEndpointOptions) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithEndpointOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEndpoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEndpointCallback updates a named endpoint via callback
+func (s *postgresMcpContainerResource) WithEndpointCallback(endpointName string, callback func(obj EndpointUpdateContext), options ...*WithEndpointCallbackOptions) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["endpointName"] = serializeValue(endpointName)
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[EndpointUpdateContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithEndpointCallbackOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEndpointCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEndpointProxySupport set whether a resource can use proxied endpoints or whether they should be disabled for all endpoints belonging to the resource. If set to `false`, endpoints belonging to the resource will ignore the configured proxy settings and run proxy-less.
+func (s *postgresMcpContainerResource) WithEndpointProxySupport(proxyEnabled bool) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["proxyEnabled"] = serializeValue(proxyEnabled)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEndpointProxySupport", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEntrypoint sets the Entrypoint for the container.
+func (s *postgresMcpContainerResource) WithEntrypoint(entrypoint string) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["entrypoint"] = serializeValue(entrypoint)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEntrypoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEnvironment sets an environment variable
+// Allowed types for parameter value: string, *ReferenceExpression, EndpointReference, ParameterResource, ExternalServiceResource, ResourceWithConnectionString, ExpressionValue.
+func (s *postgresMcpContainerResource) WithEnvironment(name string, value any) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	switch value.(type) {
+	case string, *ReferenceExpression, EndpointReference, ParameterResource, ExternalServiceResource, ResourceWithConnectionString, ExpressionValue:
+	default:
+		err := fmt.Errorf("aspire: WithEnvironment: parameter %q must be one of [string, *ReferenceExpression, EndpointReference, ParameterResource, ExternalServiceResource, ResourceWithConnectionString, ExpressionValue], got %T", "value", value)
+		s.setErr(err); return s
+	}
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	if !isNil(value) { reqArgs["value"] = serializeValue(value) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEnvironment", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEnvironmentCallback allows for the population of environment variables on a resource.
+func (s *postgresMcpContainerResource) WithEnvironmentCallback(callback func(arg EnvironmentCallbackContext)) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[EnvironmentCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEnvironmentCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithExplicitStart prevents resource from starting automatically
+func (s *postgresMcpContainerResource) WithExplicitStart() PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withExplicitStart", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithExternalHttpEndpoints marks existing http or https endpoints on a resource as external.
+func (s *postgresMcpContainerResource) WithExternalHttpEndpoints() PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withExternalHttpEndpoints", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHealthCheck adds a health check by key
+func (s *postgresMcpContainerResource) WithHealthCheck(key string) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["key"] = serializeValue(key)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHealthCheck", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHidden hides the resource from default resource lists
+func (s *postgresMcpContainerResource) WithHidden() PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHidden", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHiddenOnCompletion hides the resource from default resource lists after successful completion
+func (s *postgresMcpContainerResource) WithHiddenOnCompletion(options ...*WithHiddenOnCompletionOptions) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHiddenOnCompletionOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHiddenOnCompletion", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpCommand adds an HTTP resource command
+func (s *postgresMcpContainerResource) WithHttpCommand(path string, displayName string, options ...*HttpCommandExportOptions) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["path"] = serializeValue(path)
+	reqArgs["displayName"] = serializeValue(displayName)
+	if len(options) > 0 {
+		merged := &HttpCommandExportOptions{}
+		applied := false
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt); applied = true }
+		}
+		if applied { reqArgs["options"] = serializeValue(merged) }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpEndpoint adds an HTTP endpoint
+func (s *postgresMcpContainerResource) WithHttpEndpoint(options ...*WithHttpEndpointOptions) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHttpEndpointOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpEndpoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpEndpointCallback updates an HTTP endpoint via callback
+func (s *postgresMcpContainerResource) WithHttpEndpointCallback(callback func(obj EndpointUpdateContext), options ...*WithHttpEndpointCallbackOptions) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[EndpointUpdateContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithHttpEndpointCallbackOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpEndpointCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpHealthCheck adds a health check to the resource which is mapped to a specific endpoint.
+func (s *postgresMcpContainerResource) WithHttpHealthCheck(options ...*WithHttpHealthCheckOptions) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHttpHealthCheckOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpHealthCheck", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpProbe adds an HTTP health probe to the resource
+func (s *postgresMcpContainerResource) WithHttpProbe(probeType ProbeType, options ...*WithHttpProbeOptions) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["probeType"] = serializeValue(probeType)
+	if len(options) > 0 {
+		merged := &WithHttpProbeOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpProbe", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpsCertificateConfiguration adds a callback that allows configuring the resource to use a specific HTTPS/TLS certificate key pair for server authentication.
+func (s *postgresMcpContainerResource) WithHttpsCertificateConfiguration(callback func(arg HttpsCertificateConfigurationCallbackAnnotationContext)) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[HttpsCertificateConfigurationCallbackAnnotationContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpsCertificateConfiguration", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpsDeveloperCertificate indicates that a resource should use the developer certificate key pair for HTTPS endpoints at run time. Currently this indicates use of the ASP.NET Core developer certificate. The developer certificate will only be used when running in local development scenarios; in publish mode resources will use their default certificate configuration.
+func (s *postgresMcpContainerResource) WithHttpsDeveloperCertificate(options ...*WithHttpsDeveloperCertificateOptions) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHttpsDeveloperCertificateOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withParameterHttpsDeveloperCertificate", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpsEndpoint adds an HTTPS endpoint
+func (s *postgresMcpContainerResource) WithHttpsEndpoint(options ...*WithHttpsEndpointOptions) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHttpsEndpointOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpsEndpoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpsEndpointCallback updates an HTTPS endpoint via callback
+func (s *postgresMcpContainerResource) WithHttpsEndpointCallback(callback func(obj EndpointUpdateContext), options ...*WithHttpsEndpointCallbackOptions) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[EndpointUpdateContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithHttpsEndpointCallbackOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpsEndpointCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithIconName specifies the icon to use when displaying the resource in the dashboard.
+func (s *postgresMcpContainerResource) WithIconName(iconName string, options ...*WithIconNameOptions) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["iconName"] = serializeValue(iconName)
+	if len(options) > 0 {
+		merged := &WithIconNameOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withIconName", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithImage allows overriding the image on a container.
+func (s *postgresMcpContainerResource) WithImage(image string, options ...*WithImageOptions) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["image"] = serializeValue(image)
+	if len(options) > 0 {
+		merged := &WithImageOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withImage", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithImagePullPolicy sets the pull policy for the container resource.
+func (s *postgresMcpContainerResource) WithImagePullPolicy(pullPolicy ImagePullPolicy) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["pullPolicy"] = serializeValue(pullPolicy)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withImagePullPolicy", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithImagePushOptions adds an asynchronous callback to configure container image push options for the resource.
+func (s *postgresMcpContainerResource) WithImagePushOptions(callback func(arg ContainerImagePushOptionsCallbackContext)) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ContainerImagePushOptionsCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withImagePushOptions", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithImageRegistry allows overriding the image registry on a container.
+func (s *postgresMcpContainerResource) WithImageRegistry(registry string) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["registry"] = serializeValue(registry)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withImageRegistry", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithImageSHA256 allows setting the image to a specific sha256 on a container.
+func (s *postgresMcpContainerResource) WithImageSHA256(sha256 string) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["sha256"] = serializeValue(sha256)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withImageSHA256", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithImageTag allows overriding the image tag on a container.
+func (s *postgresMcpContainerResource) WithImageTag(tag string) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["tag"] = serializeValue(tag)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withImageTag", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithLifetime sets the lifetime behavior of the container resource.
+func (s *postgresMcpContainerResource) WithLifetime(lifetime ContainerLifetime) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["lifetime"] = serializeValue(lifetime)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withLifetime", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithLifetimeOf configures a resource to match the lifetime of another resource.
+func (s *postgresMcpContainerResource) WithLifetimeOf(sourceBuilder Resource) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	if sourceBuilder != nil { if err := sourceBuilder.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["sourceBuilder"] = serializeValue(sourceBuilder)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withLifetimeOf", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithMcpServer marks the resource as hosting a Model Context Protocol (MCP) server on the specified endpoint.
+func (s *postgresMcpContainerResource) WithMcpServer(options ...*WithMcpServerOptions) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithMcpServerOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withMcpServer", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithOtlpExporter configures OTLP telemetry export
+func (s *postgresMcpContainerResource) WithOtlpExporter(options ...*WithOtlpExporterOptions) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithOtlpExporterOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withOtlpExporter", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithParentProcessLifetime configures a resource to use a persistent lifetime that ends when a parent process exits.
+func (s *postgresMcpContainerResource) WithParentProcessLifetime(parentProcessId float64) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["parentProcessId"] = serializeValue(parentProcessId)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withParentProcessLifetime", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithParentRelationship sets the parent relationship
+func (s *postgresMcpContainerResource) WithParentRelationship(parent Resource) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	if parent != nil { if err := parent.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["parent"] = serializeValue(parent)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withBuilderParentRelationship", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithPersistentLifetime configures a resource to use a persistent lifetime.
+func (s *postgresMcpContainerResource) WithPersistentLifetime() PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withPersistentLifetime", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithPipelineConfiguration registers a callback to be executed during the pipeline configuration phase, allowing modification of step dependencies and relationships.
+func (s *postgresMcpContainerResource) WithPipelineConfiguration(callback func(obj PipelineConfigurationContext)) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[PipelineConfigurationContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withPipelineConfiguration", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithPipelineStepFactory adds a pipeline step to the resource that will be executed during deployment.
+func (s *postgresMcpContainerResource) WithPipelineStepFactory(stepName string, callback func(arg PipelineStepContext), options ...*WithPipelineStepFactoryOptions) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["stepName"] = serializeValue(stepName)
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[PipelineStepContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithPipelineStepFactoryOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withPipelineStepFactory", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithProcessCommand adds a command to the resource that starts a local process when invoked.
+func (s *postgresMcpContainerResource) WithProcessCommand(commandName string, displayName string, options *ProcessCommandExportOptions) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["commandName"] = serializeValue(commandName)
+	reqArgs["displayName"] = serializeValue(displayName)
+	if options != nil { reqArgs["options"] = serializeValue(options) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withProcessCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithProcessCommandFactory adds a command to the resource that starts a local process created by a callback when invoked.
+func (s *postgresMcpContainerResource) WithProcessCommandFactory(commandName string, displayName string, createProcessSpec func(arg ExecuteCommandContext) *ProcessCommandSpecExportData, options ...*ProcessCommandResultExportOptions) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["commandName"] = serializeValue(commandName)
+	reqArgs["displayName"] = serializeValue(displayName)
+	if createProcessSpec != nil {
+		cb := createProcessSpec
+		shim := func(args ...any) any {
+			return cb(callbackArg[ExecuteCommandContext](args, 0))
+		}
+		reqArgs["createProcessSpec"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &ProcessCommandResultExportOptions{}
+		applied := false
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt); applied = true }
+		}
+		if applied { reqArgs["options"] = serializeValue(merged) }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withProcessCommandFactory", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithReference adds a reference to another resource
+// Allowed types for parameter source: Resource, EndpointReference, string.
+func (s *postgresMcpContainerResource) WithReference(source any, options ...*WithReferenceOptions) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	switch source.(type) {
+	case Resource, EndpointReference, string:
+	default:
+		err := fmt.Errorf("aspire: WithReference: parameter %q must be one of [Resource, EndpointReference, string], got %T", "source", source)
+		s.setErr(err); return s
+	}
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if !isNil(source) { reqArgs["source"] = serializeValue(source) }
+	if len(options) > 0 {
+		merged := &WithReferenceOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withReference", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithReferenceEnvironment configures how information is injected into environment variables when the resource references other resources.
+func (s *postgresMcpContainerResource) WithReferenceEnvironment(options *ReferenceEnvironmentInjectionOptions) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if options != nil { reqArgs["options"] = serializeValue(options) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withReferenceEnvironment", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRelationship adds a relationship to another resource using its builder.
+func (s *postgresMcpContainerResource) WithRelationship(resourceBuilder Resource, type_ string) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	if resourceBuilder != nil { if err := resourceBuilder.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["resourceBuilder"] = serializeValue(resourceBuilder)
+	reqArgs["type"] = serializeValue(type_)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withBuilderRelationship", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRemoteImageName sets the remote image name (without registry endpoint or tag) for container push operations.
+func (s *postgresMcpContainerResource) WithRemoteImageName(remoteImageName string) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["remoteImageName"] = serializeValue(remoteImageName)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withRemoteImageName", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRemoteImageTag sets the remote image tag for container push operations.
+func (s *postgresMcpContainerResource) WithRemoteImageTag(remoteImageTag string) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["remoteImageTag"] = serializeValue(remoteImageTag)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withRemoteImageTag", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRequiredCommand declares that a resource requires a specific command/executable to be available on the local machine PATH before it can start.
+func (s *postgresMcpContainerResource) WithRequiredCommand(command string, options ...*WithRequiredCommandOptions) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["command"] = serializeValue(command)
+	if len(options) > 0 {
+		merged := &WithRequiredCommandOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withRequiredCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRequiredCommandValidation declares that a resource requires a specific command/executable to be available on the local machine PATH before it can start, with custom validation logic.
+func (s *postgresMcpContainerResource) WithRequiredCommandValidation(command string, validationCallback func(arg RequiredCommandValidationContext) RequiredCommandValidationResult, options ...*WithRequiredCommandValidationOptions) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["command"] = serializeValue(command)
+	if validationCallback != nil {
+		cb := validationCallback
+		shim := func(args ...any) any {
+			return cb(callbackArg[RequiredCommandValidationContext](args, 0))
+		}
+		reqArgs["validationCallback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithRequiredCommandValidationOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withRequiredCommandValidation", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithSessionLifetime configures a resource to use a session lifetime.
+func (s *postgresMcpContainerResource) WithSessionLifetime() PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withSessionLifetime", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithTerminal adds an interactive terminal session to a resource using the default terminal options.
+func (s *postgresMcpContainerResource) WithTerminal() PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withTerminal", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithUrl adds or modifies displayed URLs
+// Allowed types for parameter url: string, *ReferenceExpression.
+func (s *postgresMcpContainerResource) WithUrl(url any, options ...*WithUrlOptions) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	switch url.(type) {
+	case string, *ReferenceExpression:
+	default:
+		err := fmt.Errorf("aspire: WithUrl: parameter %q must be one of [string, *ReferenceExpression], got %T", "url", url)
+		s.setErr(err); return s
+	}
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if !isNil(url) { reqArgs["url"] = serializeValue(url) }
+	if len(options) > 0 {
+		merged := &WithUrlOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withUrl", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithUrlForEndpoint registers a callback to update the URL displayed for the endpoint with the specified name.
+func (s *postgresMcpContainerResource) WithUrlForEndpoint(endpointName string, callback func(obj *ResourceUrlAnnotation)) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["endpointName"] = serializeValue(endpointName)
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			arg0 := callbackArg[*ResourceUrlAnnotation](args, 0)
+			cb(arg0)
+			return map[string]any{
+				"p0": serializeValue(arg0),
+			}
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withUrlForEndpoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithUrls registers a callback to customize the URLs displayed for the resource.
+func (s *postgresMcpContainerResource) WithUrls(callback func(obj ResourceUrlsCallbackContext)) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ResourceUrlsCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withUrls", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithVolume adds a volume to a container resource.
+func (s *postgresMcpContainerResource) WithVolume(target string, options ...*WithVolumeOptions) PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	reqArgs["target"] = serializeValue(target)
+	if len(options) > 0 {
+		merged := &WithVolumeOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withVolume", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithoutHttpsCertificate disable HTTPS/TLS server certificate configuration for the resource. No HTTPS/TLS termination configuration will be applied.
+func (s *postgresMcpContainerResource) WithoutHttpsCertificate() PostgresMcpContainerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withoutHttpsCertificate", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// PostgresServerResource is the public interface for handle type PostgresServerResource.
+type PostgresServerResource interface {
+	handleReference
+	AddDatabase(name string, options ...*AddDatabaseOptions) PostgresDatabaseResource
+	AsHttp2Service() PostgresServerResource
+	ConnectionStringExpression() *ReferenceExpression
+	CreateExecutionConfiguration() ExecutionConfigurationBuilder
+	Databases() (map[string]string, error)
+	Entrypoint() (*string, error)
+	ExcludeFromManifest() PostgresServerResource
+	ExcludeFromMcp() PostgresServerResource
+	GetConnectionProperty(key string) *ReferenceExpression
+	GetEndpoint(name string) EndpointReference
+	GetResourceName() (string, error)
+	Host() EndpointReferenceExpression
+	JdbcConnectionString() *ReferenceExpression
+	Name() (string, error)
+	OnBeforeResourceStarted(callback func(arg BeforeResourceStartedEvent)) PostgresServerResource
+	OnConnectionStringAvailable(callback func(arg ConnectionStringAvailableEvent)) PostgresServerResource
+	OnInitializeResource(callback func(arg InitializeResourceEvent)) PostgresServerResource
+	OnResourceEndpointsAllocated(callback func(arg ResourceEndpointsAllocatedEvent)) PostgresServerResource
+	OnResourceReady(callback func(arg ResourceReadyEvent)) PostgresServerResource
+	OnResourceStopped(callback func(arg ResourceStoppedEvent)) PostgresServerResource
+	PasswordParameter() ParameterResource
+	Port() EndpointReferenceExpression
+	PrimaryEndpoint() EndpointReference
+	PublishAsConnectionString() PostgresServerResource
+	PublishAsContainer() PostgresServerResource
+	SetEntrypoint(value *string) PostgresServerResource
+	SetPasswordParameter(value ParameterResource) PostgresServerResource
+	SetShellExecution(value *bool) PostgresServerResource
+	SetUserNameParameter(value ParameterResource) PostgresServerResource
+	ShellExecution() (*bool, error)
+	SubscribeHttpsEndpointsUpdate(callback func(obj HttpsEndpointUpdateCallbackContext)) PostgresServerResource
+	UriExpression() *ReferenceExpression
+	UserNameParameter() ParameterResource
+	UserNameReference() *ReferenceExpression
+	WaitFor(dependency Resource, options ...*WaitForOptions) PostgresServerResource
+	WaitForCompletion(dependency Resource, options ...*WaitForCompletionOptions) PostgresServerResource
+	WaitForStart(dependency Resource, options ...*WaitForStartOptions) PostgresServerResource
+	WithArgs(args []string) PostgresServerResource
+	WithArgsCallback(callback func(obj CommandLineArgsCallbackContext)) PostgresServerResource
+	WithBindMount(source string, target string, options ...*WithBindMountOptions) PostgresServerResource
+	WithBuildArg(name string, value any) PostgresServerResource
+	WithBuildSecret(name string, value ParameterResource) PostgresServerResource
+	WithCertificateTrustScope(scope CertificateTrustScope) PostgresServerResource
+	WithChildRelationship(child Resource) PostgresServerResource
+	WithCommand(name string, displayName string, executeCommand func(arg ExecuteCommandContext) *ExecuteCommandResult, options ...*WithCommandOptions) PostgresServerResource
+	WithComputeEnvironment(computeEnvironmentResource ComputeEnvironmentResource) PostgresServerResource
+	WithConnectionProperty(name string, value any) PostgresServerResource
+	WithContainerBuildOptions(callback func(arg ContainerBuildOptionsCallbackContext)) PostgresServerResource
+	WithContainerCertificatePaths(options ...*WithContainerCertificatePathsOptions) PostgresServerResource
+	WithContainerFiles(destinationPath string, sourcePath string, options ...*ContainerFilesOptions) PostgresServerResource
+	WithContainerFilesCallback(destinationPath string, callback func(arg1 ContainerFileSystemCallbackContext, arg2 *CancellationToken) []ContainerFileSystemItem, options ...*ContainerFilesOptions) PostgresServerResource
+	WithContainerName(name string) PostgresServerResource
+	WithContainerNetworkAlias(alias string) PostgresServerResource
+	WithContainerRegistry(registry Resource) PostgresServerResource
+	WithContainerRuntimeArgs(args []string) PostgresServerResource
+	WithDataBindMount(source string, options ...*WithDataBindMountOptions) PostgresServerResource
+	WithDataVolume(options ...*WithDataVolumeOptions) PostgresServerResource
+	WithDeveloperCertificateTrust(trust bool) PostgresServerResource
+	WithDockerfile(contextPath string, options ...*WithDockerfileOptions) PostgresServerResource
+	WithDockerfileBaseImage(options ...*WithDockerfileBaseImageOptions) PostgresServerResource
+	WithDockerfileBuilder(contextPath string, callback func(arg DockerfileBuilderCallbackContext), options ...*WithDockerfileBuilderOptions) PostgresServerResource
+	WithDockerfileFactory(contextPath string, dockerfileFactory func(arg DockerfileFactoryContext) string, options ...*WithDockerfileFactoryOptions) PostgresServerResource
+	WithEndpoint(options ...*WithEndpointOptions) PostgresServerResource
+	WithEndpointCallback(endpointName string, callback func(obj EndpointUpdateContext), options ...*WithEndpointCallbackOptions) PostgresServerResource
+	WithEndpointProxySupport(proxyEnabled bool) PostgresServerResource
+	WithEntrypoint(entrypoint string) PostgresServerResource
+	WithEnvironment(name string, value any) PostgresServerResource
+	WithEnvironmentCallback(callback func(arg EnvironmentCallbackContext)) PostgresServerResource
+	WithExplicitStart() PostgresServerResource
+	WithExternalHttpEndpoints() PostgresServerResource
+	WithHealthCheck(key string) PostgresServerResource
+	WithHidden() PostgresServerResource
+	WithHiddenOnCompletion(options ...*WithHiddenOnCompletionOptions) PostgresServerResource
+	WithHostPort(port *float64) PostgresServerResource
+	WithHttpCommand(path string, displayName string, options ...*HttpCommandExportOptions) PostgresServerResource
+	WithHttpEndpoint(options ...*WithHttpEndpointOptions) PostgresServerResource
+	WithHttpEndpointCallback(callback func(obj EndpointUpdateContext), options ...*WithHttpEndpointCallbackOptions) PostgresServerResource
+	WithHttpHealthCheck(options ...*WithHttpHealthCheckOptions) PostgresServerResource
+	WithHttpProbe(probeType ProbeType, options ...*WithHttpProbeOptions) PostgresServerResource
+	WithHttpsCertificateConfiguration(callback func(arg HttpsCertificateConfigurationCallbackAnnotationContext)) PostgresServerResource
+	WithHttpsDeveloperCertificate(options ...*WithHttpsDeveloperCertificateOptions) PostgresServerResource
+	WithHttpsEndpoint(options ...*WithHttpsEndpointOptions) PostgresServerResource
+	WithHttpsEndpointCallback(callback func(obj EndpointUpdateContext), options ...*WithHttpsEndpointCallbackOptions) PostgresServerResource
+	WithIconName(iconName string, options ...*WithIconNameOptions) PostgresServerResource
+	WithImage(image string, options ...*WithImageOptions) PostgresServerResource
+	WithImagePullPolicy(pullPolicy ImagePullPolicy) PostgresServerResource
+	WithImagePushOptions(callback func(arg ContainerImagePushOptionsCallbackContext)) PostgresServerResource
+	WithImageRegistry(registry string) PostgresServerResource
+	WithImageSHA256(sha256 string) PostgresServerResource
+	WithImageTag(tag string) PostgresServerResource
+	WithInitFiles(source string) PostgresServerResource
+	WithLifetime(lifetime ContainerLifetime) PostgresServerResource
+	WithLifetimeOf(sourceBuilder Resource) PostgresServerResource
+	WithMcpServer(options ...*WithMcpServerOptions) PostgresServerResource
+	WithOtlpExporter(options ...*WithOtlpExporterOptions) PostgresServerResource
+	WithParentProcessLifetime(parentProcessId float64) PostgresServerResource
+	WithParentRelationship(parent Resource) PostgresServerResource
+	WithPassword(password ParameterResource) PostgresServerResource
+	WithPersistentLifetime() PostgresServerResource
+	WithPgAdmin(options ...*WithPgAdminOptions) PostgresServerResource
+	WithPgWeb(options ...*WithPgWebOptions) PostgresServerResource
+	WithPipelineConfiguration(callback func(obj PipelineConfigurationContext)) PostgresServerResource
+	WithPipelineStepFactory(stepName string, callback func(arg PipelineStepContext), options ...*WithPipelineStepFactoryOptions) PostgresServerResource
+	WithProcessCommand(commandName string, displayName string, options *ProcessCommandExportOptions) PostgresServerResource
+	WithProcessCommandFactory(commandName string, displayName string, createProcessSpec func(arg ExecuteCommandContext) *ProcessCommandSpecExportData, options ...*ProcessCommandResultExportOptions) PostgresServerResource
+	WithReference(source any, options ...*WithReferenceOptions) PostgresServerResource
+	WithReferenceEnvironment(options *ReferenceEnvironmentInjectionOptions) PostgresServerResource
+	WithRelationship(resourceBuilder Resource, type_ string) PostgresServerResource
+	WithRemoteImageName(remoteImageName string) PostgresServerResource
+	WithRemoteImageTag(remoteImageTag string) PostgresServerResource
+	WithRepl() PostgresServerResource
+	WithRequiredCommand(command string, options ...*WithRequiredCommandOptions) PostgresServerResource
+	WithRequiredCommandValidation(command string, validationCallback func(arg RequiredCommandValidationContext) RequiredCommandValidationResult, options ...*WithRequiredCommandValidationOptions) PostgresServerResource
+	WithSessionLifetime() PostgresServerResource
+	WithTerminal() PostgresServerResource
+	WithUrl(url any, options ...*WithUrlOptions) PostgresServerResource
+	WithUrlForEndpoint(endpointName string, callback func(obj *ResourceUrlAnnotation)) PostgresServerResource
+	WithUrls(callback func(obj ResourceUrlsCallbackContext)) PostgresServerResource
+	WithUserName(userName ParameterResource) PostgresServerResource
+	WithVolume(target string, options ...*WithVolumeOptions) PostgresServerResource
+	WithoutHttpsCertificate() PostgresServerResource
+	Err() error
+}
+
+// postgresServerResource is the unexported impl of PostgresServerResource.
+type postgresServerResource struct {
+	*resourceBuilderBase
+}
+
+// newPostgresServerResourceFromHandle wraps an existing handle as PostgresServerResource.
+func newPostgresServerResourceFromHandle(h *handle, c *client) PostgresServerResource {
+	return &postgresServerResource{resourceBuilderBase: newResourceBuilderBase(h, c)}
+}
+
+// AddDatabase adds a PostgreSQL database to the application model.
+func (s *postgresServerResource) AddDatabase(name string, options ...*AddDatabaseOptions) PostgresDatabaseResource {
+	if s.err != nil { return &postgresDatabaseResource{resourceBuilderBase: newErroredResourceBuilder(s.err, s.client)} }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	if len(options) > 0 {
+		merged := &AddDatabaseOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting.PostgreSQL/addDatabase", reqArgs)
+	if err != nil {
+		return &postgresDatabaseResource{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	href, ok := result.(handleReference)
+	if !ok {
+		err := fmt.Errorf("aspire: Aspire.Hosting.PostgreSQL/addDatabase returned unexpected type %T", result)
+		return &postgresDatabaseResource{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	return &postgresDatabaseResource{resourceBuilderBase: newResourceBuilderBase(href.getHandle(), s.client)}
+}
+
+// AsHttp2Service configures a resource to mark all endpoints' transport as HTTP/2. This is useful for HTTP/2 services that need prior knowledge.
+func (s *postgresServerResource) AsHttp2Service() PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/asHttp2Service", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// ConnectionStringExpression gets the connection string expression for the PostgreSQL server.
+func (s *postgresServerResource) ConnectionStringExpression() *ReferenceExpression {
+	if s.err != nil { return nil }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"context": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting.ApplicationModel/PostgresServerResource.connectionStringExpression", reqArgs)
+	if err != nil { s.setErr(err); return nil }
+	typed, ok := result.(*ReferenceExpression)
+	if !ok {
+		s.setErr(fmt.Errorf("aspire: Aspire.Hosting.ApplicationModel/PostgresServerResource.connectionStringExpression returned unexpected type %T", result))
+		return nil
+	}
+	return typed
+}
+
+// CreateExecutionConfiguration creates an execution configuration builder for the specified resource.
+func (s *postgresServerResource) CreateExecutionConfiguration() ExecutionConfigurationBuilder {
+	if s.err != nil { return &executionConfigurationBuilder{resourceBuilderBase: newErroredResourceBuilder(s.err, s.client)} }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting/createExecutionConfiguration", reqArgs)
+	if err != nil {
+		return &executionConfigurationBuilder{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	href, ok := result.(handleReference)
+	if !ok {
+		err := fmt.Errorf("aspire: Aspire.Hosting/createExecutionConfiguration returned unexpected type %T", result)
+		return &executionConfigurationBuilder{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	return &executionConfigurationBuilder{resourceBuilderBase: newResourceBuilderBase(href.getHandle(), s.client)}
+}
+
+// Databases a dictionary where the key is the resource name and the value is the database name.
+func (s *postgresServerResource) Databases() (map[string]string, error) {
+	if s.err != nil { var zero map[string]string; return zero, s.err }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"context": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting.ApplicationModel/PostgresServerResource.databases", reqArgs)
+	if err != nil {
+		var zero map[string]string
+		return zero, err
+	}
+	return decodeAs[map[string]string](result)
+}
+
+// Entrypoint the container Entrypoint.
+func (s *postgresServerResource) Entrypoint() (*string, error) {
+	if s.err != nil { var zero *string; return zero, s.err }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"context": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting.ApplicationModel/PostgresServerResource.entrypoint", reqArgs)
+	if err != nil {
+		var zero *string
+		return zero, err
+	}
+	return decodeAs[*string](result)
+}
+
+// ExcludeFromManifest excludes a resource from being published to the manifest.
+func (s *postgresServerResource) ExcludeFromManifest() PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/excludeFromManifest", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// ExcludeFromMcp exclude the resource from MCP operations using the Aspire MCP server. The resource is excluded from results that return resources, console logs and telemetry.
+func (s *postgresServerResource) ExcludeFromMcp() PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/excludeFromMcp", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// GetConnectionProperty retrieves the value of a specified connection property from the resource's connection properties.
+func (s *postgresServerResource) GetConnectionProperty(key string) *ReferenceExpression {
+	if s.err != nil { return nil }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	reqArgs["key"] = serializeValue(key)
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting/getConnectionProperty", reqArgs)
+	if err != nil { s.setErr(err); return nil }
+	typed, ok := result.(*ReferenceExpression)
+	if !ok {
+		s.setErr(fmt.Errorf("aspire: Aspire.Hosting/getConnectionProperty returned unexpected type %T", result))
+		return nil
+	}
+	return typed
+}
+
+// GetEndpoint gets an endpoint reference
+func (s *postgresServerResource) GetEndpoint(name string) EndpointReference {
+	if s.err != nil { return &endpointReference{resourceBuilderBase: newErroredResourceBuilder(s.err, s.client)} }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting/getEndpoint", reqArgs)
+	if err != nil {
+		return &endpointReference{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	href, ok := result.(handleReference)
+	if !ok {
+		err := fmt.Errorf("aspire: Aspire.Hosting/getEndpoint returned unexpected type %T", result)
+		return &endpointReference{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	return &endpointReference{resourceBuilderBase: newResourceBuilderBase(href.getHandle(), s.client)}
+}
+
+// GetResourceName gets the name of the resource from a builder.
+func (s *postgresServerResource) GetResourceName() (string, error) {
+	if s.err != nil { var zero string; return zero, s.err }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting/getResourceName", reqArgs)
+	if err != nil {
+		var zero string
+		return zero, err
+	}
+	return decodeAs[string](result)
+}
+
+// Host gets the host endpoint reference for this service.
+func (s *postgresServerResource) Host() EndpointReferenceExpression {
+	if s.err != nil { return &endpointReferenceExpression{resourceBuilderBase: newErroredResourceBuilder(s.err, s.client)} }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"context": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting.ApplicationModel/PostgresServerResource.host", reqArgs)
+	if err != nil {
+		return &endpointReferenceExpression{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	href, ok := result.(handleReference)
+	if !ok {
+		err := fmt.Errorf("aspire: Aspire.Hosting.ApplicationModel/PostgresServerResource.host returned unexpected type %T", result)
+		return &endpointReferenceExpression{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	return &endpointReferenceExpression{resourceBuilderBase: newResourceBuilderBase(href.getHandle(), s.client)}
+}
+
+// JdbcConnectionString gets the JDBC connection string for the PostgreSQL server.
+func (s *postgresServerResource) JdbcConnectionString() *ReferenceExpression {
+	if s.err != nil { return nil }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"context": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting.ApplicationModel/PostgresServerResource.jdbcConnectionString", reqArgs)
+	if err != nil { s.setErr(err); return nil }
+	typed, ok := result.(*ReferenceExpression)
+	if !ok {
+		s.setErr(fmt.Errorf("aspire: Aspire.Hosting.ApplicationModel/PostgresServerResource.jdbcConnectionString returned unexpected type %T", result))
+		return nil
+	}
+	return typed
+}
+
+// Name gets the name of the resource.
+func (s *postgresServerResource) Name() (string, error) {
+	if s.err != nil { var zero string; return zero, s.err }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"context": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting.ApplicationModel/PostgresServerResource.name", reqArgs)
+	if err != nil {
+		var zero string
+		return zero, err
+	}
+	return decodeAs[string](result)
+}
+
+// OnBeforeResourceStarted subscribes to the BeforeResourceStarted event.
+func (s *postgresServerResource) OnBeforeResourceStarted(callback func(arg BeforeResourceStartedEvent)) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[BeforeResourceStartedEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onBeforeResourceStarted", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// OnConnectionStringAvailable subscribes to the ConnectionStringAvailable event.
+func (s *postgresServerResource) OnConnectionStringAvailable(callback func(arg ConnectionStringAvailableEvent)) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ConnectionStringAvailableEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onConnectionStringAvailable", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// OnInitializeResource subscribes to the InitializeResource event.
+func (s *postgresServerResource) OnInitializeResource(callback func(arg InitializeResourceEvent)) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[InitializeResourceEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onInitializeResource", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// OnResourceEndpointsAllocated subscribes to the ResourceEndpointsAllocated event.
+func (s *postgresServerResource) OnResourceEndpointsAllocated(callback func(arg ResourceEndpointsAllocatedEvent)) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ResourceEndpointsAllocatedEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onResourceEndpointsAllocated", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// OnResourceReady subscribes to the ResourceReady event.
+func (s *postgresServerResource) OnResourceReady(callback func(arg ResourceReadyEvent)) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ResourceReadyEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onResourceReady", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// OnResourceStopped subscribes to the ResourceStopped event.
+func (s *postgresServerResource) OnResourceStopped(callback func(arg ResourceStoppedEvent)) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ResourceStoppedEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onResourceStopped", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// PasswordParameter gets or sets the parameter that contains the PostgreSQL server password.
+func (s *postgresServerResource) PasswordParameter() ParameterResource {
+	if s.err != nil { return &parameterResource{resourceBuilderBase: newErroredResourceBuilder(s.err, s.client)} }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"context": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting.ApplicationModel/PostgresServerResource.passwordParameter", reqArgs)
+	if err != nil {
+		return &parameterResource{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	href, ok := result.(handleReference)
+	if !ok {
+		err := fmt.Errorf("aspire: Aspire.Hosting.ApplicationModel/PostgresServerResource.passwordParameter returned unexpected type %T", result)
+		return &parameterResource{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	return &parameterResource{resourceBuilderBase: newResourceBuilderBase(href.getHandle(), s.client)}
+}
+
+// Port gets the endpoint reference expression that identifies the port for this endpoint.
+func (s *postgresServerResource) Port() EndpointReferenceExpression {
+	if s.err != nil { return &endpointReferenceExpression{resourceBuilderBase: newErroredResourceBuilder(s.err, s.client)} }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"context": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting.ApplicationModel/PostgresServerResource.port", reqArgs)
+	if err != nil {
+		return &endpointReferenceExpression{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	href, ok := result.(handleReference)
+	if !ok {
+		err := fmt.Errorf("aspire: Aspire.Hosting.ApplicationModel/PostgresServerResource.port returned unexpected type %T", result)
+		return &endpointReferenceExpression{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	return &endpointReferenceExpression{resourceBuilderBase: newResourceBuilderBase(href.getHandle(), s.client)}
+}
+
+// PrimaryEndpoint gets the primary endpoint for the PostgreSQL server.
+func (s *postgresServerResource) PrimaryEndpoint() EndpointReference {
+	if s.err != nil { return &endpointReference{resourceBuilderBase: newErroredResourceBuilder(s.err, s.client)} }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"context": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting.ApplicationModel/PostgresServerResource.primaryEndpoint", reqArgs)
+	if err != nil {
+		return &endpointReference{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	href, ok := result.(handleReference)
+	if !ok {
+		err := fmt.Errorf("aspire: Aspire.Hosting.ApplicationModel/PostgresServerResource.primaryEndpoint returned unexpected type %T", result)
+		return &endpointReference{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	return &endpointReference{resourceBuilderBase: newResourceBuilderBase(href.getHandle(), s.client)}
+}
+
+// PublishAsConnectionString changes the resource to be published as a connection string reference in the manifest.
+func (s *postgresServerResource) PublishAsConnectionString() PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/publishAsConnectionString", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// PublishAsContainer changes the resource to be published as a container in the manifest.
+func (s *postgresServerResource) PublishAsContainer() PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/publishAsContainer", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// SetEntrypoint sets the Entrypoint property
+func (s *postgresServerResource) SetEntrypoint(value *string) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"context": s.handle.ToJSON(),
+	}
+	reqArgs["value"] = serializeValue(value)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.ApplicationModel/PostgresServerResource.setEntrypoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// SetPasswordParameter sets the PasswordParameter property
+func (s *postgresServerResource) SetPasswordParameter(value ParameterResource) PostgresServerResource {
+	if s.err != nil { return s }
+	if value != nil { if err := value.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"context": s.handle.ToJSON(),
+	}
+	reqArgs["value"] = serializeValue(value)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.ApplicationModel/PostgresServerResource.setPasswordParameter", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// SetShellExecution sets the ShellExecution property
+func (s *postgresServerResource) SetShellExecution(value *bool) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"context": s.handle.ToJSON(),
+	}
+	reqArgs["value"] = serializeValue(value)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.ApplicationModel/PostgresServerResource.setShellExecution", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// SetUserNameParameter sets the UserNameParameter property
+func (s *postgresServerResource) SetUserNameParameter(value ParameterResource) PostgresServerResource {
+	if s.err != nil { return s }
+	if value != nil { if err := value.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"context": s.handle.ToJSON(),
+	}
+	reqArgs["value"] = serializeValue(value)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.ApplicationModel/PostgresServerResource.setUserNameParameter", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// ShellExecution should any custom arguments be wrapped in -c ">values<"?
+func (s *postgresServerResource) ShellExecution() (*bool, error) {
+	if s.err != nil { var zero *bool; return zero, s.err }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"context": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting.ApplicationModel/PostgresServerResource.shellExecution", reqArgs)
+	if err != nil {
+		var zero *bool
+		return zero, err
+	}
+	return decodeAs[*bool](result)
+}
+
+// SubscribeHttpsEndpointsUpdate subscribes to the `BeforeStartEvent` and invokes the specified callback when an HTTPS certificate is determined to be available for the resource. This is used to conditionally update endpoint URI schemes or perform other HTTPS-related configuration at startup.
+func (s *postgresServerResource) SubscribeHttpsEndpointsUpdate(callback func(obj HttpsEndpointUpdateCallbackContext)) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[HttpsEndpointUpdateCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/subscribeHttpsEndpointsUpdate", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// UriExpression gets the connection URI expression for the PostgreSQL server.
+func (s *postgresServerResource) UriExpression() *ReferenceExpression {
+	if s.err != nil { return nil }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"context": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting.ApplicationModel/PostgresServerResource.uriExpression", reqArgs)
+	if err != nil { s.setErr(err); return nil }
+	typed, ok := result.(*ReferenceExpression)
+	if !ok {
+		s.setErr(fmt.Errorf("aspire: Aspire.Hosting.ApplicationModel/PostgresServerResource.uriExpression returned unexpected type %T", result))
+		return nil
+	}
+	return typed
+}
+
+// UserNameParameter gets or sets the parameter that contains the PostgreSQL server user name.
+func (s *postgresServerResource) UserNameParameter() ParameterResource {
+	if s.err != nil { return &parameterResource{resourceBuilderBase: newErroredResourceBuilder(s.err, s.client)} }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"context": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting.ApplicationModel/PostgresServerResource.userNameParameter", reqArgs)
+	if err != nil {
+		return &parameterResource{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	href, ok := result.(handleReference)
+	if !ok {
+		err := fmt.Errorf("aspire: Aspire.Hosting.ApplicationModel/PostgresServerResource.userNameParameter returned unexpected type %T", result)
+		return &parameterResource{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	return &parameterResource{resourceBuilderBase: newResourceBuilderBase(href.getHandle(), s.client)}
+}
+
+// UserNameReference gets a reference to the user name for the PostgreSQL server.
+func (s *postgresServerResource) UserNameReference() *ReferenceExpression {
+	if s.err != nil { return nil }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"context": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting.ApplicationModel/PostgresServerResource.userNameReference", reqArgs)
+	if err != nil { s.setErr(err); return nil }
+	typed, ok := result.(*ReferenceExpression)
+	if !ok {
+		s.setErr(fmt.Errorf("aspire: Aspire.Hosting.ApplicationModel/PostgresServerResource.userNameReference returned unexpected type %T", result))
+		return nil
+	}
+	return typed
+}
+
+// WaitFor waits for another resource to be ready
+func (s *postgresServerResource) WaitFor(dependency Resource, options ...*WaitForOptions) PostgresServerResource {
+	if s.err != nil { return s }
+	if dependency != nil { if err := dependency.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["dependency"] = serializeValue(dependency)
+	if len(options) > 0 {
+		merged := &WaitForOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/waitFor", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WaitForCompletion waits for the dependency resource to enter the Exited or Finished state before starting the resource.
+func (s *postgresServerResource) WaitForCompletion(dependency Resource, options ...*WaitForCompletionOptions) PostgresServerResource {
+	if s.err != nil { return s }
+	if dependency != nil { if err := dependency.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["dependency"] = serializeValue(dependency)
+	if len(options) > 0 {
+		merged := &WaitForCompletionOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/waitForResourceCompletion", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WaitForStart waits for another resource to start
+func (s *postgresServerResource) WaitForStart(dependency Resource, options ...*WaitForStartOptions) PostgresServerResource {
+	if s.err != nil { return s }
+	if dependency != nil { if err := dependency.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["dependency"] = serializeValue(dependency)
+	if len(options) > 0 {
+		merged := &WaitForStartOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/waitForStart", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithArgs adds arguments to be passed to a resource that supports arguments when it is launched.
+func (s *postgresServerResource) WithArgs(args []string) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if args != nil { reqArgs["args"] = serializeValue(args) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withArgs", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithArgsCallback adds a callback to be executed with a list of command-line arguments when a resource is started.
+func (s *postgresServerResource) WithArgsCallback(callback func(obj CommandLineArgsCallbackContext)) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[CommandLineArgsCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withArgsCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithBindMount adds a bind mount to a container resource.
+func (s *postgresServerResource) WithBindMount(source string, target string, options ...*WithBindMountOptions) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["source"] = serializeValue(source)
+	reqArgs["target"] = serializeValue(target)
+	if len(options) > 0 {
+		merged := &WithBindMountOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withBindMount", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithBuildArg adds a build argument when the container is built from a Dockerfile.
+// Allowed types for parameter value: string, ParameterResource.
+func (s *postgresServerResource) WithBuildArg(name string, value any) PostgresServerResource {
+	if s.err != nil { return s }
+	switch value.(type) {
+	case string, ParameterResource:
+	default:
+		err := fmt.Errorf("aspire: WithBuildArg: parameter %q must be one of [string, ParameterResource], got %T", "value", value)
+		s.setErr(err); return s
+	}
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	if !isNil(value) { reqArgs["value"] = serializeValue(value) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withBuildArg", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithBuildSecret adds a secret build argument when the container is built from a Dockerfile.
+func (s *postgresServerResource) WithBuildSecret(name string, value ParameterResource) PostgresServerResource {
+	if s.err != nil { return s }
+	if value != nil { if err := value.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	reqArgs["value"] = serializeValue(value)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withParameterBuildSecret", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithCertificateTrustScope sets the certificate trust scope
+func (s *postgresServerResource) WithCertificateTrustScope(scope CertificateTrustScope) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["scope"] = serializeValue(scope)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withCertificateTrustScope", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithChildRelationship sets a child relationship
+func (s *postgresServerResource) WithChildRelationship(child Resource) PostgresServerResource {
+	if s.err != nil { return s }
+	if child != nil { if err := child.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["child"] = serializeValue(child)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withBuilderChildRelationship", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithCommand adds a resource command
+func (s *postgresServerResource) WithCommand(name string, displayName string, executeCommand func(arg ExecuteCommandContext) *ExecuteCommandResult, options ...*WithCommandOptions) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	reqArgs["displayName"] = serializeValue(displayName)
+	if executeCommand != nil {
+		cb := executeCommand
+		shim := func(args ...any) any {
+			return cb(callbackArg[ExecuteCommandContext](args, 0))
+		}
+		reqArgs["executeCommand"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithCommandOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithComputeEnvironment configures the compute environment for the compute resource.
+func (s *postgresServerResource) WithComputeEnvironment(computeEnvironmentResource ComputeEnvironmentResource) PostgresServerResource {
+	if s.err != nil { return s }
+	if computeEnvironmentResource != nil { if err := computeEnvironmentResource.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["computeEnvironmentResource"] = serializeValue(computeEnvironmentResource)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withComputeEnvironment", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithConnectionProperty adds a connection property annotation to the resource being built.
+// Allowed types for parameter value: string, *ReferenceExpression.
+func (s *postgresServerResource) WithConnectionProperty(name string, value any) PostgresServerResource {
+	if s.err != nil { return s }
+	switch value.(type) {
+	case string, *ReferenceExpression:
+	default:
+		err := fmt.Errorf("aspire: WithConnectionProperty: parameter %q must be one of [string, *ReferenceExpression], got %T", "value", value)
+		s.setErr(err); return s
+	}
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	if !isNil(value) { reqArgs["value"] = serializeValue(value) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withConnectionProperty", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerBuildOptions configures container build options for a compute resource using an async callback.
+func (s *postgresServerResource) WithContainerBuildOptions(callback func(arg ContainerBuildOptionsCallbackContext)) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ContainerBuildOptionsCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerBuildOptions", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerCertificatePaths adds container certificate path overrides used for certificate trust at run time.
+func (s *postgresServerResource) WithContainerCertificatePaths(options ...*WithContainerCertificatePathsOptions) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithContainerCertificatePathsOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerCertificatePaths", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerFiles creates or updates files and folders in a container by copying them from a source path on the host.
+func (s *postgresServerResource) WithContainerFiles(destinationPath string, sourcePath string, options ...*ContainerFilesOptions) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["destinationPath"] = serializeValue(destinationPath)
+	reqArgs["sourcePath"] = serializeValue(sourcePath)
+	if len(options) > 0 {
+		merged := &ContainerFilesOptions{}
+		applied := false
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt); applied = true }
+		}
+		if applied { reqArgs["options"] = serializeValue(merged) }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerFiles", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerFilesCallback creates or updates files and/or folders at the destination path in the container using entries produced by a callback.
+func (s *postgresServerResource) WithContainerFilesCallback(destinationPath string, callback func(arg1 ContainerFileSystemCallbackContext, arg2 *CancellationToken) []ContainerFileSystemItem, options ...*ContainerFilesOptions) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["destinationPath"] = serializeValue(destinationPath)
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			return cb(callbackArg[ContainerFileSystemCallbackContext](args, 0), callbackArg[*CancellationToken](args, 1))
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &ContainerFilesOptions{}
+		applied := false
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt); applied = true }
+		}
+		if applied { reqArgs["options"] = serializeValue(merged) }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerFilesCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerName overrides the default container name for this resource. By default Aspire generates a unique container name based on the resource name and a random postfix (or a postfix based on a hash of the AppHost project path for persistent container resources). This method allows you to override that behavior with a custom name, but could lead to naming conflicts if the specified name is not unique.
+func (s *postgresServerResource) WithContainerName(name string) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerName", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerNetworkAlias adds a network alias to container resource.
+func (s *postgresServerResource) WithContainerNetworkAlias(alias string) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["alias"] = serializeValue(alias)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerNetworkAlias", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerRegistry configures the resource to use the specified container registry for container image operations.
+func (s *postgresServerResource) WithContainerRegistry(registry Resource) PostgresServerResource {
+	if s.err != nil { return s }
+	if registry != nil { if err := registry.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["registry"] = serializeValue(registry)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerRegistry", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerRuntimeArgs adds a callback to be executed with a list of arguments to add to the container runtime run command when a container resource is started.
+func (s *postgresServerResource) WithContainerRuntimeArgs(args []string) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if args != nil { reqArgs["args"] = serializeValue(args) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerRuntimeArgs", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDataBindMount adds a bind mount for the data folder to a PostgreSQL container resource.
+func (s *postgresServerResource) WithDataBindMount(source string, options ...*WithDataBindMountOptions) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["source"] = serializeValue(source)
+	if len(options) > 0 {
+		merged := &WithDataBindMountOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.PostgreSQL/withDataBindMount", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDataVolume adds a named volume for the data folder to a PostgreSQL container resource.
+func (s *postgresServerResource) WithDataVolume(options ...*WithDataVolumeOptions) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithDataVolumeOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.PostgreSQL/withDataVolume", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDeveloperCertificateTrust indicates whether developer certificates should be treated as trusted certificate authorities for the resource at run time. Currently this indicates trust for the ASP.NET Core developer certificate. The developer certificate will only be trusted when running in local development scenarios; in publish mode resources will use their default certificate trust.
+func (s *postgresServerResource) WithDeveloperCertificateTrust(trust bool) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["trust"] = serializeValue(trust)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withDeveloperCertificateTrust", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDockerfile causes Aspire to build the specified container image from a Dockerfile.
+func (s *postgresServerResource) WithDockerfile(contextPath string, options ...*WithDockerfileOptions) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["contextPath"] = serializeValue(contextPath)
+	if len(options) > 0 {
+		merged := &WithDockerfileOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withDockerfile", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDockerfileBaseImage configures custom base images for generated Dockerfiles.
+func (s *postgresServerResource) WithDockerfileBaseImage(options ...*WithDockerfileBaseImageOptions) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithDockerfileBaseImageOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withDockerfileBaseImage", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDockerfileBuilder configures the resource to use a programmatically generated Dockerfile
+func (s *postgresServerResource) WithDockerfileBuilder(contextPath string, callback func(arg DockerfileBuilderCallbackContext), options ...*WithDockerfileBuilderOptions) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["contextPath"] = serializeValue(contextPath)
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[DockerfileBuilderCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithDockerfileBuilderOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withDockerfileBuilder", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDockerfileFactory builds the specified container image from a Dockerfile generated by an asynchronous factory function.
+func (s *postgresServerResource) WithDockerfileFactory(contextPath string, dockerfileFactory func(arg DockerfileFactoryContext) string, options ...*WithDockerfileFactoryOptions) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["contextPath"] = serializeValue(contextPath)
+	if dockerfileFactory != nil {
+		cb := dockerfileFactory
+		shim := func(args ...any) any {
+			return cb(callbackArg[DockerfileFactoryContext](args, 0))
+		}
+		reqArgs["dockerfileFactory"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithDockerfileFactoryOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withDockerfileFactory", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEndpoint adds a network endpoint
+func (s *postgresServerResource) WithEndpoint(options ...*WithEndpointOptions) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithEndpointOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEndpoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEndpointCallback updates a named endpoint via callback
+func (s *postgresServerResource) WithEndpointCallback(endpointName string, callback func(obj EndpointUpdateContext), options ...*WithEndpointCallbackOptions) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["endpointName"] = serializeValue(endpointName)
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[EndpointUpdateContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithEndpointCallbackOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEndpointCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEndpointProxySupport set whether a resource can use proxied endpoints or whether they should be disabled for all endpoints belonging to the resource. If set to `false`, endpoints belonging to the resource will ignore the configured proxy settings and run proxy-less.
+func (s *postgresServerResource) WithEndpointProxySupport(proxyEnabled bool) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["proxyEnabled"] = serializeValue(proxyEnabled)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEndpointProxySupport", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEntrypoint sets the Entrypoint for the container.
+func (s *postgresServerResource) WithEntrypoint(entrypoint string) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["entrypoint"] = serializeValue(entrypoint)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEntrypoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEnvironment sets an environment variable
+// Allowed types for parameter value: string, *ReferenceExpression, EndpointReference, ParameterResource, ExternalServiceResource, ResourceWithConnectionString, ExpressionValue.
+func (s *postgresServerResource) WithEnvironment(name string, value any) PostgresServerResource {
+	if s.err != nil { return s }
+	switch value.(type) {
+	case string, *ReferenceExpression, EndpointReference, ParameterResource, ExternalServiceResource, ResourceWithConnectionString, ExpressionValue:
+	default:
+		err := fmt.Errorf("aspire: WithEnvironment: parameter %q must be one of [string, *ReferenceExpression, EndpointReference, ParameterResource, ExternalServiceResource, ResourceWithConnectionString, ExpressionValue], got %T", "value", value)
+		s.setErr(err); return s
+	}
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	if !isNil(value) { reqArgs["value"] = serializeValue(value) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEnvironment", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEnvironmentCallback allows for the population of environment variables on a resource.
+func (s *postgresServerResource) WithEnvironmentCallback(callback func(arg EnvironmentCallbackContext)) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[EnvironmentCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEnvironmentCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithExplicitStart prevents resource from starting automatically
+func (s *postgresServerResource) WithExplicitStart() PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withExplicitStart", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithExternalHttpEndpoints marks existing http or https endpoints on a resource as external.
+func (s *postgresServerResource) WithExternalHttpEndpoints() PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withExternalHttpEndpoints", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHealthCheck adds a health check by key
+func (s *postgresServerResource) WithHealthCheck(key string) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["key"] = serializeValue(key)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHealthCheck", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHidden hides the resource from default resource lists
+func (s *postgresServerResource) WithHidden() PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHidden", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHiddenOnCompletion hides the resource from default resource lists after successful completion
+func (s *postgresServerResource) WithHiddenOnCompletion(options ...*WithHiddenOnCompletionOptions) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHiddenOnCompletionOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHiddenOnCompletion", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHostPort configures the host port that the PostgreSQL resource is exposed on instead of using randomly assigned port.
+func (s *postgresServerResource) WithHostPort(port *float64) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["port"] = serializeValue(port)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.PostgreSQL/withPostgresHostPort", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpCommand adds an HTTP resource command
+func (s *postgresServerResource) WithHttpCommand(path string, displayName string, options ...*HttpCommandExportOptions) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["path"] = serializeValue(path)
+	reqArgs["displayName"] = serializeValue(displayName)
+	if len(options) > 0 {
+		merged := &HttpCommandExportOptions{}
+		applied := false
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt); applied = true }
+		}
+		if applied { reqArgs["options"] = serializeValue(merged) }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpEndpoint adds an HTTP endpoint
+func (s *postgresServerResource) WithHttpEndpoint(options ...*WithHttpEndpointOptions) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHttpEndpointOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpEndpoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpEndpointCallback updates an HTTP endpoint via callback
+func (s *postgresServerResource) WithHttpEndpointCallback(callback func(obj EndpointUpdateContext), options ...*WithHttpEndpointCallbackOptions) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[EndpointUpdateContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithHttpEndpointCallbackOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpEndpointCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpHealthCheck adds a health check to the resource which is mapped to a specific endpoint.
+func (s *postgresServerResource) WithHttpHealthCheck(options ...*WithHttpHealthCheckOptions) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHttpHealthCheckOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpHealthCheck", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpProbe adds an HTTP health probe to the resource
+func (s *postgresServerResource) WithHttpProbe(probeType ProbeType, options ...*WithHttpProbeOptions) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["probeType"] = serializeValue(probeType)
+	if len(options) > 0 {
+		merged := &WithHttpProbeOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpProbe", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpsCertificateConfiguration adds a callback that allows configuring the resource to use a specific HTTPS/TLS certificate key pair for server authentication.
+func (s *postgresServerResource) WithHttpsCertificateConfiguration(callback func(arg HttpsCertificateConfigurationCallbackAnnotationContext)) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[HttpsCertificateConfigurationCallbackAnnotationContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpsCertificateConfiguration", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpsDeveloperCertificate indicates that a resource should use the developer certificate key pair for HTTPS endpoints at run time. Currently this indicates use of the ASP.NET Core developer certificate. The developer certificate will only be used when running in local development scenarios; in publish mode resources will use their default certificate configuration.
+func (s *postgresServerResource) WithHttpsDeveloperCertificate(options ...*WithHttpsDeveloperCertificateOptions) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHttpsDeveloperCertificateOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withParameterHttpsDeveloperCertificate", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpsEndpoint adds an HTTPS endpoint
+func (s *postgresServerResource) WithHttpsEndpoint(options ...*WithHttpsEndpointOptions) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHttpsEndpointOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpsEndpoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpsEndpointCallback updates an HTTPS endpoint via callback
+func (s *postgresServerResource) WithHttpsEndpointCallback(callback func(obj EndpointUpdateContext), options ...*WithHttpsEndpointCallbackOptions) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[EndpointUpdateContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithHttpsEndpointCallbackOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpsEndpointCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithIconName specifies the icon to use when displaying the resource in the dashboard.
+func (s *postgresServerResource) WithIconName(iconName string, options ...*WithIconNameOptions) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["iconName"] = serializeValue(iconName)
+	if len(options) > 0 {
+		merged := &WithIconNameOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withIconName", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithImage allows overriding the image on a container.
+func (s *postgresServerResource) WithImage(image string, options ...*WithImageOptions) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["image"] = serializeValue(image)
+	if len(options) > 0 {
+		merged := &WithImageOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withImage", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithImagePullPolicy sets the pull policy for the container resource.
+func (s *postgresServerResource) WithImagePullPolicy(pullPolicy ImagePullPolicy) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["pullPolicy"] = serializeValue(pullPolicy)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withImagePullPolicy", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithImagePushOptions adds an asynchronous callback to configure container image push options for the resource.
+func (s *postgresServerResource) WithImagePushOptions(callback func(arg ContainerImagePushOptionsCallbackContext)) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ContainerImagePushOptionsCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withImagePushOptions", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithImageRegistry allows overriding the image registry on a container.
+func (s *postgresServerResource) WithImageRegistry(registry string) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["registry"] = serializeValue(registry)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withImageRegistry", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithImageSHA256 allows setting the image to a specific sha256 on a container.
+func (s *postgresServerResource) WithImageSHA256(sha256 string) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["sha256"] = serializeValue(sha256)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withImageSHA256", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithImageTag allows overriding the image tag on a container.
+func (s *postgresServerResource) WithImageTag(tag string) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["tag"] = serializeValue(tag)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withImageTag", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithInitFiles copies init files to a PostgreSQL container resource.
+func (s *postgresServerResource) WithInitFiles(source string) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["source"] = serializeValue(source)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.PostgreSQL/withInitFiles", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithLifetime sets the lifetime behavior of the container resource.
+func (s *postgresServerResource) WithLifetime(lifetime ContainerLifetime) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["lifetime"] = serializeValue(lifetime)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withLifetime", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithLifetimeOf configures a resource to match the lifetime of another resource.
+func (s *postgresServerResource) WithLifetimeOf(sourceBuilder Resource) PostgresServerResource {
+	if s.err != nil { return s }
+	if sourceBuilder != nil { if err := sourceBuilder.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["sourceBuilder"] = serializeValue(sourceBuilder)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withLifetimeOf", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithMcpServer marks the resource as hosting a Model Context Protocol (MCP) server on the specified endpoint.
+func (s *postgresServerResource) WithMcpServer(options ...*WithMcpServerOptions) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithMcpServerOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withMcpServer", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithOtlpExporter configures OTLP telemetry export
+func (s *postgresServerResource) WithOtlpExporter(options ...*WithOtlpExporterOptions) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithOtlpExporterOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withOtlpExporter", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithParentProcessLifetime configures a resource to use a persistent lifetime that ends when a parent process exits.
+func (s *postgresServerResource) WithParentProcessLifetime(parentProcessId float64) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["parentProcessId"] = serializeValue(parentProcessId)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withParentProcessLifetime", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithParentRelationship sets the parent relationship
+func (s *postgresServerResource) WithParentRelationship(parent Resource) PostgresServerResource {
+	if s.err != nil { return s }
+	if parent != nil { if err := parent.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["parent"] = serializeValue(parent)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withBuilderParentRelationship", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithPassword configures the password that the PostgreSQL resource is used.
+func (s *postgresServerResource) WithPassword(password ParameterResource) PostgresServerResource {
+	if s.err != nil { return s }
+	if password != nil { if err := password.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["password"] = serializeValue(password)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.PostgreSQL/withPassword", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithPersistentLifetime configures a resource to use a persistent lifetime.
+func (s *postgresServerResource) WithPersistentLifetime() PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withPersistentLifetime", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithPgAdmin adds a pgAdmin 4 administration and development platform for PostgreSQL to the application model.
+func (s *postgresServerResource) WithPgAdmin(options ...*WithPgAdminOptions) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithPgAdminOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+		if merged.ConfigureContainer != nil {
+			cb := merged.ConfigureContainer
+			shim := func(args ...any) any {
+				cb(callbackArg[PgAdminContainerResource](args, 0))
+				return nil
+			}
+			reqArgs["configureContainer"] = s.client.registerCallback(shim)
+		}
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.PostgreSQL/withPgAdmin", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithPgWeb adds an administration and development platform for PostgreSQL to the application model using pgweb.
+func (s *postgresServerResource) WithPgWeb(options ...*WithPgWebOptions) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithPgWebOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+		if merged.ConfigureContainer != nil {
+			cb := merged.ConfigureContainer
+			shim := func(args ...any) any {
+				cb(callbackArg[PgWebContainerResource](args, 0))
+				return nil
+			}
+			reqArgs["configureContainer"] = s.client.registerCallback(shim)
+		}
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.PostgreSQL/withPgWeb", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithPipelineConfiguration registers a callback to be executed during the pipeline configuration phase, allowing modification of step dependencies and relationships.
+func (s *postgresServerResource) WithPipelineConfiguration(callback func(obj PipelineConfigurationContext)) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[PipelineConfigurationContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withPipelineConfiguration", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithPipelineStepFactory adds a pipeline step to the resource that will be executed during deployment.
+func (s *postgresServerResource) WithPipelineStepFactory(stepName string, callback func(arg PipelineStepContext), options ...*WithPipelineStepFactoryOptions) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["stepName"] = serializeValue(stepName)
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[PipelineStepContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithPipelineStepFactoryOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withPipelineStepFactory", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithProcessCommand adds a command to the resource that starts a local process when invoked.
+func (s *postgresServerResource) WithProcessCommand(commandName string, displayName string, options *ProcessCommandExportOptions) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["commandName"] = serializeValue(commandName)
+	reqArgs["displayName"] = serializeValue(displayName)
+	if options != nil { reqArgs["options"] = serializeValue(options) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withProcessCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithProcessCommandFactory adds a command to the resource that starts a local process created by a callback when invoked.
+func (s *postgresServerResource) WithProcessCommandFactory(commandName string, displayName string, createProcessSpec func(arg ExecuteCommandContext) *ProcessCommandSpecExportData, options ...*ProcessCommandResultExportOptions) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["commandName"] = serializeValue(commandName)
+	reqArgs["displayName"] = serializeValue(displayName)
+	if createProcessSpec != nil {
+		cb := createProcessSpec
+		shim := func(args ...any) any {
+			return cb(callbackArg[ExecuteCommandContext](args, 0))
+		}
+		reqArgs["createProcessSpec"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &ProcessCommandResultExportOptions{}
+		applied := false
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt); applied = true }
+		}
+		if applied { reqArgs["options"] = serializeValue(merged) }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withProcessCommandFactory", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithReference adds a reference to another resource
+// Allowed types for parameter source: Resource, EndpointReference, string.
+func (s *postgresServerResource) WithReference(source any, options ...*WithReferenceOptions) PostgresServerResource {
+	if s.err != nil { return s }
+	switch source.(type) {
+	case Resource, EndpointReference, string:
+	default:
+		err := fmt.Errorf("aspire: WithReference: parameter %q must be one of [Resource, EndpointReference, string], got %T", "source", source)
+		s.setErr(err); return s
+	}
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if !isNil(source) { reqArgs["source"] = serializeValue(source) }
+	if len(options) > 0 {
+		merged := &WithReferenceOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withReference", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithReferenceEnvironment configures how information is injected into environment variables when the resource references other resources.
+func (s *postgresServerResource) WithReferenceEnvironment(options *ReferenceEnvironmentInjectionOptions) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if options != nil { reqArgs["options"] = serializeValue(options) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withReferenceEnvironment", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRelationship adds a relationship to another resource using its builder.
+func (s *postgresServerResource) WithRelationship(resourceBuilder Resource, type_ string) PostgresServerResource {
+	if s.err != nil { return s }
+	if resourceBuilder != nil { if err := resourceBuilder.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["resourceBuilder"] = serializeValue(resourceBuilder)
+	reqArgs["type"] = serializeValue(type_)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withBuilderRelationship", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRemoteImageName sets the remote image name (without registry endpoint or tag) for container push operations.
+func (s *postgresServerResource) WithRemoteImageName(remoteImageName string) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["remoteImageName"] = serializeValue(remoteImageName)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withRemoteImageName", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRemoteImageTag sets the remote image tag for container push operations.
+func (s *postgresServerResource) WithRemoteImageTag(remoteImageTag string) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["remoteImageTag"] = serializeValue(remoteImageTag)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withRemoteImageTag", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRepl adds a REPL command that opens an authenticated PostgreSQL shell in the dashboard terminal dock.
+func (s *postgresServerResource) WithRepl() PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.PostgreSQL/withRepl", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRequiredCommand declares that a resource requires a specific command/executable to be available on the local machine PATH before it can start.
+func (s *postgresServerResource) WithRequiredCommand(command string, options ...*WithRequiredCommandOptions) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["command"] = serializeValue(command)
+	if len(options) > 0 {
+		merged := &WithRequiredCommandOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withRequiredCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRequiredCommandValidation declares that a resource requires a specific command/executable to be available on the local machine PATH before it can start, with custom validation logic.
+func (s *postgresServerResource) WithRequiredCommandValidation(command string, validationCallback func(arg RequiredCommandValidationContext) RequiredCommandValidationResult, options ...*WithRequiredCommandValidationOptions) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["command"] = serializeValue(command)
+	if validationCallback != nil {
+		cb := validationCallback
+		shim := func(args ...any) any {
+			return cb(callbackArg[RequiredCommandValidationContext](args, 0))
+		}
+		reqArgs["validationCallback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithRequiredCommandValidationOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withRequiredCommandValidation", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithSessionLifetime configures a resource to use a session lifetime.
+func (s *postgresServerResource) WithSessionLifetime() PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withSessionLifetime", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithTerminal adds an interactive terminal session to a resource using the default terminal options.
+func (s *postgresServerResource) WithTerminal() PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withTerminal", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithUrl adds or modifies displayed URLs
+// Allowed types for parameter url: string, *ReferenceExpression.
+func (s *postgresServerResource) WithUrl(url any, options ...*WithUrlOptions) PostgresServerResource {
+	if s.err != nil { return s }
+	switch url.(type) {
+	case string, *ReferenceExpression:
+	default:
+		err := fmt.Errorf("aspire: WithUrl: parameter %q must be one of [string, *ReferenceExpression], got %T", "url", url)
+		s.setErr(err); return s
+	}
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if !isNil(url) { reqArgs["url"] = serializeValue(url) }
+	if len(options) > 0 {
+		merged := &WithUrlOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withUrl", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithUrlForEndpoint registers a callback to update the URL displayed for the endpoint with the specified name.
+func (s *postgresServerResource) WithUrlForEndpoint(endpointName string, callback func(obj *ResourceUrlAnnotation)) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["endpointName"] = serializeValue(endpointName)
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			arg0 := callbackArg[*ResourceUrlAnnotation](args, 0)
+			cb(arg0)
+			return map[string]any{
+				"p0": serializeValue(arg0),
+			}
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withUrlForEndpoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithUrls registers a callback to customize the URLs displayed for the resource.
+func (s *postgresServerResource) WithUrls(callback func(obj ResourceUrlsCallbackContext)) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ResourceUrlsCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withUrls", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithUserName configures the user name that the PostgreSQL resource is used.
+func (s *postgresServerResource) WithUserName(userName ParameterResource) PostgresServerResource {
+	if s.err != nil { return s }
+	if userName != nil { if err := userName.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["userName"] = serializeValue(userName)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.PostgreSQL/withUserName", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithVolume adds a volume to a container resource.
+func (s *postgresServerResource) WithVolume(target string, options ...*WithVolumeOptions) PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	reqArgs["target"] = serializeValue(target)
+	if len(options) > 0 {
+		merged := &WithVolumeOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withVolume", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithoutHttpsCertificate disable HTTPS/TLS server certificate configuration for the resource. No HTTPS/TLS termination configuration will be applied.
+func (s *postgresServerResource) WithoutHttpsCertificate() PostgresServerResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withoutHttpsCertificate", reqArgs); err != nil { s.setErr(err) }
+	return s
 }
 
 // ProgressContext is the public interface for handle type ProgressContext.
@@ -18261,123 +36566,6 @@ func (s *resourceUrlsEditor) ExecutionContext() DistributedApplicationExecutionC
 	return &distributedApplicationExecutionContext{resourceBuilderBase: newResourceBuilderBase(href.getHandle(), s.client)}
 }
 
-// ResourceWithConnectionString is the public interface for handle type ResourceWithConnectionString.
-type ResourceWithConnectionString interface {
-	handleReference
-	GetConnectionProperty(key string) *ReferenceExpression
-	OnConnectionStringAvailable(callback func(arg ConnectionStringAvailableEvent)) ResourceWithConnectionString
-	WithConnectionProperty(name string, value any) ResourceWithConnectionString
-	Err() error
-}
-
-// resourceWithConnectionString is the unexported impl of ResourceWithConnectionString.
-type resourceWithConnectionString struct {
-	*resourceBuilderBase
-}
-
-// newResourceWithConnectionStringFromHandle wraps an existing handle as ResourceWithConnectionString.
-func newResourceWithConnectionStringFromHandle(h *handle, c *client) ResourceWithConnectionString {
-	return &resourceWithConnectionString{resourceBuilderBase: newResourceBuilderBase(h, c)}
-}
-
-// GetConnectionProperty retrieves the value of a specified connection property from the resource's connection properties.
-func (s *resourceWithConnectionString) GetConnectionProperty(key string) *ReferenceExpression {
-	if s.err != nil { return nil }
-	ctx := context.Background()
-	reqArgs := map[string]any{
-		"resource": s.handle.ToJSON(),
-	}
-	reqArgs["key"] = serializeValue(key)
-	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting/getConnectionProperty", reqArgs)
-	if err != nil { s.setErr(err); return nil }
-	typed, ok := result.(*ReferenceExpression)
-	if !ok {
-		s.setErr(fmt.Errorf("aspire: Aspire.Hosting/getConnectionProperty returned unexpected type %T", result))
-		return nil
-	}
-	return typed
-}
-
-// OnConnectionStringAvailable subscribes to the ConnectionStringAvailable event.
-func (s *resourceWithConnectionString) OnConnectionStringAvailable(callback func(arg ConnectionStringAvailableEvent)) ResourceWithConnectionString {
-	if s.err != nil { return s }
-	ctx := context.Background()
-	reqArgs := map[string]any{
-		"builder": s.handle.ToJSON(),
-	}
-	if callback != nil {
-		cb := callback
-		shim := func(args ...any) any {
-			cb(callbackArg[ConnectionStringAvailableEvent](args, 0))
-			return nil
-		}
-		reqArgs["callback"] = s.client.registerCallback(shim)
-	}
-	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onConnectionStringAvailable", reqArgs); err != nil { s.setErr(err) }
-	return s
-}
-
-// WithConnectionProperty adds a connection property annotation to the resource being built.
-// Allowed types for parameter value: string, *ReferenceExpression.
-func (s *resourceWithConnectionString) WithConnectionProperty(name string, value any) ResourceWithConnectionString {
-	if s.err != nil { return s }
-	switch value.(type) {
-	case string, *ReferenceExpression:
-	default:
-		err := fmt.Errorf("aspire: WithConnectionProperty: parameter %q must be one of [string, *ReferenceExpression], got %T", "value", value)
-		s.setErr(err); return s
-	}
-	ctx := context.Background()
-	reqArgs := map[string]any{
-		"builder": s.handle.ToJSON(),
-	}
-	reqArgs["name"] = serializeValue(name)
-	if !isNil(value) { reqArgs["value"] = serializeValue(value) }
-	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withConnectionProperty", reqArgs); err != nil { s.setErr(err) }
-	return s
-}
-
-// ResourceWithContainerFiles is the public interface for handle type ResourceWithContainerFiles.
-type ResourceWithContainerFiles interface {
-	handleReference
-	ClearContainerFilesSources() ResourceWithContainerFiles
-	WithContainerFilesSource(sourcePath string) ResourceWithContainerFiles
-	Err() error
-}
-
-// resourceWithContainerFiles is the unexported impl of ResourceWithContainerFiles.
-type resourceWithContainerFiles struct {
-	*resourceBuilderBase
-}
-
-// newResourceWithContainerFilesFromHandle wraps an existing handle as ResourceWithContainerFiles.
-func newResourceWithContainerFilesFromHandle(h *handle, c *client) ResourceWithContainerFiles {
-	return &resourceWithContainerFiles{resourceBuilderBase: newResourceBuilderBase(h, c)}
-}
-
-// ClearContainerFilesSources removes any container files source annotation from the resource being built.
-func (s *resourceWithContainerFiles) ClearContainerFilesSources() ResourceWithContainerFiles {
-	if s.err != nil { return s }
-	ctx := context.Background()
-	reqArgs := map[string]any{
-		"builder": s.handle.ToJSON(),
-	}
-	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/clearContainerFilesSources", reqArgs); err != nil { s.setErr(err) }
-	return s
-}
-
-// WithContainerFilesSource adds a container files source annotation to the resource being built, specifying the path to the container files source.
-func (s *resourceWithContainerFiles) WithContainerFilesSource(sourcePath string) ResourceWithContainerFiles {
-	if s.err != nil { return s }
-	ctx := context.Background()
-	reqArgs := map[string]any{
-		"builder": s.handle.ToJSON(),
-	}
-	reqArgs["sourcePath"] = serializeValue(sourcePath)
-	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerFilesSource", reqArgs); err != nil { s.setErr(err) }
-	return s
-}
-
 // ServiceProvider is the public interface for handle type ServiceProvider.
 type ServiceProvider interface {
 	handleReference
@@ -18749,6 +36937,1651 @@ func (s *userSecretsManager) TrySetSecret(name string, value string) (bool, erro
 		return zero, err
 	}
 	return decodeAs[bool](result)
+}
+
+// ViteAppResource is the public interface for handle type ViteAppResource.
+type ViteAppResource interface {
+	handleReference
+	AsHttp2Service() ViteAppResource
+	ClearContainerFilesSources() ViteAppResource
+	Command() (string, error)
+	CreateExecutionConfiguration() ExecutionConfigurationBuilder
+	ExcludeFromManifest() ViteAppResource
+	ExcludeFromMcp() ViteAppResource
+	GetEndpoint(name string) EndpointReference
+	GetResourceName() (string, error)
+	Name() (string, error)
+	OnBeforeResourceStarted(callback func(arg BeforeResourceStartedEvent)) ViteAppResource
+	OnInitializeResource(callback func(arg InitializeResourceEvent)) ViteAppResource
+	OnResourceEndpointsAllocated(callback func(arg ResourceEndpointsAllocatedEvent)) ViteAppResource
+	OnResourceReady(callback func(arg ResourceReadyEvent)) ViteAppResource
+	OnResourceStopped(callback func(arg ResourceStoppedEvent)) ViteAppResource
+	PublishAsDockerFile(configure func(obj ContainerResource)) ViteAppResource
+	PublishAsNodeServer(entryPoint string, options ...*PublishAsNodeServerOptions) ViteAppResource
+	PublishAsPackageScript(options ...*PublishAsPackageScriptOptions) ViteAppResource
+	PublishAsStaticWebsite(options ...*PublishAsStaticWebsiteOptions) ViteAppResource
+	SubscribeHttpsEndpointsUpdate(callback func(obj HttpsEndpointUpdateCallbackContext)) ViteAppResource
+	WaitFor(dependency Resource, options ...*WaitForOptions) ViteAppResource
+	WaitForCompletion(dependency Resource, options ...*WaitForCompletionOptions) ViteAppResource
+	WaitForStart(dependency Resource, options ...*WaitForStartOptions) ViteAppResource
+	WithArgs(args []string) ViteAppResource
+	WithArgsCallback(callback func(obj CommandLineArgsCallbackContext)) ViteAppResource
+	WithBrowserDebugger(options ...*WithBrowserDebuggerOptions) ViteAppResource
+	WithBuildScript(scriptName string, options ...*WithBuildScriptOptions) ViteAppResource
+	WithBun(options ...*WithBunOptions) ViteAppResource
+	WithCertificateTrustScope(scope CertificateTrustScope) ViteAppResource
+	WithChildRelationship(child Resource) ViteAppResource
+	WithCommand(name string, displayName string, executeCommand func(arg ExecuteCommandContext) *ExecuteCommandResult, options ...*WithCommandOptions) ViteAppResource
+	WithComputeEnvironment(computeEnvironmentResource ComputeEnvironmentResource) ViteAppResource
+	WithContainerBuildOptions(callback func(arg ContainerBuildOptionsCallbackContext)) ViteAppResource
+	WithContainerFilesSource(sourcePath string) ViteAppResource
+	WithContainerRegistry(registry Resource) ViteAppResource
+	WithDeno(options ...*WithDenoOptions) ViteAppResource
+	WithDeveloperCertificateTrust(trust bool) ViteAppResource
+	WithDockerfileBaseImage(options ...*WithDockerfileBaseImageOptions) ViteAppResource
+	WithEndpoint(options ...*WithEndpointOptions) ViteAppResource
+	WithEndpointCallback(endpointName string, callback func(obj EndpointUpdateContext), options ...*WithEndpointCallbackOptions) ViteAppResource
+	WithEndpointProxySupport(proxyEnabled bool) ViteAppResource
+	WithEnvironment(name string, value any) ViteAppResource
+	WithEnvironmentCallback(callback func(arg EnvironmentCallbackContext)) ViteAppResource
+	WithExecutableCommand(command string) ViteAppResource
+	WithExplicitStart() ViteAppResource
+	WithExternalHttpEndpoints() ViteAppResource
+	WithHealthCheck(key string) ViteAppResource
+	WithHidden() ViteAppResource
+	WithHiddenOnCompletion(options ...*WithHiddenOnCompletionOptions) ViteAppResource
+	WithHttpCommand(path string, displayName string, options ...*HttpCommandExportOptions) ViteAppResource
+	WithHttpEndpoint(options ...*WithHttpEndpointOptions) ViteAppResource
+	WithHttpEndpointCallback(callback func(obj EndpointUpdateContext), options ...*WithHttpEndpointCallbackOptions) ViteAppResource
+	WithHttpHealthCheck(options ...*WithHttpHealthCheckOptions) ViteAppResource
+	WithHttpProbe(probeType ProbeType, options ...*WithHttpProbeOptions) ViteAppResource
+	WithHttpsCertificateConfiguration(callback func(arg HttpsCertificateConfigurationCallbackAnnotationContext)) ViteAppResource
+	WithHttpsDeveloperCertificate(options ...*WithHttpsDeveloperCertificateOptions) ViteAppResource
+	WithHttpsEndpoint(options ...*WithHttpsEndpointOptions) ViteAppResource
+	WithHttpsEndpointCallback(callback func(obj EndpointUpdateContext), options ...*WithHttpsEndpointCallbackOptions) ViteAppResource
+	WithIconName(iconName string, options ...*WithIconNameOptions) ViteAppResource
+	WithImagePushOptions(callback func(arg ContainerImagePushOptionsCallbackContext)) ViteAppResource
+	WithLifetimeOf(sourceBuilder Resource) ViteAppResource
+	WithMcpServer(options ...*WithMcpServerOptions) ViteAppResource
+	WithNpm(options ...*WithNpmOptions) ViteAppResource
+	WithOtlpExporter(options ...*WithOtlpExporterOptions) ViteAppResource
+	WithParentProcessLifetime(parentProcessId float64) ViteAppResource
+	WithParentRelationship(parent Resource) ViteAppResource
+	WithPersistentLifetime() ViteAppResource
+	WithPipelineConfiguration(callback func(obj PipelineConfigurationContext)) ViteAppResource
+	WithPipelineStepFactory(stepName string, callback func(arg PipelineStepContext), options ...*WithPipelineStepFactoryOptions) ViteAppResource
+	WithPnpm(options ...*WithPnpmOptions) ViteAppResource
+	WithProcessCommand(commandName string, displayName string, options *ProcessCommandExportOptions) ViteAppResource
+	WithProcessCommandFactory(commandName string, displayName string, createProcessSpec func(arg ExecuteCommandContext) *ProcessCommandSpecExportData, options ...*ProcessCommandResultExportOptions) ViteAppResource
+	WithReference(source any, options ...*WithReferenceOptions) ViteAppResource
+	WithReferenceEnvironment(options *ReferenceEnvironmentInjectionOptions) ViteAppResource
+	WithRelationship(resourceBuilder Resource, type_ string) ViteAppResource
+	WithRemoteImageName(remoteImageName string) ViteAppResource
+	WithRemoteImageTag(remoteImageTag string) ViteAppResource
+	WithRequiredCommand(command string, options ...*WithRequiredCommandOptions) ViteAppResource
+	WithRequiredCommandValidation(command string, validationCallback func(arg RequiredCommandValidationContext) RequiredCommandValidationResult, options ...*WithRequiredCommandValidationOptions) ViteAppResource
+	WithRunScript(scriptName string, options ...*WithRunScriptOptions) ViteAppResource
+	WithSessionLifetime() ViteAppResource
+	WithTerminal() ViteAppResource
+	WithUrl(url any, options ...*WithUrlOptions) ViteAppResource
+	WithUrlForEndpoint(endpointName string, callback func(obj *ResourceUrlAnnotation)) ViteAppResource
+	WithUrls(callback func(obj ResourceUrlsCallbackContext)) ViteAppResource
+	WithViteConfig(configPath string) ViteAppResource
+	WithVolume(target string, name string, env string, options ...*ExecutableResourceWithVolumeOptions) ViteAppResource
+	WithWorkingDirectory(workingDirectory string) ViteAppResource
+	WithYarn(options ...*WithYarnOptions) ViteAppResource
+	WithoutHttpsCertificate() ViteAppResource
+	WorkingDirectory() (string, error)
+	Err() error
+}
+
+// viteAppResource is the unexported impl of ViteAppResource.
+type viteAppResource struct {
+	*resourceBuilderBase
+}
+
+// newViteAppResourceFromHandle wraps an existing handle as ViteAppResource.
+func newViteAppResourceFromHandle(h *handle, c *client) ViteAppResource {
+	return &viteAppResource{resourceBuilderBase: newResourceBuilderBase(h, c)}
+}
+
+// AsHttp2Service configures a resource to mark all endpoints' transport as HTTP/2. This is useful for HTTP/2 services that need prior knowledge.
+func (s *viteAppResource) AsHttp2Service() ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/asHttp2Service", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// ClearContainerFilesSources removes any container files source annotation from the resource being built.
+func (s *viteAppResource) ClearContainerFilesSources() ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/clearContainerFilesSources", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// Command gets the command associated with this executable resource.
+func (s *viteAppResource) Command() (string, error) {
+	if s.err != nil { var zero string; return zero, s.err }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"context": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/JavaScriptAppResource.command", reqArgs)
+	if err != nil {
+		var zero string
+		return zero, err
+	}
+	return decodeAs[string](result)
+}
+
+// CreateExecutionConfiguration creates an execution configuration builder for the specified resource.
+func (s *viteAppResource) CreateExecutionConfiguration() ExecutionConfigurationBuilder {
+	if s.err != nil { return &executionConfigurationBuilder{resourceBuilderBase: newErroredResourceBuilder(s.err, s.client)} }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting/createExecutionConfiguration", reqArgs)
+	if err != nil {
+		return &executionConfigurationBuilder{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	href, ok := result.(handleReference)
+	if !ok {
+		err := fmt.Errorf("aspire: Aspire.Hosting/createExecutionConfiguration returned unexpected type %T", result)
+		return &executionConfigurationBuilder{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	return &executionConfigurationBuilder{resourceBuilderBase: newResourceBuilderBase(href.getHandle(), s.client)}
+}
+
+// ExcludeFromManifest excludes a resource from being published to the manifest.
+func (s *viteAppResource) ExcludeFromManifest() ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/excludeFromManifest", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// ExcludeFromMcp exclude the resource from MCP operations using the Aspire MCP server. The resource is excluded from results that return resources, console logs and telemetry.
+func (s *viteAppResource) ExcludeFromMcp() ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/excludeFromMcp", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// GetEndpoint gets an endpoint reference
+func (s *viteAppResource) GetEndpoint(name string) EndpointReference {
+	if s.err != nil { return &endpointReference{resourceBuilderBase: newErroredResourceBuilder(s.err, s.client)} }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting/getEndpoint", reqArgs)
+	if err != nil {
+		return &endpointReference{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	href, ok := result.(handleReference)
+	if !ok {
+		err := fmt.Errorf("aspire: Aspire.Hosting/getEndpoint returned unexpected type %T", result)
+		return &endpointReference{resourceBuilderBase: newErroredResourceBuilder(err, s.client)}
+	}
+	return &endpointReference{resourceBuilderBase: newResourceBuilderBase(href.getHandle(), s.client)}
+}
+
+// GetResourceName gets the name of the resource from a builder.
+func (s *viteAppResource) GetResourceName() (string, error) {
+	if s.err != nil { var zero string; return zero, s.err }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting/getResourceName", reqArgs)
+	if err != nil {
+		var zero string
+		return zero, err
+	}
+	return decodeAs[string](result)
+}
+
+// Name gets the name of the resource.
+func (s *viteAppResource) Name() (string, error) {
+	if s.err != nil { var zero string; return zero, s.err }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"context": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/JavaScriptAppResource.name", reqArgs)
+	if err != nil {
+		var zero string
+		return zero, err
+	}
+	return decodeAs[string](result)
+}
+
+// OnBeforeResourceStarted subscribes to the BeforeResourceStarted event.
+func (s *viteAppResource) OnBeforeResourceStarted(callback func(arg BeforeResourceStartedEvent)) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[BeforeResourceStartedEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onBeforeResourceStarted", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// OnInitializeResource subscribes to the InitializeResource event.
+func (s *viteAppResource) OnInitializeResource(callback func(arg InitializeResourceEvent)) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[InitializeResourceEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onInitializeResource", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// OnResourceEndpointsAllocated subscribes to the ResourceEndpointsAllocated event.
+func (s *viteAppResource) OnResourceEndpointsAllocated(callback func(arg ResourceEndpointsAllocatedEvent)) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ResourceEndpointsAllocatedEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onResourceEndpointsAllocated", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// OnResourceReady subscribes to the ResourceReady event.
+func (s *viteAppResource) OnResourceReady(callback func(arg ResourceReadyEvent)) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ResourceReadyEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onResourceReady", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// OnResourceStopped subscribes to the ResourceStopped event.
+func (s *viteAppResource) OnResourceStopped(callback func(arg ResourceStoppedEvent)) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ResourceStoppedEvent](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/onResourceStopped", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// PublishAsDockerFile publishes an executable as a Docker file
+func (s *viteAppResource) PublishAsDockerFile(configure func(obj ContainerResource)) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if configure != nil {
+		cb := configure
+		shim := func(args ...any) any {
+			cb(callbackArg[ContainerResource](args, 0))
+			return nil
+		}
+		reqArgs["configure"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/publishAsDockerFile", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// PublishAsNodeServer configures the JavaScript application to publish as a standalone Node.js server that runs a built artifact directly.
+func (s *viteAppResource) PublishAsNodeServer(entryPoint string, options ...*PublishAsNodeServerOptions) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["entryPoint"] = serializeValue(entryPoint)
+	if len(options) > 0 {
+		merged := &PublishAsNodeServerOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/publishAsNodeServer", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// PublishAsPackageScript configures the JavaScript application to publish as a server that runs a package manager script at runtime.
+func (s *viteAppResource) PublishAsPackageScript(options ...*PublishAsPackageScriptOptions) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &PublishAsPackageScriptOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/publishAsPackageScript", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// PublishAsStaticWebsite publishes the JavaScript application as a standalone static website using YARP.
+func (s *viteAppResource) PublishAsStaticWebsite(options ...*PublishAsStaticWebsiteOptions) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &PublishAsStaticWebsiteOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/publishAsStaticWebsite", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// SubscribeHttpsEndpointsUpdate subscribes to the `BeforeStartEvent` and invokes the specified callback when an HTTPS certificate is determined to be available for the resource. This is used to conditionally update endpoint URI schemes or perform other HTTPS-related configuration at startup.
+func (s *viteAppResource) SubscribeHttpsEndpointsUpdate(callback func(obj HttpsEndpointUpdateCallbackContext)) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[HttpsEndpointUpdateCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/subscribeHttpsEndpointsUpdate", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WaitFor waits for another resource to be ready
+func (s *viteAppResource) WaitFor(dependency Resource, options ...*WaitForOptions) ViteAppResource {
+	if s.err != nil { return s }
+	if dependency != nil { if err := dependency.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["dependency"] = serializeValue(dependency)
+	if len(options) > 0 {
+		merged := &WaitForOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/waitFor", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WaitForCompletion waits for the dependency resource to enter the Exited or Finished state before starting the resource.
+func (s *viteAppResource) WaitForCompletion(dependency Resource, options ...*WaitForCompletionOptions) ViteAppResource {
+	if s.err != nil { return s }
+	if dependency != nil { if err := dependency.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["dependency"] = serializeValue(dependency)
+	if len(options) > 0 {
+		merged := &WaitForCompletionOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/waitForResourceCompletion", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WaitForStart waits for another resource to start
+func (s *viteAppResource) WaitForStart(dependency Resource, options ...*WaitForStartOptions) ViteAppResource {
+	if s.err != nil { return s }
+	if dependency != nil { if err := dependency.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["dependency"] = serializeValue(dependency)
+	if len(options) > 0 {
+		merged := &WaitForStartOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/waitForStart", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithArgs adds arguments to be passed to a resource that supports arguments when it is launched.
+func (s *viteAppResource) WithArgs(args []string) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if args != nil { reqArgs["args"] = serializeValue(args) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withArgs", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithArgsCallback adds a callback to be executed with a list of command-line arguments when a resource is started.
+func (s *viteAppResource) WithArgsCallback(callback func(obj CommandLineArgsCallbackContext)) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[CommandLineArgsCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withArgsCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithBrowserDebugger configures a browser debugger for the JavaScript application resource, enabling browser-based debugging through a child resource that launches when the parent application is ready.
+func (s *viteAppResource) WithBrowserDebugger(options ...*WithBrowserDebuggerOptions) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithBrowserDebuggerOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withBrowserDebugger", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithBuildScript adds a build script annotation to the resource builder using the specified command-line arguments.
+func (s *viteAppResource) WithBuildScript(scriptName string, options ...*WithBuildScriptOptions) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	reqArgs["scriptName"] = serializeValue(scriptName)
+	if len(options) > 0 {
+		merged := &WithBuildScriptOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withBuildScript", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithBun configures the JavaScript resource to use Bun as the package manager and optionally installs packages before the application starts.
+func (s *viteAppResource) WithBun(options ...*WithBunOptions) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithBunOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withBun", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithCertificateTrustScope sets the certificate trust scope
+func (s *viteAppResource) WithCertificateTrustScope(scope CertificateTrustScope) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["scope"] = serializeValue(scope)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withCertificateTrustScope", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithChildRelationship sets a child relationship
+func (s *viteAppResource) WithChildRelationship(child Resource) ViteAppResource {
+	if s.err != nil { return s }
+	if child != nil { if err := child.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["child"] = serializeValue(child)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withBuilderChildRelationship", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithCommand adds a resource command
+func (s *viteAppResource) WithCommand(name string, displayName string, executeCommand func(arg ExecuteCommandContext) *ExecuteCommandResult, options ...*WithCommandOptions) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	reqArgs["displayName"] = serializeValue(displayName)
+	if executeCommand != nil {
+		cb := executeCommand
+		shim := func(args ...any) any {
+			return cb(callbackArg[ExecuteCommandContext](args, 0))
+		}
+		reqArgs["executeCommand"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithCommandOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithComputeEnvironment configures the compute environment for the compute resource.
+func (s *viteAppResource) WithComputeEnvironment(computeEnvironmentResource ComputeEnvironmentResource) ViteAppResource {
+	if s.err != nil { return s }
+	if computeEnvironmentResource != nil { if err := computeEnvironmentResource.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["computeEnvironmentResource"] = serializeValue(computeEnvironmentResource)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withComputeEnvironment", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerBuildOptions configures container build options for a compute resource using an async callback.
+func (s *viteAppResource) WithContainerBuildOptions(callback func(arg ContainerBuildOptionsCallbackContext)) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ContainerBuildOptionsCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerBuildOptions", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerFilesSource adds a container files source annotation to the resource being built, specifying the path to the container files source.
+func (s *viteAppResource) WithContainerFilesSource(sourcePath string) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["sourcePath"] = serializeValue(sourcePath)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerFilesSource", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithContainerRegistry configures the resource to use the specified container registry for container image operations.
+func (s *viteAppResource) WithContainerRegistry(registry Resource) ViteAppResource {
+	if s.err != nil { return s }
+	if registry != nil { if err := registry.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["registry"] = serializeValue(registry)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withContainerRegistry", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDeno configures the JavaScript resource to use Deno as the package manager.
+func (s *viteAppResource) WithDeno(options ...*WithDenoOptions) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithDenoOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withDeno", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDeveloperCertificateTrust indicates whether developer certificates should be treated as trusted certificate authorities for the resource at run time. Currently this indicates trust for the ASP.NET Core developer certificate. The developer certificate will only be trusted when running in local development scenarios; in publish mode resources will use their default certificate trust.
+func (s *viteAppResource) WithDeveloperCertificateTrust(trust bool) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["trust"] = serializeValue(trust)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withDeveloperCertificateTrust", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithDockerfileBaseImage configures custom base images for generated Dockerfiles.
+func (s *viteAppResource) WithDockerfileBaseImage(options ...*WithDockerfileBaseImageOptions) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithDockerfileBaseImageOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withDockerfileBaseImage", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEndpoint adds a network endpoint
+func (s *viteAppResource) WithEndpoint(options ...*WithEndpointOptions) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithEndpointOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEndpoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEndpointCallback updates a named endpoint via callback
+func (s *viteAppResource) WithEndpointCallback(endpointName string, callback func(obj EndpointUpdateContext), options ...*WithEndpointCallbackOptions) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["endpointName"] = serializeValue(endpointName)
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[EndpointUpdateContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithEndpointCallbackOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEndpointCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEndpointProxySupport set whether a resource can use proxied endpoints or whether they should be disabled for all endpoints belonging to the resource. If set to `false`, endpoints belonging to the resource will ignore the configured proxy settings and run proxy-less.
+func (s *viteAppResource) WithEndpointProxySupport(proxyEnabled bool) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["proxyEnabled"] = serializeValue(proxyEnabled)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEndpointProxySupport", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEnvironment sets an environment variable
+// Allowed types for parameter value: string, *ReferenceExpression, EndpointReference, ParameterResource, ExternalServiceResource, ResourceWithConnectionString, ExpressionValue.
+func (s *viteAppResource) WithEnvironment(name string, value any) ViteAppResource {
+	if s.err != nil { return s }
+	switch value.(type) {
+	case string, *ReferenceExpression, EndpointReference, ParameterResource, ExternalServiceResource, ResourceWithConnectionString, ExpressionValue:
+	default:
+		err := fmt.Errorf("aspire: WithEnvironment: parameter %q must be one of [string, *ReferenceExpression, EndpointReference, ParameterResource, ExternalServiceResource, ResourceWithConnectionString, ExpressionValue], got %T", "value", value)
+		s.setErr(err); return s
+	}
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["name"] = serializeValue(name)
+	if !isNil(value) { reqArgs["value"] = serializeValue(value) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEnvironment", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithEnvironmentCallback allows for the population of environment variables on a resource.
+func (s *viteAppResource) WithEnvironmentCallback(callback func(arg EnvironmentCallbackContext)) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[EnvironmentCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withEnvironmentCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithExecutableCommand sets the command for the executable resource.
+func (s *viteAppResource) WithExecutableCommand(command string) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["command"] = serializeValue(command)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withExecutableCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithExplicitStart prevents resource from starting automatically
+func (s *viteAppResource) WithExplicitStart() ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withExplicitStart", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithExternalHttpEndpoints marks existing http or https endpoints on a resource as external.
+func (s *viteAppResource) WithExternalHttpEndpoints() ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withExternalHttpEndpoints", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHealthCheck adds a health check by key
+func (s *viteAppResource) WithHealthCheck(key string) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["key"] = serializeValue(key)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHealthCheck", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHidden hides the resource from default resource lists
+func (s *viteAppResource) WithHidden() ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHidden", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHiddenOnCompletion hides the resource from default resource lists after successful completion
+func (s *viteAppResource) WithHiddenOnCompletion(options ...*WithHiddenOnCompletionOptions) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHiddenOnCompletionOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHiddenOnCompletion", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpCommand adds an HTTP resource command
+func (s *viteAppResource) WithHttpCommand(path string, displayName string, options ...*HttpCommandExportOptions) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["path"] = serializeValue(path)
+	reqArgs["displayName"] = serializeValue(displayName)
+	if len(options) > 0 {
+		merged := &HttpCommandExportOptions{}
+		applied := false
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt); applied = true }
+		}
+		if applied { reqArgs["options"] = serializeValue(merged) }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpEndpoint adds an HTTP endpoint
+func (s *viteAppResource) WithHttpEndpoint(options ...*WithHttpEndpointOptions) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHttpEndpointOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpEndpoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpEndpointCallback updates an HTTP endpoint via callback
+func (s *viteAppResource) WithHttpEndpointCallback(callback func(obj EndpointUpdateContext), options ...*WithHttpEndpointCallbackOptions) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[EndpointUpdateContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithHttpEndpointCallbackOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpEndpointCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpHealthCheck adds a health check to the resource which is mapped to a specific endpoint.
+func (s *viteAppResource) WithHttpHealthCheck(options ...*WithHttpHealthCheckOptions) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHttpHealthCheckOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpHealthCheck", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpProbe adds an HTTP health probe to the resource
+func (s *viteAppResource) WithHttpProbe(probeType ProbeType, options ...*WithHttpProbeOptions) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["probeType"] = serializeValue(probeType)
+	if len(options) > 0 {
+		merged := &WithHttpProbeOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpProbe", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpsCertificateConfiguration adds a callback that allows configuring the resource to use a specific HTTPS/TLS certificate key pair for server authentication.
+func (s *viteAppResource) WithHttpsCertificateConfiguration(callback func(arg HttpsCertificateConfigurationCallbackAnnotationContext)) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[HttpsCertificateConfigurationCallbackAnnotationContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpsCertificateConfiguration", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpsDeveloperCertificate indicates that a resource should use the developer certificate key pair for HTTPS endpoints at run time. Currently this indicates use of the ASP.NET Core developer certificate. The developer certificate will only be used when running in local development scenarios; in publish mode resources will use their default certificate configuration.
+func (s *viteAppResource) WithHttpsDeveloperCertificate(options ...*WithHttpsDeveloperCertificateOptions) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHttpsDeveloperCertificateOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withParameterHttpsDeveloperCertificate", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpsEndpoint adds an HTTPS endpoint
+func (s *viteAppResource) WithHttpsEndpoint(options ...*WithHttpsEndpointOptions) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithHttpsEndpointOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpsEndpoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithHttpsEndpointCallback updates an HTTPS endpoint via callback
+func (s *viteAppResource) WithHttpsEndpointCallback(callback func(obj EndpointUpdateContext), options ...*WithHttpsEndpointCallbackOptions) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[EndpointUpdateContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithHttpsEndpointCallbackOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withHttpsEndpointCallback", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithIconName specifies the icon to use when displaying the resource in the dashboard.
+func (s *viteAppResource) WithIconName(iconName string, options ...*WithIconNameOptions) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["iconName"] = serializeValue(iconName)
+	if len(options) > 0 {
+		merged := &WithIconNameOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withIconName", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithImagePushOptions adds an asynchronous callback to configure container image push options for the resource.
+func (s *viteAppResource) WithImagePushOptions(callback func(arg ContainerImagePushOptionsCallbackContext)) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ContainerImagePushOptionsCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withImagePushOptions", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithLifetimeOf configures a resource to match the lifetime of another resource.
+func (s *viteAppResource) WithLifetimeOf(sourceBuilder Resource) ViteAppResource {
+	if s.err != nil { return s }
+	if sourceBuilder != nil { if err := sourceBuilder.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["sourceBuilder"] = serializeValue(sourceBuilder)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withLifetimeOf", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithMcpServer marks the resource as hosting a Model Context Protocol (MCP) server on the specified endpoint.
+func (s *viteAppResource) WithMcpServer(options ...*WithMcpServerOptions) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithMcpServerOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withMcpServer", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithNpm configures the Node.js resource to use npm as the package manager and optionally installs packages before the application starts.
+func (s *viteAppResource) WithNpm(options ...*WithNpmOptions) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithNpmOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withNpm", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithOtlpExporter configures OTLP telemetry export
+func (s *viteAppResource) WithOtlpExporter(options ...*WithOtlpExporterOptions) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithOtlpExporterOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withOtlpExporter", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithParentProcessLifetime configures a resource to use a persistent lifetime that ends when a parent process exits.
+func (s *viteAppResource) WithParentProcessLifetime(parentProcessId float64) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["parentProcessId"] = serializeValue(parentProcessId)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withParentProcessLifetime", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithParentRelationship sets the parent relationship
+func (s *viteAppResource) WithParentRelationship(parent Resource) ViteAppResource {
+	if s.err != nil { return s }
+	if parent != nil { if err := parent.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["parent"] = serializeValue(parent)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withBuilderParentRelationship", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithPersistentLifetime configures a resource to use a persistent lifetime.
+func (s *viteAppResource) WithPersistentLifetime() ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withPersistentLifetime", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithPipelineConfiguration registers a callback to be executed during the pipeline configuration phase, allowing modification of step dependencies and relationships.
+func (s *viteAppResource) WithPipelineConfiguration(callback func(obj PipelineConfigurationContext)) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[PipelineConfigurationContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withPipelineConfiguration", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithPipelineStepFactory adds a pipeline step to the resource that will be executed during deployment.
+func (s *viteAppResource) WithPipelineStepFactory(stepName string, callback func(arg PipelineStepContext), options ...*WithPipelineStepFactoryOptions) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["stepName"] = serializeValue(stepName)
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[PipelineStepContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithPipelineStepFactoryOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withPipelineStepFactory", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithPnpm configures the Node.js resource to use pnpm as the package manager and optionally installs packages before the application starts.
+func (s *viteAppResource) WithPnpm(options ...*WithPnpmOptions) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithPnpmOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withPnpm", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithProcessCommand adds a command to the resource that starts a local process when invoked.
+func (s *viteAppResource) WithProcessCommand(commandName string, displayName string, options *ProcessCommandExportOptions) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["commandName"] = serializeValue(commandName)
+	reqArgs["displayName"] = serializeValue(displayName)
+	if options != nil { reqArgs["options"] = serializeValue(options) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withProcessCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithProcessCommandFactory adds a command to the resource that starts a local process created by a callback when invoked.
+func (s *viteAppResource) WithProcessCommandFactory(commandName string, displayName string, createProcessSpec func(arg ExecuteCommandContext) *ProcessCommandSpecExportData, options ...*ProcessCommandResultExportOptions) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["commandName"] = serializeValue(commandName)
+	reqArgs["displayName"] = serializeValue(displayName)
+	if createProcessSpec != nil {
+		cb := createProcessSpec
+		shim := func(args ...any) any {
+			return cb(callbackArg[ExecuteCommandContext](args, 0))
+		}
+		reqArgs["createProcessSpec"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &ProcessCommandResultExportOptions{}
+		applied := false
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt); applied = true }
+		}
+		if applied { reqArgs["options"] = serializeValue(merged) }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withProcessCommandFactory", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithReference adds a reference to another resource
+// Allowed types for parameter source: Resource, EndpointReference, string.
+func (s *viteAppResource) WithReference(source any, options ...*WithReferenceOptions) ViteAppResource {
+	if s.err != nil { return s }
+	switch source.(type) {
+	case Resource, EndpointReference, string:
+	default:
+		err := fmt.Errorf("aspire: WithReference: parameter %q must be one of [Resource, EndpointReference, string], got %T", "source", source)
+		s.setErr(err); return s
+	}
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if !isNil(source) { reqArgs["source"] = serializeValue(source) }
+	if len(options) > 0 {
+		merged := &WithReferenceOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withReference", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithReferenceEnvironment configures how information is injected into environment variables when the resource references other resources.
+func (s *viteAppResource) WithReferenceEnvironment(options *ReferenceEnvironmentInjectionOptions) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if options != nil { reqArgs["options"] = serializeValue(options) }
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withReferenceEnvironment", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRelationship adds a relationship to another resource using its builder.
+func (s *viteAppResource) WithRelationship(resourceBuilder Resource, type_ string) ViteAppResource {
+	if s.err != nil { return s }
+	if resourceBuilder != nil { if err := resourceBuilder.Err(); err != nil { s.setErr(err); return s } }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["resourceBuilder"] = serializeValue(resourceBuilder)
+	reqArgs["type"] = serializeValue(type_)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withBuilderRelationship", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRemoteImageName sets the remote image name (without registry endpoint or tag) for container push operations.
+func (s *viteAppResource) WithRemoteImageName(remoteImageName string) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["remoteImageName"] = serializeValue(remoteImageName)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withRemoteImageName", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRemoteImageTag sets the remote image tag for container push operations.
+func (s *viteAppResource) WithRemoteImageTag(remoteImageTag string) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["remoteImageTag"] = serializeValue(remoteImageTag)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withRemoteImageTag", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRequiredCommand declares that a resource requires a specific command/executable to be available on the local machine PATH before it can start.
+func (s *viteAppResource) WithRequiredCommand(command string, options ...*WithRequiredCommandOptions) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["command"] = serializeValue(command)
+	if len(options) > 0 {
+		merged := &WithRequiredCommandOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withRequiredCommand", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRequiredCommandValidation declares that a resource requires a specific command/executable to be available on the local machine PATH before it can start, with custom validation logic.
+func (s *viteAppResource) WithRequiredCommandValidation(command string, validationCallback func(arg RequiredCommandValidationContext) RequiredCommandValidationResult, options ...*WithRequiredCommandValidationOptions) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["command"] = serializeValue(command)
+	if validationCallback != nil {
+		cb := validationCallback
+		shim := func(args ...any) any {
+			return cb(callbackArg[RequiredCommandValidationContext](args, 0))
+		}
+		reqArgs["validationCallback"] = s.client.registerCallback(shim)
+	}
+	if len(options) > 0 {
+		merged := &WithRequiredCommandValidationOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withRequiredCommandValidation", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithRunScript adds a run script annotation to the specified JavaScript application resource builder, specifying the script to execute and its arguments during run mode.
+func (s *viteAppResource) WithRunScript(scriptName string, options ...*WithRunScriptOptions) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	reqArgs["scriptName"] = serializeValue(scriptName)
+	if len(options) > 0 {
+		merged := &WithRunScriptOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withRunScript", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithSessionLifetime configures a resource to use a session lifetime.
+func (s *viteAppResource) WithSessionLifetime() ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withSessionLifetime", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithTerminal adds an interactive terminal session to a resource using the default terminal options.
+func (s *viteAppResource) WithTerminal() ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withTerminal", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithUrl adds or modifies displayed URLs
+// Allowed types for parameter url: string, *ReferenceExpression.
+func (s *viteAppResource) WithUrl(url any, options ...*WithUrlOptions) ViteAppResource {
+	if s.err != nil { return s }
+	switch url.(type) {
+	case string, *ReferenceExpression:
+	default:
+		err := fmt.Errorf("aspire: WithUrl: parameter %q must be one of [string, *ReferenceExpression], got %T", "url", url)
+		s.setErr(err); return s
+	}
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if !isNil(url) { reqArgs["url"] = serializeValue(url) }
+	if len(options) > 0 {
+		merged := &WithUrlOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withUrl", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithUrlForEndpoint registers a callback to update the URL displayed for the endpoint with the specified name.
+func (s *viteAppResource) WithUrlForEndpoint(endpointName string, callback func(obj *ResourceUrlAnnotation)) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["endpointName"] = serializeValue(endpointName)
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			arg0 := callbackArg[*ResourceUrlAnnotation](args, 0)
+			cb(arg0)
+			return map[string]any{
+				"p0": serializeValue(arg0),
+			}
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withUrlForEndpoint", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithUrls registers a callback to customize the URLs displayed for the resource.
+func (s *viteAppResource) WithUrls(callback func(obj ResourceUrlsCallbackContext)) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if callback != nil {
+		cb := callback
+		shim := func(args ...any) any {
+			cb(callbackArg[ResourceUrlsCallbackContext](args, 0))
+			return nil
+		}
+		reqArgs["callback"] = s.client.registerCallback(shim)
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withUrls", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithViteConfig configures the Vite app to use the specified Vite configuration file instead of the default resolution behavior.
+func (s *viteAppResource) WithViteConfig(configPath string) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["configPath"] = serializeValue(configPath)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withViteConfig", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithVolume adds a volume to an executable resource.
+func (s *viteAppResource) WithVolume(target string, name string, env string, options ...*ExecutableResourceWithVolumeOptions) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	reqArgs["target"] = serializeValue(target)
+	reqArgs["name"] = serializeValue(name)
+	reqArgs["env"] = serializeValue(env)
+	if len(options) > 0 {
+		merged := &ExecutableResourceWithVolumeOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withExecutableVolume", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithWorkingDirectory sets the working directory for the executable resource.
+func (s *viteAppResource) WithWorkingDirectory(workingDirectory string) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	reqArgs["workingDirectory"] = serializeValue(workingDirectory)
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withWorkingDirectory", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithYarn configures the Node.js resource to use yarn as the package manager and optionally installs packages before the application starts.
+func (s *viteAppResource) WithYarn(options ...*WithYarnOptions) ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"resource": s.handle.ToJSON(),
+	}
+	if len(options) > 0 {
+		merged := &WithYarnOptions{}
+		for _, opt := range options {
+			if opt != nil { merged = deepUpdate(merged, opt) }
+		}
+		for k, v := range merged.ToMap() { reqArgs[k] = v }
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/withYarn", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WithoutHttpsCertificate disable HTTPS/TLS server certificate configuration for the resource. No HTTPS/TLS termination configuration will be applied.
+func (s *viteAppResource) WithoutHttpsCertificate() ViteAppResource {
+	if s.err != nil { return s }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"builder": s.handle.ToJSON(),
+	}
+	if _, err := s.client.invokeCapability(ctx, "Aspire.Hosting/withoutHttpsCertificate", reqArgs); err != nil { s.setErr(err) }
+	return s
+}
+
+// WorkingDirectory gets the working directory for the executable resource.
+func (s *viteAppResource) WorkingDirectory() (string, error) {
+	if s.err != nil { var zero string; return zero, s.err }
+	ctx := context.Background()
+	reqArgs := map[string]any{
+		"context": s.handle.ToJSON(),
+	}
+	result, err := s.client.invokeCapability(ctx, "Aspire.Hosting.JavaScript/JavaScriptAppResource.workingDirectory", reqArgs)
+	if err != nil {
+		var zero string
+		return zero, err
+	}
+	return decodeAs[string](result)
 }
 
 // ============================================================================
@@ -19844,6 +39677,373 @@ func (o *AddForEndpointOptions) ToMap() map[string]any {
 	return m
 }
 
+// AddGoAppOptions carries optional parameters for AddGoApp.
+type AddGoAppOptions struct {
+	PackagePath *string `json:"packagePath,omitempty"`
+	BuildTags []string `json:"buildTags,omitempty"`
+	LdFlags *string `json:"ldFlags,omitempty"`
+	GcFlags *string `json:"gcFlags,omitempty"`
+	RaceDetector *bool `json:"raceDetector,omitempty"`
+}
+
+func (o *AddGoAppOptions) ToMap() map[string]any {
+	m := map[string]any{}
+	if o == nil { return m }
+	if o.PackagePath != nil { m["packagePath"] = serializeValue(o.PackagePath) }
+	if o.BuildTags != nil { m["buildTags"] = serializeValue(o.BuildTags) }
+	if o.LdFlags != nil { m["ldFlags"] = serializeValue(o.LdFlags) }
+	if o.GcFlags != nil { m["gcFlags"] = serializeValue(o.GcFlags) }
+	if o.RaceDetector != nil { m["raceDetector"] = serializeValue(o.RaceDetector) }
+	return m
+}
+
+// WithGoPrivateOptions carries optional parameters for WithGoPrivate.
+type WithGoPrivateOptions struct {
+	UsernameArgName *string `json:"usernameArgName,omitempty"`
+	TokenSecretId *string `json:"tokenSecretId,omitempty"`
+}
+
+func (o *WithGoPrivateOptions) ToMap() map[string]any {
+	m := map[string]any{}
+	if o == nil { return m }
+	if o.UsernameArgName != nil { m["usernameArgName"] = serializeValue(o.UsernameArgName) }
+	if o.TokenSecretId != nil { m["tokenSecretId"] = serializeValue(o.TokenSecretId) }
+	return m
+}
+
+// WithDenoAllowAllOptions carries optional parameters for WithDenoAllowAll.
+type WithDenoAllowAllOptions struct {
+	Enabled *bool `json:"enabled,omitempty"`
+}
+
+func (o *WithDenoAllowAllOptions) ToMap() map[string]any {
+	m := map[string]any{}
+	if o == nil { return m }
+	if o.Enabled != nil { m["enabled"] = serializeValue(o.Enabled) }
+	return m
+}
+
+// WithDenoNodeModulesDirOptions carries optional parameters for WithDenoNodeModulesDir.
+type WithDenoNodeModulesDirOptions struct {
+	Mode *DenoNodeModulesDirMode `json:"mode,omitempty"`
+}
+
+func (o *WithDenoNodeModulesDirOptions) ToMap() map[string]any {
+	m := map[string]any{}
+	if o == nil { return m }
+	if o.Mode != nil { m["mode"] = serializeValue(o.Mode) }
+	return m
+}
+
+// WithDenoWatchOptions carries optional parameters for WithDenoWatch.
+type WithDenoWatchOptions struct {
+	Hmr *bool `json:"hmr,omitempty"`
+}
+
+func (o *WithDenoWatchOptions) ToMap() map[string]any {
+	m := map[string]any{}
+	if o == nil { return m }
+	if o.Hmr != nil { m["hmr"] = serializeValue(o.Hmr) }
+	return m
+}
+
+// WithDenoInspectOptions carries optional parameters for WithDenoInspect.
+type WithDenoInspectOptions struct {
+	Mode *DenoInspectMode `json:"mode,omitempty"`
+	HostPort *string `json:"hostPort,omitempty"`
+}
+
+func (o *WithDenoInspectOptions) ToMap() map[string]any {
+	m := map[string]any{}
+	if o == nil { return m }
+	if o.Mode != nil { m["mode"] = serializeValue(o.Mode) }
+	if o.HostPort != nil { m["hostPort"] = serializeValue(o.HostPort) }
+	return m
+}
+
+// AddJavaScriptAppOptions carries optional parameters for AddJavaScriptApp.
+type AddJavaScriptAppOptions struct {
+	RunScriptName *string `json:"runScriptName,omitempty"`
+}
+
+func (o *AddJavaScriptAppOptions) ToMap() map[string]any {
+	m := map[string]any{}
+	if o == nil { return m }
+	if o.RunScriptName != nil { m["runScriptName"] = serializeValue(o.RunScriptName) }
+	return m
+}
+
+// PublishAsStaticWebsiteOptions carries optional parameters for PublishAsStaticWebsite.
+type PublishAsStaticWebsiteOptions struct {
+	ApiPath *string `json:"apiPath,omitempty"`
+	ApiTarget *ResourceWithServiceDiscovery `json:"apiTarget,omitempty"`
+	OutputPath *string `json:"outputPath,omitempty"`
+	StripPrefix *bool `json:"stripPrefix,omitempty"`
+	TargetEndpointName *string `json:"targetEndpointName,omitempty"`
+}
+
+func (o *PublishAsStaticWebsiteOptions) ToMap() map[string]any {
+	m := map[string]any{}
+	if o == nil { return m }
+	if o.ApiPath != nil { m["apiPath"] = serializeValue(o.ApiPath) }
+	if o.ApiTarget != nil { m["apiTarget"] = serializeValue(o.ApiTarget) }
+	if o.OutputPath != nil { m["outputPath"] = serializeValue(o.OutputPath) }
+	if o.StripPrefix != nil { m["stripPrefix"] = serializeValue(o.StripPrefix) }
+	if o.TargetEndpointName != nil { m["targetEndpointName"] = serializeValue(o.TargetEndpointName) }
+	return m
+}
+
+// PublishAsNodeServerOptions carries optional parameters for PublishAsNodeServer.
+type PublishAsNodeServerOptions struct {
+	OutputPath *string `json:"outputPath,omitempty"`
+}
+
+func (o *PublishAsNodeServerOptions) ToMap() map[string]any {
+	m := map[string]any{}
+	if o == nil { return m }
+	if o.OutputPath != nil { m["outputPath"] = serializeValue(o.OutputPath) }
+	return m
+}
+
+// PublishAsPackageScriptOptions carries optional parameters for PublishAsPackageScript.
+type PublishAsPackageScriptOptions struct {
+	ScriptName *string `json:"scriptName,omitempty"`
+	RunScriptArguments *string `json:"runScriptArguments,omitempty"`
+}
+
+func (o *PublishAsPackageScriptOptions) ToMap() map[string]any {
+	m := map[string]any{}
+	if o == nil { return m }
+	if o.ScriptName != nil { m["scriptName"] = serializeValue(o.ScriptName) }
+	if o.RunScriptArguments != nil { m["runScriptArguments"] = serializeValue(o.RunScriptArguments) }
+	return m
+}
+
+// AddViteAppOptions carries optional parameters for AddViteApp.
+type AddViteAppOptions struct {
+	RunScriptName *string `json:"runScriptName,omitempty"`
+}
+
+func (o *AddViteAppOptions) ToMap() map[string]any {
+	m := map[string]any{}
+	if o == nil { return m }
+	if o.RunScriptName != nil { m["runScriptName"] = serializeValue(o.RunScriptName) }
+	return m
+}
+
+// AddNextJsAppOptions carries optional parameters for AddNextJsApp.
+type AddNextJsAppOptions struct {
+	RunScriptName *string `json:"runScriptName,omitempty"`
+}
+
+func (o *AddNextJsAppOptions) ToMap() map[string]any {
+	m := map[string]any{}
+	if o == nil { return m }
+	if o.RunScriptName != nil { m["runScriptName"] = serializeValue(o.RunScriptName) }
+	return m
+}
+
+// WithNpmOptions carries optional parameters for WithNpm.
+type WithNpmOptions struct {
+	Install *bool `json:"install,omitempty"`
+	InstallCommand *string `json:"installCommand,omitempty"`
+	InstallArgs []string `json:"installArgs,omitempty"`
+}
+
+func (o *WithNpmOptions) ToMap() map[string]any {
+	m := map[string]any{}
+	if o == nil { return m }
+	if o.Install != nil { m["install"] = serializeValue(o.Install) }
+	if o.InstallCommand != nil { m["installCommand"] = serializeValue(o.InstallCommand) }
+	if o.InstallArgs != nil { m["installArgs"] = serializeValue(o.InstallArgs) }
+	return m
+}
+
+// WithBunOptions carries optional parameters for WithBun.
+type WithBunOptions struct {
+	Install *bool `json:"install,omitempty"`
+	InstallArgs []string `json:"installArgs,omitempty"`
+}
+
+func (o *WithBunOptions) ToMap() map[string]any {
+	m := map[string]any{}
+	if o == nil { return m }
+	if o.Install != nil { m["install"] = serializeValue(o.Install) }
+	if o.InstallArgs != nil { m["installArgs"] = serializeValue(o.InstallArgs) }
+	return m
+}
+
+// WithDenoOptions carries optional parameters for WithDeno.
+type WithDenoOptions struct {
+	Install *bool `json:"install,omitempty"`
+	InstallArgs []string `json:"installArgs,omitempty"`
+}
+
+func (o *WithDenoOptions) ToMap() map[string]any {
+	m := map[string]any{}
+	if o == nil { return m }
+	if o.Install != nil { m["install"] = serializeValue(o.Install) }
+	if o.InstallArgs != nil { m["installArgs"] = serializeValue(o.InstallArgs) }
+	return m
+}
+
+// WithYarnOptions carries optional parameters for WithYarn.
+type WithYarnOptions struct {
+	Install *bool `json:"install,omitempty"`
+	InstallArgs []string `json:"installArgs,omitempty"`
+}
+
+func (o *WithYarnOptions) ToMap() map[string]any {
+	m := map[string]any{}
+	if o == nil { return m }
+	if o.Install != nil { m["install"] = serializeValue(o.Install) }
+	if o.InstallArgs != nil { m["installArgs"] = serializeValue(o.InstallArgs) }
+	return m
+}
+
+// WithPnpmOptions carries optional parameters for WithPnpm.
+type WithPnpmOptions struct {
+	Install *bool `json:"install,omitempty"`
+	InstallArgs []string `json:"installArgs,omitempty"`
+}
+
+func (o *WithPnpmOptions) ToMap() map[string]any {
+	m := map[string]any{}
+	if o == nil { return m }
+	if o.Install != nil { m["install"] = serializeValue(o.Install) }
+	if o.InstallArgs != nil { m["installArgs"] = serializeValue(o.InstallArgs) }
+	return m
+}
+
+// WithBuildScriptOptions carries optional parameters for WithBuildScript.
+type WithBuildScriptOptions struct {
+	Args []string `json:"args,omitempty"`
+}
+
+func (o *WithBuildScriptOptions) ToMap() map[string]any {
+	m := map[string]any{}
+	if o == nil { return m }
+	if o.Args != nil { m["args"] = serializeValue(o.Args) }
+	return m
+}
+
+// WithRunScriptOptions carries optional parameters for WithRunScript.
+type WithRunScriptOptions struct {
+	Args []string `json:"args,omitempty"`
+}
+
+func (o *WithRunScriptOptions) ToMap() map[string]any {
+	m := map[string]any{}
+	if o == nil { return m }
+	if o.Args != nil { m["args"] = serializeValue(o.Args) }
+	return m
+}
+
+// WithBrowserDebuggerOptions carries optional parameters for WithBrowserDebugger.
+type WithBrowserDebuggerOptions struct {
+	Browser *string `json:"browser,omitempty"`
+}
+
+func (o *WithBrowserDebuggerOptions) ToMap() map[string]any {
+	m := map[string]any{}
+	if o == nil { return m }
+	if o.Browser != nil { m["browser"] = serializeValue(o.Browser) }
+	return m
+}
+
+// AddPostgresOptions carries optional parameters for AddPostgres.
+type AddPostgresOptions struct {
+	UserName *ParameterResource `json:"userName,omitempty"`
+	Password *ParameterResource `json:"password,omitempty"`
+	Port *float64 `json:"port,omitempty"`
+}
+
+func (o *AddPostgresOptions) ToMap() map[string]any {
+	m := map[string]any{}
+	if o == nil { return m }
+	if o.UserName != nil { m["userName"] = serializeValue(o.UserName) }
+	if o.Password != nil { m["password"] = serializeValue(o.Password) }
+	if o.Port != nil { m["port"] = serializeValue(o.Port) }
+	return m
+}
+
+// AddDatabaseOptions carries optional parameters for AddDatabase.
+type AddDatabaseOptions struct {
+	DatabaseName *string `json:"databaseName,omitempty"`
+}
+
+func (o *AddDatabaseOptions) ToMap() map[string]any {
+	m := map[string]any{}
+	if o == nil { return m }
+	if o.DatabaseName != nil { m["databaseName"] = serializeValue(o.DatabaseName) }
+	return m
+}
+
+// WithPgAdminOptions carries optional parameters for WithPgAdmin.
+type WithPgAdminOptions struct {
+	ConfigureContainer func(obj PgAdminContainerResource) `json:"-"`
+	ContainerName *string `json:"containerName,omitempty"`
+}
+
+func (o *WithPgAdminOptions) ToMap() map[string]any {
+	m := map[string]any{}
+	if o == nil { return m }
+	if o.ContainerName != nil { m["containerName"] = serializeValue(o.ContainerName) }
+	return m
+}
+
+// WithPgWebOptions carries optional parameters for WithPgWeb.
+type WithPgWebOptions struct {
+	ConfigureContainer func(obj PgWebContainerResource) `json:"-"`
+	ContainerName *string `json:"containerName,omitempty"`
+}
+
+func (o *WithPgWebOptions) ToMap() map[string]any {
+	m := map[string]any{}
+	if o == nil { return m }
+	if o.ContainerName != nil { m["containerName"] = serializeValue(o.ContainerName) }
+	return m
+}
+
+// WithPostgresMcpOptions carries optional parameters for WithPostgresMcp.
+type WithPostgresMcpOptions struct {
+	ConfigureContainer func(obj PostgresMcpContainerResource) `json:"-"`
+	ContainerName *string `json:"containerName,omitempty"`
+}
+
+func (o *WithPostgresMcpOptions) ToMap() map[string]any {
+	m := map[string]any{}
+	if o == nil { return m }
+	if o.ContainerName != nil { m["containerName"] = serializeValue(o.ContainerName) }
+	return m
+}
+
+// WithDataVolumeOptions carries optional parameters for WithDataVolume.
+type WithDataVolumeOptions struct {
+	Name *string `json:"name,omitempty"`
+	IsReadOnly *bool `json:"isReadOnly,omitempty"`
+}
+
+func (o *WithDataVolumeOptions) ToMap() map[string]any {
+	m := map[string]any{}
+	if o == nil { return m }
+	if o.Name != nil { m["name"] = serializeValue(o.Name) }
+	if o.IsReadOnly != nil { m["isReadOnly"] = serializeValue(o.IsReadOnly) }
+	return m
+}
+
+// WithDataBindMountOptions carries optional parameters for WithDataBindMount.
+type WithDataBindMountOptions struct {
+	IsReadOnly *bool `json:"isReadOnly,omitempty"`
+}
+
+func (o *WithDataBindMountOptions) ToMap() map[string]any {
+	m := map[string]any{}
+	if o == nil { return m }
+	if o.IsReadOnly != nil { m["isReadOnly"] = serializeValue(o.IsReadOnly) }
+	return m
+}
+
 // ============================================================================
 // Per-client handle wrapper registration
 // ============================================================================
@@ -19869,6 +40069,9 @@ func registerWrappers(c *client) {
 	})
 	c.registerHandleWrapper("Aspire.Hosting/Aspire.Hosting.ApplicationModel.BeforeStartEvent", func(h *handle, c *client) any {
 		return newBeforeStartEventFromHandle(h, c)
+	})
+	c.registerHandleWrapper("Aspire.Hosting.JavaScript/Aspire.Hosting.JavaScript.BunAppResource", func(h *handle, c *client) any {
+		return newBunAppResourceFromHandle(h, c)
 	})
 	c.registerHandleWrapper("Aspire.Hosting/Aspire.Hosting.ApplicationModel.CSharpAppResource", func(h *handle, c *client) any {
 		return newCSharpAppResourceFromHandle(h, c)
@@ -19917,6 +40120,9 @@ func registerWrappers(c *client) {
 	})
 	c.registerHandleWrapper("Aspire.Hosting/Aspire.Hosting.ApplicationModel.ContainerResource", func(h *handle, c *client) any {
 		return newContainerResourceFromHandle(h, c)
+	})
+	c.registerHandleWrapper("Aspire.Hosting.JavaScript/Aspire.Hosting.JavaScript.DenoAppResource", func(h *handle, c *client) any {
+		return newDenoAppResourceFromHandle(h, c)
 	})
 	c.registerHandleWrapper("Aspire.Hosting/Aspire.Hosting.DistributedApplication", func(h *handle, c *client) any {
 		return newDistributedApplicationFromHandle(h, c)
@@ -19993,6 +40199,9 @@ func registerWrappers(c *client) {
 	c.registerHandleWrapper("Aspire.Hosting/Aspire.Hosting.ExternalServiceResource", func(h *handle, c *client) any {
 		return newExternalServiceResourceFromHandle(h, c)
 	})
+	c.registerHandleWrapper("Aspire.Hosting.Go/Aspire.Hosting.Go.GoAppResource", func(h *handle, c *client) any {
+		return newGoAppResourceFromHandle(h, c)
+	})
 	c.registerHandleWrapper("Microsoft.Extensions.Hosting.Abstractions/Microsoft.Extensions.Hosting.IHostEnvironment", func(h *handle, c *client) any {
 		return newHostEnvironmentFromHandle(h, c)
 	})
@@ -20035,6 +40244,9 @@ func registerWrappers(c *client) {
 	c.registerHandleWrapper("Aspire.Hosting/Aspire.Hosting.IInteractionService", func(h *handle, c *client) any {
 		return newInteractionServiceFromHandle(h, c)
 	})
+	c.registerHandleWrapper("Aspire.Hosting.JavaScript/Aspire.Hosting.JavaScript.JavaScriptAppResource", func(h *handle, c *client) any {
+		return newJavaScriptAppResourceFromHandle(h, c)
+	})
 	c.registerHandleWrapper("Aspire.Hosting/Aspire.Hosting.ApplicationModel.LogFacade", func(h *handle, c *client) any {
 		return newLogFacadeFromHandle(h, c)
 	})
@@ -20044,8 +40256,20 @@ func registerWrappers(c *client) {
 	c.registerHandleWrapper("Microsoft.Extensions.Logging.Abstractions/Microsoft.Extensions.Logging.ILoggerFactory", func(h *handle, c *client) any {
 		return newLoggerFactoryFromHandle(h, c)
 	})
+	c.registerHandleWrapper("Aspire.Hosting.JavaScript/Aspire.Hosting.JavaScript.NextJsAppResource", func(h *handle, c *client) any {
+		return newNextJsAppResourceFromHandle(h, c)
+	})
+	c.registerHandleWrapper("Aspire.Hosting.JavaScript/Aspire.Hosting.JavaScript.NodeAppResource", func(h *handle, c *client) any {
+		return newNodeAppResourceFromHandle(h, c)
+	})
 	c.registerHandleWrapper("Aspire.Hosting/Aspire.Hosting.ApplicationModel.ParameterResource", func(h *handle, c *client) any {
 		return newParameterResourceFromHandle(h, c)
+	})
+	c.registerHandleWrapper("Aspire.Hosting.PostgreSQL/Aspire.Hosting.Postgres.PgAdminContainerResource", func(h *handle, c *client) any {
+		return newPgAdminContainerResourceFromHandle(h, c)
+	})
+	c.registerHandleWrapper("Aspire.Hosting.PostgreSQL/Aspire.Hosting.Postgres.PgWebContainerResource", func(h *handle, c *client) any {
+		return newPgWebContainerResourceFromHandle(h, c)
 	})
 	c.registerHandleWrapper("Aspire.Hosting/Aspire.Hosting.Pipelines.PipelineConfigurationContext", func(h *handle, c *client) any {
 		return newPipelineConfigurationContextFromHandle(h, c)
@@ -20067,6 +40291,15 @@ func registerWrappers(c *client) {
 	})
 	c.registerHandleWrapper("Aspire.Hosting/Aspire.Hosting.Pipelines.PipelineSummary", func(h *handle, c *client) any {
 		return newPipelineSummaryFromHandle(h, c)
+	})
+	c.registerHandleWrapper("Aspire.Hosting.PostgreSQL/Aspire.Hosting.ApplicationModel.PostgresDatabaseResource", func(h *handle, c *client) any {
+		return newPostgresDatabaseResourceFromHandle(h, c)
+	})
+	c.registerHandleWrapper("Aspire.Hosting.PostgreSQL/Aspire.Hosting.Postgres.PostgresMcpContainerResource", func(h *handle, c *client) any {
+		return newPostgresMcpContainerResourceFromHandle(h, c)
+	})
+	c.registerHandleWrapper("Aspire.Hosting.PostgreSQL/Aspire.Hosting.ApplicationModel.PostgresServerResource", func(h *handle, c *client) any {
+		return newPostgresServerResourceFromHandle(h, c)
 	})
 	c.registerHandleWrapper("Aspire.Hosting/Aspire.Hosting.ProgressContext", func(h *handle, c *client) any {
 		return newProgressContextFromHandle(h, c)
@@ -20116,12 +40349,6 @@ func registerWrappers(c *client) {
 	c.registerHandleWrapper("Aspire.Hosting/Aspire.Hosting.ApplicationModel.ResourceUrlsEditor", func(h *handle, c *client) any {
 		return newResourceUrlsEditorFromHandle(h, c)
 	})
-	c.registerHandleWrapper("Aspire.Hosting/Aspire.Hosting.ApplicationModel.IResourceWithConnectionString", func(h *handle, c *client) any {
-		return newResourceWithConnectionStringFromHandle(h, c)
-	})
-	c.registerHandleWrapper("Aspire.Hosting/Aspire.Hosting.IResourceWithContainerFiles", func(h *handle, c *client) any {
-		return newResourceWithContainerFilesFromHandle(h, c)
-	})
 	c.registerHandleWrapper("System.ComponentModel/System.IServiceProvider", func(h *handle, c *client) any {
 		return newServiceProviderFromHandle(h, c)
 	})
@@ -20130,6 +40357,9 @@ func registerWrappers(c *client) {
 	})
 	c.registerHandleWrapper("Aspire.Hosting/Aspire.Hosting.IUserSecretsManager", func(h *handle, c *client) any {
 		return newUserSecretsManagerFromHandle(h, c)
+	})
+	c.registerHandleWrapper("Aspire.Hosting.JavaScript/Aspire.Hosting.JavaScript.ViteAppResource", func(h *handle, c *client) any {
+		return newViteAppResourceFromHandle(h, c)
 	})
 }
 

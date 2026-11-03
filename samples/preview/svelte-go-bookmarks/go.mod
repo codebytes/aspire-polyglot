@@ -1,6 +1,6 @@
 module apphost
 
-go 1.27.2
+go 1.26.0
 
 replace apphost/modules/aspire => ./.aspire/modules
 
