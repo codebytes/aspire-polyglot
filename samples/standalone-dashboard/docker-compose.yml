@@ -8,7 +8,7 @@ name: aspire-standalone-dashboard
 services:
   # The Aspire dashboard, straight from the public image.
   dashboard:
-    image: mcr.microsoft.com/dotnet/aspire-dashboard:13.6.1
+    image: mcr.microsoft.com/dotnet/aspire-dashboard:13.6.2
     container_name: aspire-dashboard
     environment:
       # Local demo only: disable the browser login token AND the OTLP API key so

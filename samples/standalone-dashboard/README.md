@@ -28,7 +28,7 @@ Then open **<http://localhost:18888>** and watch the **Structured Logs**,
 >   -p 127.0.0.1:4317:18889 -p 127.0.0.1:4318:18890 \
 >   -e DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS=true \
 >   -d --name aspire-dashboard \
->   mcr.microsoft.com/dotnet/aspire-dashboard:13.6.1
+>   mcr.microsoft.com/dotnet/aspire-dashboard:13.6.2
 > ```
 >
 > Then point any OTEL app at `http://localhost:4317` (gRPC) or `4318` (HTTP).
@@ -65,6 +65,15 @@ never do this in production.** (Without it, the dashboard prints a login URL wit
 token in its container logs, and OTLP requires an API key.)
 The published ports bind only to IPv4 loopback so the anonymous demo is not
 exposed on the host's network interfaces.
+
+## Query it from the terminal
+
+The Aspire CLI can read a standalone dashboard too, no AppHost required:
+
+```bash
+aspire otel logs go-worker --dashboard-url http://localhost:18888
+aspire otel traces python-worker --dashboard-url http://localhost:18888
+```
 
 ## Wire your own app in 30 seconds
 

@@ -477,6 +477,17 @@ async function standalone() {
     for (const worker of ["node-worker", "python-worker", "go-worker"]) {
       await eventually(async () => /job \d+/i.test(await compose("logs", "--no-color", "--tail", "30", worker)),
         `${worker} to process jobs`, 60_000);
+      // The same CLI queries a standalone dashboard: no AppHost involved.
+      for (const signal of ["logs", "traces"]) {
+        await eventually(async () => {
+          try {
+            return cliJson(await command("aspire", ["otel", signal, worker, "--dashboard-url",
+              "http://localhost:18888", "--format", "Json", "--limit", "5", ...flags])).length > 0;
+          } catch {
+            return false;
+          }
+        }, `${worker} ${signal} in the standalone dashboard`, 60_000);
+      }
     }
     const output = (await compose("ps", "--all", "--format", "json")).trim();
     const services = output.startsWith("[") ? JSON.parse(output) : output.split(/\r?\n/).map(line => JSON.parse(line));
