@@ -4,10 +4,14 @@
     "language": "java"
   },
   "sdk": {
-    "version": "13.6.1"
+    "version": "13.6.4"
   },
   "features": {
     "polyglotSupportEnabled": true,
     "experimentalPolyglot:java": true
+  },
+  "packages": {
+    "Aspire.Hosting.Java": "13.6.4-preview.1.26523.11",
+    "Aspire.Hosting.PostgreSQL": "13.6.4"
   }
 }

@@ -1,64 +1,71 @@
 # Java (Javalin) + Redis leaderboard
 
-A single-file C# AppHost orchestrating a **Java** service — a lightweight
-[Javalin](https://javalin.io/) REST API backed by a Redis leaderboard. The Java
-app is built and shipped as a container via a multi-stage Dockerfile (Maven
-build → JRE runtime), so no host JDK is required to run it. Polyglot: **C#
-AppHost, Java API, Redis store.**
+A single-file C# AppHost runs a [Javalin](https://javalin.io/) leaderboard API as
+a **native JVM process** next to a Redis container. Aspire builds the JAR with the
+project's Maven wrapper and starts it with the **OpenTelemetry Java agent**, so
+traces, metrics, and logs reach the dashboard with zero telemetry code.
 
-## Tech Stack
-- **AppHost**: single-file `apphost.cs`, base Aspire SDK
-- **API**: Java 21 + [Javalin 7](https://javalin.io/) + [Jedis 8](https://github.com/redis/jedis) + Jackson 3, built from a Dockerfile
-- **Store**: `redis:7-alpine` (public image) — a sorted-set leaderboard
+| Resource | Runs as | Integration |
+|----------|---------|-------------|
+| `api` | native `java -jar` (Java 21) | `AddJavaApp` (`Aspire.Hosting.Java`, preview) |
+| `api-maven-build` | `./mvnw package` before `api` starts | `WithMavenBuild` |
+| `cache` | Redis container | `AddRedis` |
 
-## Running
+```csharp
+builder.AddJavaApp("api", "src/api", "target/leaderboard.jar")
+    .WithMavenBuild("package", "-DskipTests")
+    .WithOtelAgent()
+    .WithReference(cache)
+    .WaitFor(cache)
+    .WithHttpEndpoint(env: "PORT");
+```
+
+## Run
+
+Prerequisites: Aspire CLI 13.6.4, .NET 10 SDK, JDK 21+, Docker. Maven is not
+required: `src/api/mvnw` downloads it on first use.
 
 ```bash
 cd samples/java-javalin-redis
 aspire run
 ```
 
-**Prerequisites:** [Aspire CLI](https://aspire.dev/get-started/install-cli/), [Docker](https://docs.docker.com/get-docker/).
+Open the `api` URL and submit a few scores. In the dashboard:
 
-For a host-only Java build, use JDK 21+ and Maven 3.9+:
-`mvn -f src/api/pom.xml clean verify`. Tests exercise the HTTP API with a mocked
-Redis client; no Redis server or Docker is needed. Javalin 7 registers all routes
-before startup, and the app explicitly selects its Jackson 3 mapper.
+- **Structured logs**: `Recorded score 300.0 for Dave` from SLF4J/Logback.
+- **Traces**: each request with a child span for the Redis `ZADD`/`ZREVRANGE`.
+- **Metrics**: HTTP server and JVM runtime metrics from the agent.
 
-Aspire builds the Java image (Maven multi-stage build), starts Redis, and opens
-the dashboard. Try the API:
+Or use curl against the `api` endpoint:
 
 ```bash
-# Submit some scores
-curl -X POST http://<api-endpoint>/api/scores \
-  -H 'Content-Type: application/json' -d '{"player":"Alice","score":100}'
-curl -X POST http://<api-endpoint>/api/scores \
-  -H 'Content-Type: application/json' -d '{"player":"Dave","score":300}'
-
-# Top 10, highest first
-curl http://<api-endpoint>/api/leaderboard
+curl -X POST "$API/api/scores" -H 'Content-Type: application/json' -d '{"player":"Dave","score":300}'
+curl "$API/api/leaderboard"
 ```
 
-## What It Demonstrates
-- A **C# AppHost orchestrating a Java service** with no host JDK — the
-  multi-stage Dockerfile builds the jar with Maven and runs it on a JRE base.
-- `AddDockerfile` for the Java app + `AddContainer` for Redis, wired with
-  **container-to-container networking by resource name** (`REDIS_HOST=cache`).
-- A real Redis data structure (a **sorted set**) driving the leaderboard ranking.
-- `WithOtlpExporter()` configures the OpenTelemetry Java agent to export HTTP and
-  Redis traces, runtime metrics, and Logback structured logs to the dashboard.
-  The entrypoint trusts Aspire's mounted development certificate without disabling TLS.
-- Because the API is already a Dockerfile, `aspire publish` ships it as a
-  container image with no extra work.
+## How it is wired
 
-## Project Layout
+- `WithMavenBuild` adds a build resource the API waits for. The POM copies
+  `opentelemetry-javaagent.jar` to `target/agent/`, where `WithOtelAgent()` expects it.
+- `WithReference(cache)` injects `CACHE_URI`; the app passes it to `RedisClient.create(URI)`.
+- Aspire also gives the JVM a trust store with its development certificate, so the
+  agent exports over TLS without any entrypoint scripts.
 
+## Tests
+
+```bash
+cd src/api
+./mvnw verify
 ```
-apphost.cs            single-file C# AppHost
-aspire.config.json    points aspire at apphost.cs
-apphost.run.json      launch profiles (dashboard/OTLP ports)
-src/api/
-  pom.xml             Maven build (Javalin + Jedis, shaded fat jar)
-  src/main/java/...    App.java — the Javalin leaderboard API
-  Dockerfile          multi-stage: Maven build → JRE runtime
+
+Tests exercise the HTTP API with a mocked Redis client; no Redis or Docker needed.
+
+## Layout
+
+```text
+apphost.cs                                      single-file C# AppHost
+src/api/pom.xml                                 Javalin 7, Jedis 8, Jackson 3, OTel agent copy
+src/api/mvnw                                    Maven wrapper used by WithMavenBuild
+src/api/src/main/java/com/aspire/polyglot/App.java
+src/api/src/main/resources/logback.xml          INFO-level console logging
 ```

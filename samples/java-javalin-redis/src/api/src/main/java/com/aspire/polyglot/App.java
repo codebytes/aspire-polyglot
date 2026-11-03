@@ -2,31 +2,35 @@ package com.aspire.polyglot;
 
 import io.javalin.Javalin;
 import io.javalin.json.JavalinJackson3;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import redis.clients.jedis.RedisClient;
 import redis.clients.jedis.resps.Tuple;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 /**
- * A tiny Javalin leaderboard API backed by Redis sorted sets.
+ * A tiny Javalin leaderboard API backed by a Redis sorted set.
  *
- * Aspire injects REDIS_HOST / REDIS_PORT (see apphost.cs). Because this app runs
- * as a container on Aspire's network, it reaches Redis by the container hostname
- * "cache". PORT is the port Aspire tells the app to listen on.
+ * Aspire runs this JAR natively (AddJavaApp) and injects:
+ *   PORT       the port to listen on
+ *   CACHE_URI  redis[s]://:password@host:port for the "cache" resource
+ *   OTEL_*     settings the OpenTelemetry Java agent uses to export traces,
+ *              metrics, and these SLF4J logs to the dashboard
  */
 public class App {
 
+    private static final Logger log = LoggerFactory.getLogger(App.class);
     private static final String KEY = "leaderboard";
 
     public static void main(String[] args) {
         int port = Integer.parseInt(env("PORT", "8080"));
-        String redisHost = env("REDIS_HOST", "localhost");
-        int redisPort = Integer.parseInt(env("REDIS_PORT", "6379"));
-
-        RedisClient redis = RedisClient.builder().hostAndPort(redisHost, redisPort).build();
-        createApp(redis).start("0.0.0.0", port);
+        RedisClient redis = RedisClient.create(URI.create(env("CACHE_URI", "redis://localhost:6379")));
+        createApp(redis).start(port);
+        log.info("Leaderboard API listening on port {}", port);
     }
 
     static Javalin createApp(RedisClient redis) {
@@ -41,7 +45,12 @@ public class App {
             // Submit a score: adds/updates the player in the sorted set.
             config.routes.post("/api/scores", ctx -> {
                 ScoreDto dto = ctx.bodyAsClass(ScoreDto.class);
+                if (dto.player == null || dto.player.isBlank()) {
+                    ctx.status(400).json(Map.of("error", "player is required"));
+                    return;
+                }
                 redis.zadd(KEY, dto.score, dto.player);
+                log.info("Recorded score {} for {}", dto.score, dto.player);
                 ctx.status(201).json(dto);
             });
 
@@ -56,6 +65,7 @@ public class App {
                             "player", t.getElement(),
                             "score", (long) t.getScore()));
                 }
+                log.info("Served leaderboard with {} players", board.size());
                 ctx.json(Map.of("leaderboard", board));
             });
         });
@@ -103,7 +113,7 @@ public class App {
             <body>
               <main class="wrap">
                 <h1>&#127942; Aspire Java Leaderboard</h1>
-                <p class="sub">Javalin &middot; Redis sorted set &mdash; orchestrated by a single-file C# AppHost.</p>
+                <p class="sub">Javalin &middot; Redis sorted set &mdash; a native JVM run by a single-file C# AppHost.</p>
                 <form id="form">
                   <input id="player" placeholder="Player name" required />
                   <input id="score" type="number" placeholder="Score" required />

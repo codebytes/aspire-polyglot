@@ -1,25 +1,24 @@
-#:sdk Aspire.AppHost.Sdk@13.6.1
+#:sdk Aspire.AppHost.Sdk@13.6.4
 #:property AspireUseCliBundle=true
+#:package Aspire.Hosting.Redis@13.6.4
+#:package Aspire.Hosting.Java@13.6.4-preview.1.26523.11
 
-// Single-file C# AppHost orchestrating a Java service. The API is a lightweight
-// Javalin app built from a multi-stage Dockerfile (Maven build + JRE runtime),
-// so it runs and publishes as a container with no host JDK required. Polyglot:
-// C# AppHost, Java (Javalin) API, Redis store.
+// Single-file C# AppHost: a Javalin (Java 21) leaderboard API and Redis.
+// The API runs as a NATIVE JVM process: Aspire builds it with the project's
+// Maven wrapper, then runs the JAR with the OpenTelemetry Java agent attached.
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-// Redis holds the leaderboard (a sorted set). Public image, no app code.
-var cache = builder.AddContainer("cache", "redis", "7-alpine");
+// Redis with a generated password. Referencing it injects CACHE_URI.
+var cache = builder.AddRedis("cache");
 
-// Java Javalin API built from ./src/api. It reaches Redis by the container
-// hostname "cache" on Aspire's network.
-builder.AddDockerfile("api", "src/api")
-    .WithOtlpExporter()
-    .WithEnvironment("REDIS_HOST", "cache")
-    .WithEnvironment("REDIS_PORT", "6379")
-    .WithHttpEndpoint(targetPort: 8080, env: "PORT")
+builder.AddJavaApp("api", "src/api", "target/leaderboard.jar")
+    .WithMavenBuild("package", "-DskipTests") // a child build resource; tests run separately
+    .WithOtelAgent()                           // target/agent/opentelemetry-javaagent.jar
+    .WithReference(cache)
+    .WaitFor(cache)
+    .WithHttpEndpoint(env: "PORT")
     .WithHttpHealthCheck("/health")
-    .WithExternalHttpEndpoints()
-    .WaitFor(cache);
+    .WithExternalHttpEndpoints();
 
 builder.Build().Run();

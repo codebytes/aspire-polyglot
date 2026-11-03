@@ -1,0 +1,12 @@
+<configuration>
+  <!-- Console output for the dashboard's console view. The OpenTelemetry Java
+       agent also forwards these records to the dashboard as structured logs. -->
+  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>%d{HH:mm:ss.SSS} %-5level %logger{20} - %msg%n</pattern>
+    </encoder>
+  </appender>
+  <root level="INFO">
+    <appender-ref ref="CONSOLE"/>
+  </root>
+</configuration>

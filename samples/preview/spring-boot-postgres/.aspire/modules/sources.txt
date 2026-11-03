@@ -2,6 +2,7 @@
 .aspire/modules/aspire/AddDockerfileOptions.java
 .aspire/modules/aspire/AddParameterOptions.java
 .aspire/modules/aspire/AddParameterWithGeneratedValueOptions.java
+.aspire/modules/aspire/AddPostgresOptions.java
 .aspire/modules/aspire/AddStepOptions.java
 .aspire/modules/aspire/AfterPublishEvent.java
 .aspire/modules/aspire/AfterResourcesCreatedEvent.java
@@ -122,6 +123,7 @@
 .aspire/modules/aspire/IExpressionValue.java
 .aspire/modules/aspire/IHostEnvironment.java
 .aspire/modules/aspire/IInteractionService.java
+.aspire/modules/aspire/IJavaAppResource.java
 .aspire/modules/aspire/ILogger.java
 .aspire/modules/aspire/ILoggerFactory.java
 .aspire/modules/aspire/IReportingStep.java
@@ -153,12 +155,16 @@
 .aspire/modules/aspire/InteractionMessageBoxOptions.java
 .aspire/modules/aspire/InteractionNotificationOptions.java
 .aspire/modules/aspire/InteractionProgressOptions.java
+.aspire/modules/aspire/JavaAppResource.java
+.aspire/modules/aspire/JavaContainerResource.java
 .aspire/modules/aspire/JsonSerializable.java
 .aspire/modules/aspire/LogFacade.java
 .aspire/modules/aspire/MessageIntent.java
 .aspire/modules/aspire/OtlpProtocol.java
 .aspire/modules/aspire/ParameterCustomInputOptions.java
 .aspire/modules/aspire/ParameterResource.java
+.aspire/modules/aspire/PgAdminContainerResource.java
+.aspire/modules/aspire/PgWebContainerResource.java
 .aspire/modules/aspire/PipelineConfigurationContext.java
 .aspire/modules/aspire/PipelineContext.java
 .aspire/modules/aspire/PipelineEditor.java
@@ -166,6 +172,9 @@
 .aspire/modules/aspire/PipelineStepContext.java
 .aspire/modules/aspire/PipelineStepFactoryContext.java
 .aspire/modules/aspire/PipelineSummary.java
+.aspire/modules/aspire/PostgresDatabaseResource.java
+.aspire/modules/aspire/PostgresMcpContainerResource.java
+.aspire/modules/aspire/PostgresServerResource.java
 .aspire/modules/aspire/ProbeType.java
 .aspire/modules/aspire/ProcessCommandExportOptions.java
 .aspire/modules/aspire/ProcessCommandResultExportOptions.java
@@ -208,6 +217,7 @@
 .aspire/modules/aspire/WellKnownPipelineTags.java
 .aspire/modules/aspire/WireValueEnum.java
 .aspire/modules/aspire/WithContainerCertificatePathsOptions.java
+.aspire/modules/aspire/WithDataVolumeOptions.java
 .aspire/modules/aspire/WithDockerfileBaseImageOptions.java
 .aspire/modules/aspire/WithDockerfileOptions.java
 .aspire/modules/aspire/WithEndpointOptions.java
@@ -219,6 +229,9 @@
 .aspire/modules/aspire/WithHttpsEndpointCallbackOptions.java
 .aspire/modules/aspire/WithHttpsEndpointOptions.java
 .aspire/modules/aspire/WithMcpServerOptions.java
+.aspire/modules/aspire/WithPgAdminOptions.java
+.aspire/modules/aspire/WithPgWebOptions.java
 .aspire/modules/aspire/WithPipelineStepFactoryOptions.java
+.aspire/modules/aspire/WithPostgresMcpOptions.java
 .aspire/modules/aspire/WithReferenceOptions.java
 .aspire/modules/aspire/WithVolumeOptions.java

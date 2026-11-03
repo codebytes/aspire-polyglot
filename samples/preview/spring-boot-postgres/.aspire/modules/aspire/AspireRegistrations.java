@@ -110,8 +110,16 @@ public class AspireRegistrations {
         AspireClient.registerHandleWrapper("Aspire.Hosting/Aspire.Hosting.ApplicationModel.CSharpAppResource", (h, c) -> new CSharpAppResource(h, c));
         AspireClient.registerHandleWrapper("Aspire.Hosting/Aspire.Hosting.IResourceWithContainerFiles", (h, c) -> new IResourceWithContainerFiles(h, c));
         AspireClient.registerHandleWrapper("Aspire.Hosting/Aspire.Hosting.ApplicationModel.IComputeEnvironmentResource", (h, c) -> new IComputeEnvironmentResource(h, c));
+        AspireClient.registerHandleWrapper("Aspire.Hosting.Java/Aspire.Hosting.Java.JavaAppResource", (h, c) -> new JavaAppResource(h, c));
+        AspireClient.registerHandleWrapper("Aspire.Hosting.Java/Aspire.Hosting.Java.JavaContainerResource", (h, c) -> new JavaContainerResource(h, c));
+        AspireClient.registerHandleWrapper("Aspire.Hosting.PostgreSQL/Aspire.Hosting.ApplicationModel.PostgresDatabaseResource", (h, c) -> new PostgresDatabaseResource(h, c));
+        AspireClient.registerHandleWrapper("Aspire.Hosting.PostgreSQL/Aspire.Hosting.ApplicationModel.PostgresServerResource", (h, c) -> new PostgresServerResource(h, c));
+        AspireClient.registerHandleWrapper("Aspire.Hosting.PostgreSQL/Aspire.Hosting.Postgres.PgAdminContainerResource", (h, c) -> new PgAdminContainerResource(h, c));
+        AspireClient.registerHandleWrapper("Aspire.Hosting.PostgreSQL/Aspire.Hosting.Postgres.PgWebContainerResource", (h, c) -> new PgWebContainerResource(h, c));
+        AspireClient.registerHandleWrapper("Aspire.Hosting.PostgreSQL/Aspire.Hosting.Postgres.PostgresMcpContainerResource", (h, c) -> new PostgresMcpContainerResource(h, c));
         AspireClient.registerHandleWrapper("Aspire.Hosting/Aspire.Hosting.ApplicationModel.IContainerFilesDestinationResource", (h, c) -> new IContainerFilesDestinationResource(h, c));
         AspireClient.registerHandleWrapper("Aspire.Hosting/Aspire.Hosting.ApplicationModel.IComputeResource", (h, c) -> new IComputeResource(h, c));
+        AspireClient.registerHandleWrapper("Aspire.Hosting.Java/Aspire.Hosting.Java.IJavaAppResource", (h, c) -> new IJavaAppResource(h, c));
         AspireClient.registerHandleWrapper("Aspire.Hosting/List<string>", (h, c) -> new AspireList<>(h, c));
         AspireClient.registerHandleWrapper("Aspire.Hosting/Dict<string,any>", (h, c) -> new AspireDict<>(h, c));
         AspireClient.registerHandleWrapper("Aspire.Hosting/List<any>", (h, c) -> new AspireList<>(h, c));

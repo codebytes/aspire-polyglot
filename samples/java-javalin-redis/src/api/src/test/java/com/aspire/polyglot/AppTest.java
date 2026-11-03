@@ -63,6 +63,17 @@ class AppTest {
     }
 
     @Test
+    void rejectsScoreWithoutPlayer() throws Exception {
+        var request = HttpRequest.newBuilder(uri("/api/scores"))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString("{\"player\":\" \",\"score\":10}")).build();
+        var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(400, response.statusCode());
+        verify(redis, never()).zadd(anyString(), anyDouble(), anyString());
+    }
+
+    @Test
     void preservesLeaderboardEnvelopeRanksAndScoreRepresentation() throws Exception {
         when(redis.zrevrangeWithScores("leaderboard", 0, 9)).thenReturn(
                 List.of(new Tuple("Alice", 300.75), new Tuple("Dave", 100.0)));

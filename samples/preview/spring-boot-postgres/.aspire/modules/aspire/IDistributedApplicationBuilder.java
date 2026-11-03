@@ -505,4 +505,93 @@ public class IDistributedApplicationBuilder extends HandleWrapperBase {
         getClient().invokeCapability("Aspire.Hosting/addHealthCheck", reqArgs);
     }
 
+    /** Adds a Java application to the application model, launched with `java`. */
+    public JavaAppResource addJavaApp(String name, String appDirectory) {
+        Map<String, Object> reqArgs = new HashMap<>();
+        reqArgs.put("builder", AspireClient.serializeValue(getHandle()));
+        reqArgs.put("name", AspireClient.serializeValue(name));
+        reqArgs.put("appDirectory", AspireClient.serializeValue(appDirectory));
+        var result = getClient().invokeCapability("Aspire.Hosting.Java/addJavaApp", reqArgs);
+        return (JavaAppResource) result;
+    }
+
+    /** Adds a Java application that runs a prebuilt JAR with `java -jar`. */
+    public JavaAppResource addJavaAppWithJar(String name, String appDirectory, String jarPath, String[] args) {
+        Map<String, Object> reqArgs = new HashMap<>();
+        reqArgs.put("builder", AspireClient.serializeValue(getHandle()));
+        reqArgs.put("name", AspireClient.serializeValue(name));
+        reqArgs.put("appDirectory", AspireClient.serializeValue(appDirectory));
+        reqArgs.put("jarPath", AspireClient.serializeValue(jarPath));
+        reqArgs.put("args", AspireClient.serializeValue(args));
+        var result = getClient().invokeCapability("Aspire.Hosting.Java/addJavaAppWithJar", reqArgs);
+        return (JavaAppResource) result;
+    }
+
+    public JavaContainerResource addJavaContainer(String name, String image) {
+        return addJavaContainer(name, image, null);
+    }
+
+    /** Adds a Java application that runs from an existing container image. */
+    public JavaContainerResource addJavaContainer(String name, String image, String tag) {
+        Map<String, Object> reqArgs = new HashMap<>();
+        reqArgs.put("builder", AspireClient.serializeValue(getHandle()));
+        reqArgs.put("name", AspireClient.serializeValue(name));
+        reqArgs.put("image", AspireClient.serializeValue(image));
+        if (tag != null) {
+            reqArgs.put("tag", AspireClient.serializeValue(tag));
+        }
+        var result = getClient().invokeCapability("Aspire.Hosting.Java/addJavaContainer", reqArgs);
+        return (JavaContainerResource) result;
+    }
+
+    /** Adds a Spring Boot application to the application model, built and launched with its own Maven or Gradle wrapper. */
+    public JavaAppResource addSpringBootApp(String name, String appDirectory) {
+        Map<String, Object> reqArgs = new HashMap<>();
+        reqArgs.put("builder", AspireClient.serializeValue(getHandle()));
+        reqArgs.put("name", AspireClient.serializeValue(name));
+        reqArgs.put("appDirectory", AspireClient.serializeValue(appDirectory));
+        var result = getClient().invokeCapability("Aspire.Hosting.Java/addSpringBootApp", reqArgs);
+        return (JavaAppResource) result;
+    }
+
+    /** Adds a Quarkus application to the application model, built and launched with its own Maven or Gradle wrapper. */
+    public JavaAppResource addQuarkusApp(String name, String appDirectory) {
+        Map<String, Object> reqArgs = new HashMap<>();
+        reqArgs.put("builder", AspireClient.serializeValue(getHandle()));
+        reqArgs.put("name", AspireClient.serializeValue(name));
+        reqArgs.put("appDirectory", AspireClient.serializeValue(appDirectory));
+        var result = getClient().invokeCapability("Aspire.Hosting.Java/addQuarkusApp", reqArgs);
+        return (JavaAppResource) result;
+    }
+
+    /** Adds a PostgreSQL resource to the application model. A container is used for local development. */
+    public PostgresServerResource addPostgres(String name, AddPostgresOptions optionsBag) {
+        var userName = optionsBag == null ? null : optionsBag.getUserName();
+        var password = optionsBag == null ? null : optionsBag.getPassword();
+        var port = optionsBag == null ? null : optionsBag.getPort();
+        return addPostgresImpl(name, userName, password, port);
+    }
+
+    public PostgresServerResource addPostgres(String name) {
+        return addPostgres(name, null);
+    }
+
+    /** Adds a PostgreSQL resource to the application model. A container is used for local development. */
+    private PostgresServerResource addPostgresImpl(String name, ParameterResource userName, ParameterResource password, Number port) {
+        Map<String, Object> reqArgs = new HashMap<>();
+        reqArgs.put("builder", AspireClient.serializeValue(getHandle()));
+        reqArgs.put("name", AspireClient.serializeValue(name));
+        if (userName != null) {
+            reqArgs.put("userName", AspireClient.serializeValue(userName));
+        }
+        if (password != null) {
+            reqArgs.put("password", AspireClient.serializeValue(password));
+        }
+        if (port != null) {
+            reqArgs.put("port", AspireClient.serializeValue(port));
+        }
+        var result = getClient().invokeCapability("Aspire.Hosting.PostgreSQL/addPostgres", reqArgs);
+        return (PostgresServerResource) result;
+    }
+
 }

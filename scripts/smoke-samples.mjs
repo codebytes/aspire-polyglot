@@ -136,7 +136,7 @@ const samples = [
   { name: "preview/flask-markdown-wiki", apphost: "apphost.py", wait: ["cache", "wiki"], otel: ["wiki"], check: wiki },
   { name: "preview/django-htmx-polls", apphost: "apphost.py", wait: ["pg", "pollsdb", "polls"], otel: ["polls"], check: polls },
   { name: "preview/svelte-go-bookmarks", apphost: "apphost.go", wait: ["pg", "api", "frontend"], otel: ["api"], check: bookmarks },
-  { name: "preview/spring-boot-postgres", apphost: "AppHost.java", wait: ["pg", "api"], otel: ["api"], check: notes },
+  { name: "preview/spring-boot-postgres", apphost: "AppHost.java", wait: ["pg", "notesdb", "api"], otel: ["api"], check: notes },
   { name: "standalone-dashboard", apphost: null, wait: [], otel: [], check: standalone },
 ];
 
