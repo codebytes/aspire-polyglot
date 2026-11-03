@@ -1,7 +1,10 @@
 import express from "express";
+import { pino } from "pino";
 import { existsSync } from "fs";
 import { join } from "path";
 
+// pino records become dashboard structured logs, linked to the active trace.
+const log = pino();
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -17,6 +20,7 @@ app.get("/api/weatherforecast", (_req, res) => {
       summary: summaries[Math.floor(Math.random() * summaries.length)],
     };
   });
+  log.info({ days: forecasts.length }, "served weather forecast");
   res.json(forecasts);
 });
 
@@ -32,5 +36,5 @@ if (existsSync(staticDir)) {
 }
 
 app.listen(port, () => {
-  console.log(`API server listening on port ${port}`);
+  log.info({ port }, "API server listening");
 });

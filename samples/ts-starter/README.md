@@ -29,7 +29,7 @@ A minimal starter sample scaffolded from the **official Aspire TypeScript templa
 
 ## Prerequisites
 
-- [.NET Aspire CLI](https://learn.microsoft.com/dotnet/aspire/) (`aspire` command)
+- [Aspire CLI](https://aspire.dev/get-started/install-cli/) 13.6.4
 - .NET 10 SDK
 - [Node.js](https://nodejs.org/) 20.19+ or 22.13+ or 24+
 - npm
@@ -37,16 +37,8 @@ A minimal starter sample scaffolded from the **official Aspire TypeScript templa
 ## Getting Started
 
 ```bash
-# Install dependencies
-npm install
-cd api && npm install && cd ..
-cd frontend && npm install && cd ..
-
-# Restore Aspire SDK code
-aspire restore
-
-# Start the app
-aspire run
+npm install     # the AppHost's own dependencies
+aspire run      # Aspire installs api/ and frontend/ packages before starting them
 ```
 
 The Aspire dashboard URL will appear in the terminal. Open it to see the API and frontend resources, their logs, and distributed traces.
@@ -55,9 +47,12 @@ For a worktree, use `aspire start --apphost apphost.mts --isolated`.
 Open `frontend`, refresh the five-day forecast, and switch between Fahrenheit
 and Celsius. Stop the sample with `aspire stop --apphost apphost.mts`.
 
-The API and browser tracing use the dynamically allocated OTLP/HTTP listener.
-The API preloads its instrumentation before Express starts. HTTP/protobuf also
-avoids the Node 25 gRPC TLS restriction on IP-address collector endpoints.
+In the dashboard, **Structured logs** shows the API's pino records
+(`served weather forecast`), and **Traces** links the browser's `fetch` span to the
+Express request. `npm start` preloads [`api/src/otel.ts`](api/src/otel.ts), the
+OpenTelemetry Node SDK with auto-instrumentation configured by Aspire's `OTEL_*`
+variables; [`frontend/src/instrumentation.ts`](frontend/src/instrumentation.ts)
+traces page loads and `fetch` calls over OTLP/HTTP.
 
 ## Build checks
 
@@ -87,7 +82,7 @@ ts-starter/
 ├── api/                # Express API service
 │   ├── src/
 │   │   ├── index.ts            # Express server + weather endpoint
-│   │   └── instrumentation.ts  # OpenTelemetry setup
+│   │   └── otel.ts             # OpenTelemetry setup (preloaded by npm start)
 │   └── package.json
 └── frontend/           # React + Vite frontend
     ├── src/
