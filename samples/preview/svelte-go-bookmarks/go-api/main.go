@@ -48,7 +48,8 @@ func main() {
 
 	// otelsql wraps the pgx driver so every query is a child span of its HTTP request.
 	db, err := otelsql.Open("pgx", os.Getenv("BOOKMARKSDB_URI"),
-		otelsql.WithAttributes(semconv.DBSystemNamePostgreSQL))
+		otelsql.WithAttributes(semconv.DBSystemNamePostgreSQL),
+		otelsql.WithSpanOptions(otelsql.SpanOptions{OmitConnResetSession: true}))
 	if err != nil {
 		slog.Error("open database failed", "error", err)
 		os.Exit(1)
@@ -123,9 +124,14 @@ func main() {
 	}
 	server := &http.Server{
 		Addr: ":" + port,
-		// Name spans by route ("GET /api/bookmarks/{id}") so the dashboard groups them.
+		// Name spans by route pattern ("DELETE /api/bookmarks/{id}") so the dashboard groups them.
 		Handler: otelhttp.NewHandler(mux, "bookmarks-api", otelhttp.WithSpanNameFormatter(
-			func(_ string, r *http.Request) string { return r.Method + " " + r.Pattern })),
+			func(_ string, r *http.Request) string {
+				if r.Pattern == "" {
+					return r.Method // unmatched route
+				}
+				return r.Pattern
+			})),
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 	go func() {

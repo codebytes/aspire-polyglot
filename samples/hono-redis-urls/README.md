@@ -35,7 +35,7 @@ aspire run
 Open **web**, shorten a URL, and click the short link. In the dashboard:
 
 - **Structured logs**: pino records such as `shortened URL` and `redirected`.
-- **Traces**: `POST /api/shorten` with a child span for each Redis command.
+- **Traces**: the shorten request (`POST`) with child spans for its Redis `MULTI`, `HSET`, `LPUSH`, and `EXEC`.
 
 ## How it is wired
 
