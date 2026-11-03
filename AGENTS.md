@@ -36,11 +36,11 @@ This repository holds the slides and demos for Chris Ayers' talk **Aspire 13: On
 
 Use the shared skills from [codebytes/skills](https://github.com/codebytes/skills) (for Copilot CLI: `copilot plugin install https://github.com/codebytes/skills`). Don't copy their instructions or scripts into this repo.
 
-| Task | Skill |
-| --- | --- |
-| Write or revise slides, notes, order, or layouts | `marp-authoring` |
-| Charts, Mermaid diagrams, or other visuals | `marp-visuals` |
-| Editable `.drawio.svg` diagrams (stored in `slides/img/`) | `drawio-diagrams` |
+| Task                                                                          | Skill               |
+| ----------------------------------------------------------------------------- | ------------------- |
+| Write or revise slides, notes, order, or layouts                              | `marp-authoring`    |
+| Charts, Mermaid diagrams, or other visuals                                    | `marp-visuals`      |
+| Editable `.drawio.svg` diagrams (stored in `slides/img/`)                     | `drawio-diagrams`   |
 | Check overflow, clipping, and HTML/PDF parity before presenting or publishing | `marp-slide-review` |
 
 ## Build and run
@@ -56,9 +56,9 @@ node scripts/smoke-samples.mjs --list     # list the samples the smoke suite kno
 - Add a new sample under `samples/`, list it in `docs/samples-and-development.md`, and make sure the smoke suite covers it.
 - Mermaid diagrams: include the Mermaid `<script>` tag once in the deck when diagrams are used.
 
-## README
+## Readme
 
-- Keep the README sections in this order: Slides, Recordings, Resources, Contact.
+- Keep the readme sections in this order: Slides, Recordings, Resources, Contact.
 - When a new recording of the talk is published, add it at the top of `## Recordings` as `- [Event Year](https://www.youtube.com/watch?v=VIDEO_ID)`. When the video's title differs from the talk's, add an em dash and the recorded title after the event. Keep the list newest first.
 - The talk also appears on <https://chris-ayers.com/speaking/> (source: `content/speaking.md` in [codebytes/codebytes.github.io](https://github.com/codebytes/codebytes.github.io)); new events and recordings belong there too.
 
