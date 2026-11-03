@@ -1,53 +1,54 @@
-# Hono + Redis URL Shortener (single-file TypeScript AppHost)
+# URL shortener: Hono + Vite + Redis
 
-A URL shortener orchestrated by a **single-file TypeScript AppHost** — the entire
-dev-time orchestrator is one `apphost.mts`, with no C# project in sight.
+A **TypeScript** AppHost runs a [Hono](https://hono.dev/) API and a Vite frontend,
+both **natively on Node.js**, with Redis in a container.
 
-## Tech Stack
-- **Backend**: [Hono](https://hono.dev/) (Node + TypeScript) API, containerized via a Dockerfile
-- **Store**: Redis (container) holding short-code → URL mappings and click counts
-- **Frontend**: Vite + vanilla TypeScript, containerized via a Dockerfile
-- **AppHost**: single-file `apphost.mts` using the Aspire JavaScript SDK (`./.aspire/modules`)
+| Resource | Runs as | Integration |
+|----------|---------|-------------|
+| `api` | `npm start` (Node.js runs the TypeScript directly) | `addNodeApp` |
+| `web` | Vite dev server | `addViteApp` |
+| `cache` | Redis container | `addRedis` |
 
-## Running
+```typescript
+const cache = await builder.addRedis("cache");
+
+const api = await builder.addNodeApp("api", "./src/api", "src/index.ts")
+  .withRunScript("start")
+  .withOtlpExporter({ protocol: OtlpProtocol.HttpProtobuf })
+  .withReference(cache)
+  .withHttpEndpoint({ env: "PORT" });
+
+await builder.addViteApp("web", "./src/web").withReference(api).waitFor(api);
+```
+
+## Run
+
+Prerequisites: Aspire CLI 13.6.4, .NET 10 SDK, Node.js 22.18+ (built-in TypeScript
+type stripping), Docker. Aspire installs each app's npm packages before starting it.
 
 ```bash
 cd samples/hono-redis-urls
+npm install
 aspire run
 ```
 
-**Prerequisites:** [Aspire CLI](https://aspire.dev/get-started/install-cli/), [Docker](https://docs.docker.com/get-docker/), and Node 20+.
+Open **web**, shorten a URL, and click the short link. In the dashboard:
 
-Aspire builds the API and web images, starts Redis, and opens the dashboard. Open the
-`web` endpoint, paste a long URL, and it returns a short link backed by Redis. Following
-a short link redirects and bumps its click counter.
+- **Structured logs**: pino records such as `shortened URL` and `redirected`.
+- **Traces**: `POST /api/shorten` with child spans for the Redis `MULTI`/`EXEC`.
 
-The API container sets `NODE_OPTIONS=--use-openssl-ca` so Node's OTLP exporters trust
-Aspire's development certificate through the injected `SSL_CERT_DIR`. HTTPS
-certificate validation remains enabled.
-The API start script preloads instrumentation and registers the OpenTelemetry
-ESM loader hook so actual HTTP requests, not just startup activity, produce server spans.
+## How it is wired
 
-## What It Demonstrates
-- A **single-file `apphost.mts`** that wires three resources with a fluent builder and
-  no scaffolding project.
-- `addContainer("cache", "redis:latest")` for a backing service, plus `addDockerfile`
-  for the API and web apps so they share a network — the API reaches Redis by the
-  container hostname `cache`.
-- `withReference(api.getEndpoint("http"))` to inject the API endpoint into the web
-  container as a service-discovery variable, which `vite.config.ts` uses to proxy `/api`.
-- `withOtlpExporter()` + the OpenTelemetry Node SDK (`src/api/src/instrumentation.ts`)
-  streaming traces, metrics, and logs to the Aspire dashboard.
-- `withExternalHttpEndpoints()` and `withHttpEndpoint({ env: "PORT" })` for endpoint
-  wiring.
+- `withReference(cache)` injects `CACHE_URI`; `new Redis(process.env.CACHE_URI)` connects.
+- `withReference(api)` gives Vite `API_HTTP`; `vite.config.ts` proxies `/api` and `/r`.
+- `npm start` preloads [`src/otel.ts`](src/api/src/otel.ts): the OpenTelemetry Node
+  SDK with auto-instrumentation, configured entirely by Aspire's `OTEL_*` variables.
+  Its loader hook instruments ES module imports (ioredis, pino, HTTP).
 
-## Project Layout
+## Checks
 
-```
-apphost.mts           single-file TypeScript AppHost (the orchestrator)
-.aspire/modules/      generated Aspire TypeScript SDK (imported by apphost.mts)
-aspire.config.json    points Aspire at apphost.mts
-apphost.run.json      launch profiles (dashboard/OTLP ports)
-src/api/              Hono API + Dockerfile (Redis-backed shortener)
-src/web/              Vite vanilla-TS frontend + Dockerfile
+```bash
+npm run typecheck                                   # the AppHost
+(cd src/api && npm install && npm run typecheck)    # the API
+(cd src/web && npm install && npm run build)        # the frontend
 ```
