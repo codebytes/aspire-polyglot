@@ -26,7 +26,7 @@ class WikiTests(unittest.TestCase):
         self.addCleanup(self.directory.cleanup)
         self.cache = MemoryCache()
         self.db_patch = patch.object(main, "DB_PATH", str(Path(self.directory.name) / "wiki.db"))
-        self.cache_patch = patch.object(main, "redis_client", self.cache)
+        self.cache_patch = patch.object(main, "cache", self.cache)
         self.db_patch.start()
         self.cache_patch.start()
         self.addCleanup(self.db_patch.stop)

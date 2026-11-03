@@ -1547,8 +1547,6 @@ DistributedApplicationOperation = typing.Literal["Run", "Publish"]
 
 EndpointProperty = typing.Literal["Url", "Host", "IPV4Host", "Port", "Scheme", "TargetPort", "HostAndPort", "TlsEnabled"]
 
-EntrypointType = typing.Literal["Executable", "Script", "Module"]
-
 HealthStatus = typing.Literal["Unhealthy", "Degraded", "Healthy"]
 
 HttpCommandResultMode = typing.Literal["None", "Auto", "Json", "Text"]
@@ -1760,16 +1758,6 @@ class ExecutableVolumeParameters(typing.TypedDict, total=False):
     name: typing.Required[str]
     env: typing.Required[str]
     is_read_only: bool
-
-
-class PipParameters(typing.TypedDict, total=False):
-    install: bool
-    install_args: typing.Iterable[str]
-
-
-class UvParameters(typing.TypedDict, total=False):
-    install: bool
-    args: typing.Iterable[str]
 
 
 class RedisCommanderParameters(typing.TypedDict, total=False):
@@ -2659,58 +2647,6 @@ class DistributedApplicationBuilder:
             kwargs,
         )
         return typing.cast(RedisResource, result)
-
-    def add_python_app(self, name: str, app_dir: str, script_path: str, **kwargs: typing.Unpack["PythonAppResourceKwargs"]) -> PythonAppResource:  # type: ignore
-        """Adds a Python application to the application model."""
-        rpc_args: dict[str, typing.Any] = {'builder': self._handle}
-        rpc_args['name'] = name
-        rpc_args['appDirectory'] = app_dir
-        rpc_args['scriptPath'] = script_path
-        result = self._client.invoke_capability(
-            'Aspire.Hosting.Python/addPythonApp',
-            rpc_args,
-            kwargs,
-        )
-        return typing.cast(PythonAppResource, result)
-
-    def add_python_module(self, name: str, app_dir: str, module_name: str, **kwargs: typing.Unpack["PythonAppResourceKwargs"]) -> PythonAppResource:  # type: ignore
-        """Adds a Python module to the application model."""
-        rpc_args: dict[str, typing.Any] = {'builder': self._handle}
-        rpc_args['name'] = name
-        rpc_args['appDirectory'] = app_dir
-        rpc_args['moduleName'] = module_name
-        result = self._client.invoke_capability(
-            'Aspire.Hosting.Python/addPythonModule',
-            rpc_args,
-            kwargs,
-        )
-        return typing.cast(PythonAppResource, result)
-
-    def add_python_executable(self, name: str, app_dir: str, executable_name: str, **kwargs: typing.Unpack["PythonAppResourceKwargs"]) -> PythonAppResource:  # type: ignore
-        """Adds a Python executable to the application model."""
-        rpc_args: dict[str, typing.Any] = {'builder': self._handle}
-        rpc_args['name'] = name
-        rpc_args['appDirectory'] = app_dir
-        rpc_args['executableName'] = executable_name
-        result = self._client.invoke_capability(
-            'Aspire.Hosting.Python/addPythonExecutable',
-            rpc_args,
-            kwargs,
-        )
-        return typing.cast(PythonAppResource, result)
-
-    def add_uvicorn_app(self, name: str, app_dir: str, app: str, **kwargs: typing.Unpack["UvicornAppResourceKwargs"]) -> UvicornAppResource:  # type: ignore
-        """Adds a Uvicorn-based Python application to the distributed application builder with HTTP endpoint configuration."""
-        rpc_args: dict[str, typing.Any] = {'builder': self._handle}
-        rpc_args['name'] = name
-        rpc_args['appDirectory'] = app_dir
-        rpc_args['app'] = app
-        result = self._client.invoke_capability(
-            'Aspire.Hosting.Python/addUvicornApp',
-            rpc_args,
-            kwargs,
-        )
-        return typing.cast(UvicornAppResource, result)
 
 
 class AbstractDistributedApplicationEvent(abc.ABC):
@@ -11678,157 +11614,6 @@ class ParameterResource(_BaseResource, AbstractExpressionValue):
         super().__init__(handle, client, **kwargs)
 
 
-class PythonAppResourceKwargs(ExecutableResourceKwargs, total=False):
-    """PythonAppResource options."""
-
-    publish_with_container_files: tuple[AbstractResourceWithContainerFiles, str]
-    virtual_env: str | tuple[str, bool]
-    debugging: typing.Literal[True]
-    entrypoint: tuple[EntrypointType, str]
-    pip: PipParameters | typing.Literal[True]
-    uv: UvParameters | typing.Literal[True]
-
-class PythonAppResource(ExecutableResource, AbstractResourceWithServiceDiscovery, AbstractContainerFilesDestinationResource):
-    """PythonAppResource resource."""
-
-    def __repr__(self) -> str:
-        return "PythonAppResource(handle={self._handle.handle_id})"
-
-    def publish_with_container_files(self, source: AbstractResourceWithContainerFiles, destination_path: str) -> typing.Self:
-        """Configures the resource to copy container files from the specified source resource during publishing."""
-        rpc_args: dict[str, typing.Any] = {'builder': self._handle}
-        rpc_args['source'] = source
-        rpc_args['destinationPath'] = destination_path
-        result = self._client.invoke_capability(
-            'Aspire.Hosting/publishWithContainerFilesFromResource',
-            rpc_args,
-        )
-        self._handle = self._wrap_builder(result)
-        return self
-
-    def with_virtual_env(self, virtual_env_path: str, *, create_if_not_exists: bool = True) -> typing.Self:
-        """Configures a custom virtual environment path for the Python application."""
-        rpc_args: dict[str, typing.Any] = {'builder': self._handle}
-        rpc_args['virtualEnvironmentPath'] = virtual_env_path
-        if create_if_not_exists is not None:
-            rpc_args['createIfNotExists'] = create_if_not_exists
-        result = self._client.invoke_capability(
-            'Aspire.Hosting.Python/withVirtualEnvironment',
-            rpc_args,
-        )
-        self._handle = self._wrap_builder(result)
-        return self
-
-    def with_debugging(self) -> typing.Self:
-        """Enables debugging support for the Python application."""
-        rpc_args: dict[str, typing.Any] = {'builder': self._handle}
-        result = self._client.invoke_capability(
-            'Aspire.Hosting.Python/withDebugging',
-            rpc_args,
-        )
-        self._handle = self._wrap_builder(result)
-        return self
-
-    def with_entrypoint(self, entrypoint_type: EntrypointType, entrypoint: str) -> typing.Self:
-        """Configures the entrypoint for the Python application."""
-        rpc_args: dict[str, typing.Any] = {'builder': self._handle}
-        rpc_args['entrypointType'] = entrypoint_type
-        rpc_args['entrypoint'] = entrypoint
-        result = self._client.invoke_capability(
-            'Aspire.Hosting.Python/withEntrypoint',
-            rpc_args,
-        )
-        self._handle = self._wrap_builder(result)
-        return self
-
-    def with_pip(self, *, install: bool = True, install_args: typing.Iterable[str] | None = None) -> typing.Self:
-        """Configures the Python resource to use pip as the package manager and optionally installs packages before the application starts."""
-        rpc_args: dict[str, typing.Any] = {'builder': self._handle}
-        if install is not None:
-            rpc_args['install'] = install
-        if install_args is not None:
-            rpc_args['installArgs'] = install_args
-        result = self._client.invoke_capability(
-            'Aspire.Hosting.Python/withPip',
-            rpc_args,
-        )
-        self._handle = self._wrap_builder(result)
-        return self
-
-    def with_uv(self, *, install: bool = True, args: typing.Iterable[str] | None = None) -> typing.Self:
-        """Adds a UV environment setup task to ensure the virtual environment exists before running the Python application."""
-        rpc_args: dict[str, typing.Any] = {'builder': self._handle}
-        if install is not None:
-            rpc_args['install'] = install
-        if args is not None:
-            rpc_args['args'] = args
-        result = self._client.invoke_capability(
-            'Aspire.Hosting.Python/withUv',
-            rpc_args,
-        )
-        self._handle = self._wrap_builder(result)
-        return self
-
-    def __init__(self, handle: Handle, client: AspireClient, **kwargs: typing.Unpack[PythonAppResourceKwargs]) -> None:
-        if _publish_with_container_files := kwargs.pop("publish_with_container_files", None):
-            if _validate_tuple_types(_publish_with_container_files, (AbstractResourceWithContainerFiles, str)):
-                rpc_args: dict[str, typing.Any] = {"builder": handle}
-                rpc_args["source"] = typing.cast(tuple[AbstractResourceWithContainerFiles, str], _publish_with_container_files)[0]
-                rpc_args["destinationPath"] = typing.cast(tuple[AbstractResourceWithContainerFiles, str], _publish_with_container_files)[1]
-                handle = self._wrap_builder(client.invoke_capability('Aspire.Hosting/publishWithContainerFilesFromResource', rpc_args))
-            else:
-                raise TypeError("Invalid type for option 'publish_with_container_files'. Expected: (AbstractResourceWithContainerFiles, str)")
-        if _virtual_env := kwargs.pop("virtual_env", None):
-            if _validate_type(_virtual_env, str):
-                rpc_args: dict[str, typing.Any] = {"builder": handle}
-                rpc_args["virtualEnvironmentPath"] = typing.cast(str, _virtual_env)
-                handle = self._wrap_builder(client.invoke_capability('Aspire.Hosting.Python/withVirtualEnvironment', rpc_args))
-            elif _validate_tuple_types(_virtual_env, (str, bool)):
-                rpc_args: dict[str, typing.Any] = {"builder": handle}
-                rpc_args["virtualEnvironmentPath"] = typing.cast(tuple[str, bool], _virtual_env)[0]
-                rpc_args["createIfNotExists"] = typing.cast(tuple[str, bool], _virtual_env)[1]
-                handle = self._wrap_builder(client.invoke_capability('Aspire.Hosting.Python/withVirtualEnvironment', rpc_args))
-            else:
-                raise TypeError("Invalid type for option 'virtual_env'. Expected: str or (str, bool)")
-        if _debugging := kwargs.pop("debugging", None):
-            if _debugging is True:
-                rpc_args: dict[str, typing.Any] = {"builder": handle}
-                handle = self._wrap_builder(client.invoke_capability('Aspire.Hosting.Python/withDebugging', rpc_args))
-            else:
-                raise TypeError("Invalid type for option 'debugging'. Expected: Literal[True]")
-        if _entrypoint := kwargs.pop("entrypoint", None):
-            if _validate_tuple_types(_entrypoint, (EntrypointType, str)):
-                rpc_args: dict[str, typing.Any] = {"builder": handle}
-                rpc_args["entrypointType"] = typing.cast(tuple[EntrypointType, str], _entrypoint)[0]
-                rpc_args["entrypoint"] = typing.cast(tuple[EntrypointType, str], _entrypoint)[1]
-                handle = self._wrap_builder(client.invoke_capability('Aspire.Hosting.Python/withEntrypoint', rpc_args))
-            else:
-                raise TypeError("Invalid type for option 'entrypoint'. Expected: (EntrypointType, str)")
-        if _pip := kwargs.pop("pip", None):
-            if _validate_dict_types(_pip, PipParameters):
-                rpc_args: dict[str, typing.Any] = {"builder": handle}
-                rpc_args["install"] = typing.cast(PipParameters, _pip).get("install")
-                rpc_args["installArgs"] = typing.cast(PipParameters, _pip).get("install_args")
-                handle = self._wrap_builder(client.invoke_capability('Aspire.Hosting.Python/withPip', rpc_args))
-            elif _pip is True:
-                rpc_args: dict[str, typing.Any] = {"builder": handle}
-                handle = self._wrap_builder(client.invoke_capability('Aspire.Hosting.Python/withPip', rpc_args))
-            else:
-                raise TypeError("Invalid type for option 'pip'. Expected: PipParameters or Literal[True]")
-        if _uv := kwargs.pop("uv", None):
-            if _validate_dict_types(_uv, UvParameters):
-                rpc_args: dict[str, typing.Any] = {"builder": handle}
-                rpc_args["install"] = typing.cast(UvParameters, _uv).get("install")
-                rpc_args["args"] = typing.cast(UvParameters, _uv).get("args")
-                handle = self._wrap_builder(client.invoke_capability('Aspire.Hosting.Python/withUv', rpc_args))
-            elif _uv is True:
-                rpc_args: dict[str, typing.Any] = {"builder": handle}
-                handle = self._wrap_builder(client.invoke_capability('Aspire.Hosting.Python/withUv', rpc_args))
-            else:
-                raise TypeError("Invalid type for option 'uv'. Expected: UvParameters or Literal[True]")
-        super().__init__(handle, client, **kwargs)
-
-
 class RedisCommanderResourceKwargs(ContainerResourceKwargs, total=False):
     """RedisCommanderResource options."""
 
@@ -12331,20 +12116,6 @@ class RedisResource(ContainerResource, AbstractResourceWithConnectionString):
         super().__init__(handle, client, **kwargs)
 
 
-class UvicornAppResourceKwargs(PythonAppResourceKwargs, total=False):
-    """UvicornAppResource options."""
-
-
-class UvicornAppResource(PythonAppResource):
-    """UvicornAppResource resource."""
-
-    def __repr__(self) -> str:
-        return "UvicornAppResource(handle={self._handle.handle_id})"
-
-    def __init__(self, handle: Handle, client: AspireClient, **kwargs: typing.Unpack[UvicornAppResourceKwargs]) -> None:
-        super().__init__(handle, client, **kwargs)
-
-
 # ============================================================================
 # Connection Helper
 # ============================================================================
@@ -12543,8 +12314,6 @@ _register_handle_wrapper("Aspire.Hosting/Aspire.Hosting.ApplicationModel.Executa
 _register_handle_wrapper("Aspire.Hosting/Aspire.Hosting.ApplicationModel.DotnetToolResource", DotnetToolResource)
 _register_handle_wrapper("Aspire.Hosting/Aspire.Hosting.ExternalServiceResource", ExternalServiceResource)
 _register_handle_wrapper("Aspire.Hosting/Aspire.Hosting.ApplicationModel.ParameterResource", ParameterResource)
-_register_handle_wrapper("Aspire.Hosting.Python/Aspire.Hosting.Python.PythonAppResource", PythonAppResource)
 _register_handle_wrapper("Aspire.Hosting.Redis/Aspire.Hosting.Redis.RedisCommanderResource", RedisCommanderResource)
 _register_handle_wrapper("Aspire.Hosting.Redis/Aspire.Hosting.Redis.RedisInsightResource", RedisInsightResource)
 _register_handle_wrapper("Aspire.Hosting.Redis/Aspire.Hosting.ApplicationModel.RedisResource", RedisResource)
-_register_handle_wrapper("Aspire.Hosting.Python/Aspire.Hosting.Python.UvicornAppResource", UvicornAppResource)

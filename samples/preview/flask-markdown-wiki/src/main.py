@@ -1,194 +1,61 @@
-#!/usr/bin/env python3
-import os
-import glob as _glob
+"""Markdown wiki: Flask + SQLite, with rendered pages cached in Redis.
 
-
-def _load_grpc_ssl_credentials():
-    """Build gRPC SSL credentials that trust the Aspire dev certificate.
-
-    The Python gRPC library ships its own root certificates and ignores
-    SSL_CERT_DIR. Aspire injects the dev-cert PEM via SSL_CERT_DIR.
-    We combine system CAs with the Aspire cert and return gRPC credentials.
-    Returns None when no Aspire certs are found.
-    """
-    ssl_cert_dirs = os.environ.get("SSL_CERT_DIR", "")
-    if not ssl_cert_dirs:
-        return None
-
-    aspire_pems: list[str] = []
-    for cert_dir in ssl_cert_dirs.split(":"):
-        if "aspire" in cert_dir.lower():
-            for pem_path in sorted(_glob.glob(os.path.join(cert_dir, "*.pem"))):
-                try:
-                    with open(pem_path) as fh:
-                        aspire_pems.append(fh.read())
-                except OSError:
-                    pass
-
-    if not aspire_pems:
-        return None
-
-    system_bundle = ""
-    for ca_path in ("/etc/ssl/certs/ca-certificates.crt", "/etc/ssl/cert.pem"):
-        if os.path.exists(ca_path):
-            with open(ca_path) as fh:
-                system_bundle = fh.read()
-            break
-
-    combined = system_bundle + "\n" + "\n".join(aspire_pems)
-
-    # Also set env var as a fallback for any other gRPC channels
-    combined_path = os.path.join(os.environ.get("HOME", "/app"), ".aspire-combined-ca.pem")
-    try:
-        with open(combined_path, "w") as out:
-            out.write(combined)
-        os.environ["GRPC_DEFAULT_SSL_ROOTS_FILE_PATH"] = combined_path
-    except OSError:
-        pass
-
-    import grpc
-    return grpc.ssl_channel_credentials(root_certificates=combined.encode("utf-8"))
-
-
-# --- OpenTelemetry setup (must run before Flask app creation) ---
-if os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT"):
-    _grpc_creds = _load_grpc_ssl_credentials()
-
-    from opentelemetry import trace, metrics
-    from opentelemetry.sdk.trace import TracerProvider
-    from opentelemetry.sdk.trace.export import BatchSpanProcessor
-    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
-    from opentelemetry.sdk.resources import Resource
-    from opentelemetry.instrumentation.flask import FlaskInstrumentor
-    from opentelemetry.sdk.metrics import MeterProvider
-    from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
-    from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import OTLPMetricExporter
-    from opentelemetry.sdk._logs import LoggerProvider, LoggingHandler
-    from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
-    from opentelemetry.exporter.otlp.proto.grpc._log_exporter import OTLPLogExporter
-    import logging
-
-    resource = Resource.create({
-        "service.name": os.environ.get("OTEL_SERVICE_NAME", "flask-wiki"),
-    })
-
-    _exporter_kwargs = {"credentials": _grpc_creds} if _grpc_creds else {}
-
-    # Traces
-    trace_provider = TracerProvider(resource=resource)
-    trace_provider.add_span_processor(BatchSpanProcessor(OTLPSpanExporter(**_exporter_kwargs)))
-    trace.set_tracer_provider(trace_provider)
-
-    # Metrics
-    metric_reader = PeriodicExportingMetricReader(OTLPMetricExporter(**_exporter_kwargs))
-    meter_provider = MeterProvider(resource=resource, metric_readers=[metric_reader])
-    metrics.set_meter_provider(meter_provider)
-
-    # Logs
-    logger_provider = LoggerProvider(resource=resource)
-    logger_provider.add_log_record_processor(
-        BatchLogRecordProcessor(OTLPLogExporter(**_exporter_kwargs))
-    )
-    handler = LoggingHandler(logger_provider=logger_provider)
-    logging.getLogger().addHandler(handler)
-    logging.getLogger().setLevel(logging.INFO)
-
-    _flask_instrumentor = FlaskInstrumentor()
-
+This app runs in a container that Aspire builds from ./Dockerfile
+(add_dockerfile). Aspire injects PORT, CACHE_URI, and the OTEL_* settings.
+"""
 import logging
+import os
+import re
 import sqlite3
 from datetime import datetime
-from flask import Flask, abort, request, redirect, url_for, render_template_string
-import markdown
-import nh3
-import re
+from pathlib import Path
 
-logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 
+if os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT"):
+    # Python's gRPC ignores SSL_CERT_DIR, so point the OTLP exporter at the
+    # development certificate Aspire mounts (the first SSL_CERT_DIR entry).
+    cert_dir = Path(os.environ.get("SSL_CERT_DIR", "").split(":")[0])
+    if cert_dir.name and (pem := next(cert_dir.glob("*.pem"), None)):
+        os.environ.setdefault("OTEL_EXPORTER_OTLP_CERTIFICATE", str(pem))
+
+    # The OpenTelemetry distro reads the OTEL_* settings and instruments Flask,
+    # Redis, and sqlite3. It must run before those libraries are imported.
+    # Aspire's Python integration enables log export; set it for this container too.
+    os.environ.setdefault("OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED", "true")
+    from opentelemetry.instrumentation.auto_instrumentation import initialize
+
+    initialize()
+
+import markdown  # noqa: E402
+import nh3  # noqa: E402
+import redis  # noqa: E402
+from flask import Flask, abort, redirect, render_template_string, request, url_for  # noqa: E402
+
+logger = logging.getLogger("wiki")
 app = Flask(__name__)
 
-# Instrument Flask app if OTel is enabled
-if os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT"):
-    _flask_instrumentor.instrument_app(app)
+# Rendered HTML is cached in Redis. CACHE_URI is rediss:// under Aspire; the
+# certificate is verified against SSL_CERT_DIR like any other TLS connection.
+cache = redis.Redis.from_url(os.environ.get("CACHE_URI", "redis://localhost:6379"), decode_responses=True)
+CACHE_TTL = 3600
 
-# Redis cache setup — optional, used when Aspire provides a connection string
-redis_client = None
-CACHE_TTL = 3600  # 1 hour
-
-def _init_redis():
-    """Initialize Redis client from Aspire connection info."""
-    global redis_client
-    # Prefer the full URI that Aspire provides (e.g. rediss://:pass@host:port)
-    cache_uri = os.environ.get("CACHE_URI")
-    if cache_uri:
-        try:
-            import redis as _redis
-            # Aspire Redis uses a self-signed cert; skip hostname verification
-            redis_client = _redis.Redis.from_url(
-                cache_uri, decode_responses=True,
-                ssl_cert_reqs="none",
-            )
-            redis_client.ping()
-            logger.info("Redis cache connected via CACHE_URI")
-        except Exception as e:
-            logger.warning("Redis unavailable, running without cache: %s", e)
-            redis_client = None
-        return
-
-    conn_str = os.environ.get("ConnectionStrings__cache")
-    if conn_str:
-        try:
-            import redis as _redis
-            # Parse StackExchange-style: host:port,password=xxx,ssl=true
-            parts = dict(p.split("=", 1) for p in conn_str.split(",") if "=" in p)
-            host_port = conn_str.split(",")[0]
-            host, _, port = host_port.rpartition(":")
-            use_ssl = parts.get("ssl", "false").lower() == "true"
-            kwargs = {
-                "host": host, "port": int(port),
-                "password": parts.get("password"),
-                "decode_responses": True,
-            }
-            if use_ssl:
-                kwargs.update(ssl=True, ssl_cert_reqs="none")
-            redis_client = _redis.Redis(**kwargs)
-            redis_client.ping()
-            logger.info("Redis cache connected via ConnectionStrings__cache")
-        except Exception as e:
-            logger.warning("Redis unavailable, running without cache: %s", e)
-            redis_client = None
-    else:
-        logger.info("No Redis connection string found, running without cache")
 
 def _cache_key(slug):
     return f"wiki:html:{slug}"
 
+
 def get_cached_html(slug):
-    """Retrieve cached rendered HTML for a page."""
-    if redis_client is None:
-        return None
-    try:
-        return redis_client.get(_cache_key(slug))
-    except Exception:
-        return None
+    return cache.get(_cache_key(slug))
+
 
 def set_cached_html(slug, html):
-    """Store rendered HTML in cache."""
-    if redis_client is None:
-        return
-    try:
-        redis_client.set(_cache_key(slug), html, ex=CACHE_TTL)
-    except Exception:
-        pass
+    cache.set(_cache_key(slug), html, ex=CACHE_TTL)
+
 
 def invalidate_cache(slug):
-    """Remove cached HTML when a page is edited."""
-    if redis_client is None:
-        return
-    try:
-        redis_client.delete(_cache_key(slug))
-    except Exception:
-        pass
+    cache.delete(_cache_key(slug))
+
 
 # Database setup
 DB_PATH = "wiki.db"
@@ -511,7 +378,7 @@ def save_page(slug):
     conn.close()
     
     invalidate_cache(slug)
-    
+    logger.info("Saved page %s", slug)
     return redirect(url_for("view_page", slug=slug))
 
 @app.route("/new")
@@ -548,6 +415,7 @@ def create_page():
     
     conn.close()
     invalidate_cache(slug)
+    logger.info("Created page %s", slug)
     return redirect(url_for("view_page", slug=slug))
 
 @app.route("/health")
@@ -556,20 +424,9 @@ def health():
     return {"status": "healthy", "service": "markdown-wiki"}, 200
 
 if __name__ == "__main__":
-    # Initialize Redis cache (optional — works without it)
-    _init_redis()
+    from waitress import serve
 
-    # Initialize database after the cache so seeding invalidates stale HTML.
     init_db()
-    
-    # Get port from environment variable
     port = int(os.environ.get("PORT", 8080))
-    
-    # Use waitress in production, Flask dev server as fallback
-    try:
-        from waitress import serve
-        logger.info("Starting wiki server on port %d with Waitress...", port)
-        serve(app, host="0.0.0.0", port=port)
-    except ImportError:
-        logger.info("Waitress not found, using Flask dev server on port %d...", port)
-        app.run(host="0.0.0.0", port=port, debug=True)
+    logger.info("Serving the wiki on port %d", port)
+    serve(app, host="0.0.0.0", port=port)
