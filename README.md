@@ -1,7 +1,7 @@
 # Polyglot Aspire
 
 Slides and samples for Chris Ayers' talk on orchestrating Python,
-JavaScript/TypeScript, Go, Java, and .NET applications with Aspire.
+JavaScript/TypeScript, Go, Java, Rust, and .NET applications with Aspire.
 
 ## Slides
 

@@ -518,8 +518,8 @@ if (names.includes("--list") || names.includes("--help")) {
 } else {
   for (const name of names) assert(samples.some(sample => sample.name === name), `Unknown sample: ${name}`);
   const selected = names.length ? samples.filter(sample => names.includes(sample.name)) : samples;
-  // Native workloads serve HTTPS with the .NET development certificate.
-  if (selected.some(sample => sample.apphost)) await trustDevelopmentCertificate();
+  // uvicorn serves the FastAPI sample over HTTPS with the .NET development certificate.
+  if (selected.some(sample => sample.name === "python-fastapi-docker")) await trustDevelopmentCertificate();
   const failed = [];
   for (const sample of selected) {
     const start = Date.now();

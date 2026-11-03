@@ -222,7 +222,7 @@ Core: show resources, their endpoints, and one request's trace. Console logs cap
 Transition: prove the polyglot promise with a TypeScript AppHost running React, FastAPI, and Redis. Save the release details below for questions rather than delaying the first demo.
 Optional 13.6 callout: the dashboard keeps resource snapshots and telemetry after the AppHost stops. Each start begins a new run, and the run selector switches between live and read-only past runs. Filtering, search, paging, and aggregation work on past runs. It keeps up to 10 runs per application and prunes the oldest; pin a run to keep it. Runs are SQLite databases on disk, so a coding agent can compare them. Default limits rose to 100,000 entries each for console logs, structured logs, and traces.
 Persisted telemetry can contain sensitive values, and the on-disk database has no separate encryption or authorization layer. The dashboard remains a development and short-term diagnostics tool, not a production telemetry backend.
-Run history requires Aspire 13.6. This repository's samples run on 13.6.1, so restart any sample to show the run selector live.
+Run history requires Aspire 13.6. This repository's samples run on 13.6.4, so restart any sample to show the run selector live.
 Optional: demonstrate a case-insensitive console-log search, then narrow logs or traces by timestamp and exact numeric comparisons (added in 13.5).
 Screenshot is the official release-post example, not a capture of this repository's demos.
 Sources: https://devblogs.microsoft.com/aspire/whats-new-aspire-13-6/ and https://aspire.dev/dashboard/data-persistence/
@@ -248,7 +248,7 @@ From samples/vite-react-api, start aspire run --apphost apphost.mts and open web
 Create a TODO with the Add button, create another with Enter, reload to show Redis-backed storage, then delete the test TODO. Inspect the trace that links a browser client span to the FastAPI server span.
 Payoff: the AppHost language and workload languages are independent; one model wires the stack and one dashboard exposes the request.
 Keep this stack running while explaining the model and basic CLI operations. Stop it before the Quotes Board demo.
-Optional troubleshooting detail: the current/legacy container-hostname mapping in vite.config.ts gives the browser a reachable HTTP collector, not a container-only name or the gRPC port.
+Both workloads run natively: addUvicornApp creates FastAPI's virtual environment and addViteApp starts Vite, so only Redis is a container. Optional detail: vite.config.ts forwards the dashboard's OTLP/HTTP endpoint to the browser; browsers cannot speak gRPC.
 Transition: now explain what produced that running graph, starting with AppHost code rather than environment-variable conventions.
 -->
 
@@ -478,7 +478,7 @@ Five clicks: the two integrations, then the three universal options.
 13.6 moved Spring Boot into first-party Java hosting, so it now lives on the workload slide. Deno also gained a first-party, experimental AddDenoApp in Aspire.Hosting.JavaScript (ASPIREDENO001), with task and serve modes; it differs from the Community Toolkit's Deno integration and its AddDenoTask.
 Keep this separate from the first-party workload slide so the audience can see the escape hatches without losing the primary recommendation.
 The backing-service APIs include AddRedis, AddPostgres(...).AddDatabase(...), AddKafka, and AddAzureCosmosDB. Our recipe demo uses RunAsEmulator, which selects the Linux-based vNext emulator in 13.6, for its local Cosmos DB instance. Hosting packages and preview status vary by integration.
-The repository demonstrates both typed integrations and raw Dockerfile/container/executable resources. A raw container still needs explicit connection configuration and any health checks the application requires.
+The repository's workloads use typed integrations (AddGoApp, AddJavaApp, AddSpringBootApp, AddRustApp, AddUvicornApp, AddNodeApp, AddViteApp) wherever one fits; the escape hatches appear deliberately in flask-markdown-wiki (AddDockerfile), postgres-adminer (AddContainer), and terminal-demo (AddExecutable). A raw container still needs explicit connection configuration and any health checks the application requires.
 -->
 
 ---
@@ -816,7 +816,7 @@ It is opt-in because the session uses the resource's real credentials with full 
 Press backtick to show or hide the dock. Hiding the dock leaves sessions running: exit the client before closing its tab.
 This complements the previous slide: WithTerminal() gives a console app its own terminal, while the dock and its experimental APIs let you open terminals into container and executable resources.
 Live companion: samples/dotnet-react-postgres already enables .WithRepl() on postgres. Open postgres > Actions > REPL, then run \connect quotesdb and SELECT id, text, author FROM quotes ORDER BY id DESC LIMIT 5; to inspect the quotes just imported. Exit with \q before closing the tab. This continues the same Quotes Board demo without starting another stack.
-The reference screenshot shows Redis; the live sample demonstrates the same feature with PostgreSQL. Requires Aspire 13.6, which the repository samples use (13.6.1).
+The reference screenshot shows Redis; the live sample demonstrates the same feature with PostgreSQL. Requires Aspire 13.6, which the repository samples use (13.6.4).
 Transition: the same discoverable resource state and actions can also give a coding agent useful runtime context.
 Sources: https://devblogs.microsoft.com/aspire/whats-new-aspire-13-6/ and https://aspire.dev/dashboard/terminals/
 Image: https://aspire.dev/_astro/redis-repl-dock.OdVXcskn_1CLwQQ.webp (cropped to the resource and the docked REPL).
@@ -913,12 +913,12 @@ Open your configured coding agent; it launches MCP on demand.
 
 # <!--fit--> More Polyglot Demos
 
-From HTTP requests to event-driven workflows: **16 verified samples**
+From HTTP requests to event-driven workflows: **17 verified samples**
 
 <!--
 The opening React/FastAPI/Redis demo proved the basic polyglot workflow, and the Quotes Board made resource commands concrete. Now ask a different question: can the same model coordinate an event bus and consumers in multiple runtimes? The event-stream demo is the only required live stack in this section; artifact publishing follows later.
-The samples in this branch align the AppHost SDK, core packages, client integrations, and every Aspire.Hosting.* integration on 13.6.1. Keep every Aspire package on one release: mixing package families across releases can cause MissingMethodException or TypeLoadException, including in the Go, JavaScript, and Python hosting integrations.
-The screenshots are official reference captures; the repository demos exercise the same resource model across C#, TypeScript, Python, Go, and Java AppHosts.
+The samples in this branch align the AppHost SDK, core packages, client integrations, and every Aspire.Hosting.* integration on 13.6.4 (the Go, Java, and Rust hosting previews use the matching 13.6.4-preview.1.26523.11). Keep every Aspire package on one release: mixing package families across releases can cause MissingMethodException or TypeLoadException, including in the Go, JavaScript, and Python hosting integrations.
+The screenshots are official reference captures; the repository demos exercise the same resource model across C#, TypeScript, Python, Go, and Java AppHosts, with native Python, Node.js, Go, Java, Rust, and .NET workloads.
 Open the dashboard explicitly if VS Code does not auto-launch it. Use aspire describe to inspect resources and ordinary aspire stop to preserve persistent demo data.
 Source: https://aspire.dev/whats-new/aspire-13-5/
 -->
@@ -1033,7 +1033,7 @@ Payoff: one modeled graph coordinates more than HTTP request/response. Transitio
 **Add a target integration and resource to the AppHost:**
 
 ```csharp
-#:package Aspire.Hosting.Docker@13.6.1
+#:package Aspire.Hosting.Docker@13.6.4
 // Alongside the API, cache, and their references:
 builder.AddDockerComposeEnvironment("compose");
 ```
@@ -1098,10 +1098,10 @@ Sources: https://aspire.dev/deployment/deploy-with-aspire/ and https://devblogs.
 ```bash
 # From samples/go-redis-compose
 aspire publish -o compose-output
-docker build -t hitcounter-api:local src/api
+docker build -f compose-output/api.Dockerfile -t hitcounter-api:local src/api
 cd compose-output
-API_IMAGE=hitcounter-api:local docker compose up -d
-docker compose port api 8080
+API_IMAGE=hitcounter-api:local CACHE_PASSWORD=demo docker compose up -d
+docker compose port api 8000
 ```
 
 Open `/api/hits` on the reported host port. Refresh → the Redis counter increases.
@@ -1109,9 +1109,9 @@ Open `/api/hits` on the reported host port. Refresh → the Redis counter increa
 **Verified:** generated artifacts, working API, and counter retention across API restart.
 
 <!--
-This is the tested publish handoff, not an Azure deployment transcript or a timing benchmark. First verify the development run, then stop the AppHost before running the Compose output. aspire publish creates docker-compose.yaml and .env with an API_IMAGE placeholder; Docker builds and runs the image here.
+This is the tested publish handoff, not an Azure deployment transcript or a timing benchmark. First verify the development run, then stop the AppHost before running the Compose output. In development the Go API runs natively with go run (AddGoApp). aspire publish creates docker-compose.yaml, .env with API_IMAGE and CACHE_PASSWORD placeholders, and api.Dockerfile, a multi-stage Go build generated by AddGoApp; Docker builds and runs the image here. The published stack also includes a dashboard container.
 Validation used a session-specific Compose project name and a separate localhost-only port override; the generated Compose file was not edited. Redis retained the counter across an API restart. Redis data persistence across its own recreation is a separate storage choice.
-The host port is dynamic and can change on restart: rediscover it with docker compose port api 8080. Tear down with API_IMAGE=hitcounter-api:local docker compose down. Add --volumes only when intentionally deleting the demo's volume data.
+The host port is dynamic and can change on restart: rediscover it with docker compose port api 8000. Tear down with API_IMAGE=hitcounter-api:local CACHE_PASSWORD=demo docker compose down. Add --volumes only when intentionally deleting the demo's volume data.
 aspire deploy is the alternative target-driven build/apply path after the required target configuration; it does not consume the files from this publish handoff. No cloud deployment or elapsed-time claim is being made.
 -->
 

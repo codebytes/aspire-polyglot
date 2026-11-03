@@ -57,8 +57,10 @@ curl http://localhost:8080/api/info
 ## What It Demonstrates
 - `AddUvicornApp("api", "app", "main:app")` — a **native Python dev experience**
   (auto venv + `uvicorn`) with health checks and external endpoints.
-- `WithOtlpExporter()` and the Python SDK export FastAPI request traces and metrics,
-  plus structured analysis logs, to the Aspire dashboard.
+- Telemetry with no Aspire-specific code: Aspire injects the `OTEL_*` settings and
+  its development certificate, and the OpenTelemetry distro's `initialize()` in
+  [`main.py`](app/main.py) exports FastAPI traces, metrics, and `logging` records
+  (`Analyzed 6 words in 2 sentences`) to the dashboard.
 - **No hand-written Dockerfile**: `aspire publish` generates one tailored to the
   detected Python version and dependencies, then references it from a compose file.
 - One app model, two runtimes: native `uvicorn` for dev, a container image for
@@ -71,6 +73,6 @@ apphost.cs            single-file C# AppHost (Python + Docker Compose publish)
 aspire.config.json    points aspire at apphost.cs
 apphost.run.json      launch profiles (dashboard/OTLP ports)
 app/
-  main.py             FastAPI text-analyzer
-  requirements.txt    fastapi + uvicorn (Aspire builds the venv from this)
+  main.py             FastAPI text-analyzer (+ OpenTelemetry distro setup)
+  requirements.txt    fastapi, uvicorn, OpenTelemetry (Aspire builds the venv from this)
 ```

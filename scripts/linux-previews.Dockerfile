@@ -1,5 +1,5 @@
 FROM node:26-bookworm-slim AS node
-FROM golang:1.27.2-bookworm AS go
+FROM golang:1.27.3-bookworm AS go
 FROM eclipse-temurin:25-jdk AS java
 FROM docker:29-cli AS docker
 FROM mcr.microsoft.com/dotnet/sdk:10.0
