@@ -188,7 +188,12 @@ async function appHostSample({ name, apphost: entryPoint, wait: required, otel, 
       return found.url.replace(/\/$/, "");
     };
     const container = (name, ...args) => command("docker", ["exec", resource(name).name, ...args]);
-    await check({ aspire, endpoint, container });
+    // Environment variables Aspire injected into a resource, e.g. a connection URI.
+    const environment = name => {
+      const env = resource(name).environment ?? {};
+      return Array.isArray(env) ? Object.fromEntries(env.map(item => [item.name, item.value])) : env;
+    };
+    await check({ aspire, endpoint, container, environment, cwd });
     await telemetry(aspire, otel);
   } catch (error) {
     failure = error;
@@ -385,7 +390,7 @@ async function wiki({ endpoint }) {
   assert(!updated.includes("<strong>Original smoke content</strong>"), "Wiki served stale Redis content");
 }
 
-async function polls({ endpoint, container }) {
+async function polls({ endpoint, container, environment, cwd }) {
   const base = endpoint("polls");
   const form = await request(`${base}/create/`);
   const html = await form.text();
@@ -412,10 +417,18 @@ async function polls({ endpoint, container }) {
   });
   assert.match(await result.text(), /1 votes?/);
   assert.match(await (await request(`${base}${path}`)).text(), /1 votes?/);
-  const vendor = await container("polls", "python", "manage.py", "shell", "-c",
-    "from django.db import connection; print(connection.vendor)");
-  assert.match(vendor, /postgresql/, "Django silently used SQLite");
-  await container("polls", "python", "manage.py", "test", "polls", "--noinput");
+  const stored = await psql(container, "pg", "pollsdb",
+    `SELECT count(*) FROM polls_poll WHERE question = '${marker}'`);
+  assert.equal(stored.trim(), "1", "Django did not store the poll in PostgreSQL");
+  // Run the Django tests (including the concurrent-vote test) against PostgreSQL
+  // with the virtual environment Aspire created.
+  const src = join(cwd, "src");
+  const python = join(src, ".venv", ...(process.platform === "win32" ? ["Scripts", "python.exe"] : ["bin", "python"]));
+  const tests = await new Promise((resolve, reject) => execFile(python, ["manage.py", "test", "polls", "--noinput"], {
+    cwd: src, timeout: 300_000, env: { ...process.env, POLLSDB_URI: environment("polls").POLLSDB_URI },
+  }, (error, stdout, stderr) => error ? reject(new Error(`${stderr}${stdout}`)) : resolve(stderr)));
+  assert.match(tests, /OK/);
+  assert.doesNotMatch(tests, /skipped/, "The PostgreSQL concurrency test was skipped");
 }
 
 async function bookmarks({ endpoint, container }) {

@@ -1,3 +1,4 @@
+import logging
 import re
 
 from django.db import transaction
@@ -6,6 +7,8 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse
 from django.views.decorators.http import require_POST
 from .models import Poll, Choice
+
+logger = logging.getLogger("polls")
 
 
 def index(request):
@@ -26,8 +29,10 @@ def vote(request, poll_id, choice_id):
     poll = get_object_or_404(Poll, pk=poll_id)
     choice = get_object_or_404(Choice, pk=choice_id, poll=poll)
     
+    # F() increments in the database, so concurrent votes are never lost.
     Choice.objects.filter(pk=choice.pk).update(votes=F('votes') + 1)
-    
+    logger.info("Vote recorded for '%s' in poll %d", choice.text, poll.id)
+
     # Return HTMX partial with updated results
     return results_partial(request, poll_id)
 
@@ -80,6 +85,7 @@ def create(request):
             Choice.objects.bulk_create([
                 Choice(poll=poll, text=text) for text in choice_texts
             ])
+        logger.info("Created poll %d with %d choices", poll.id, len(choice_texts))
         return redirect('detail', poll_id=poll.id)
     
     return render(request, 'polls/create.html')
