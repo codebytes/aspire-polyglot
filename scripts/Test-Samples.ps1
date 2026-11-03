@@ -29,7 +29,7 @@ if (-not $linuxPreviews.Count) {
 }
 
 $dockerfile = Join-Path $PSScriptRoot 'linux-previews.Dockerfile'
-$image = 'aspire-polyglot-linux-previews:13.6.1'
+$image = 'aspire-polyglot-linux-previews:13.6.4'
 & docker build --file $dockerfile --tag $image $root
 if ($LASTEXITCODE -ne 0) { throw 'Linux validation image build failed.' }
 

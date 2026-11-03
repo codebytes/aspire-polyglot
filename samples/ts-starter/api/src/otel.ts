@@ -1,19 +1,21 @@
 // Preloaded by `npm start` (node --import ./src/otel.ts). The OpenTelemetry SDK
 // reads Aspire's OTEL_* settings (endpoint, protocol, headers, service name) and
-// exports traces, metrics, and logs. The loader hook lets it instrument ES module
-// imports too, such as Express and pino.
+// exports traces, metrics, and logs. The loader hook lets the instrumentations
+// below patch ES module imports.
 import { register } from "node:module";
 import { NodeSDK } from "@opentelemetry/sdk-node";
-import { getNodeAutoInstrumentations } from "@opentelemetry/auto-instrumentations-node";
+import { HttpInstrumentation } from "@opentelemetry/instrumentation-http";
+import { ExpressInstrumentation } from "@opentelemetry/instrumentation-express";
+import { PinoInstrumentation } from "@opentelemetry/instrumentation-pino";
 
 register("@opentelemetry/instrumentation/hook.mjs", import.meta.url);
 
 const sdk = new NodeSDK({
-  instrumentations: getNodeAutoInstrumentations({
-    // Keep traces focused on requests rather than socket internals.
-    "@opentelemetry/instrumentation-dns": { enabled: false },
-    "@opentelemetry/instrumentation-net": { enabled: false },
-  }),
+  instrumentations: [
+    new HttpInstrumentation(), // a server span per request
+    new ExpressInstrumentation(), // route names and middleware spans
+    new PinoInstrumentation(), // pino records -> OTLP logs with trace context
+  ],
 });
 sdk.start();
 process.on("SIGTERM", () => sdk.shutdown().finally(() => process.exit(0)));

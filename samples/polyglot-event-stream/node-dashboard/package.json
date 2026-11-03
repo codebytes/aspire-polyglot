@@ -4,23 +4,18 @@
   "description": "IoT Sensor Dashboard",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js"
+    "start": "node app.js",
+    "test": "node --test app.test.js"
   },
   "dependencies": {
-    "@opentelemetry/api": "^1.9.1",
-    "@opentelemetry/api-logs": "^0.223.0",
-    "@opentelemetry/auto-instrumentations-node": "^0.81.0",
-    "@opentelemetry/exporter-logs-otlp-http": "^0.223.0",
-    "@opentelemetry/exporter-metrics-otlp-http": "^0.223.0",
-    "@opentelemetry/exporter-trace-otlp-http": "^0.223.0",
-    "@opentelemetry/sdk-logs": "^0.223.0",
-    "@opentelemetry/sdk-metrics": "^2.12.0",
-    "@opentelemetry/sdk-node": "^0.223.0",
-    "ejs": "^7.0.1",
+    "@opentelemetry/instrumentation-express": "^0.72.0",
+    "@opentelemetry/instrumentation-http": "^0.300.0",
+    "@opentelemetry/instrumentation-kafkajs": "^0.33.0",
+    "@opentelemetry/instrumentation-pino": "^0.70.0",
+    "@opentelemetry/sdk-node": "^0.300.0",
+    "ejs": "^7.0.2",
     "express": "^5.3.0",
-    "kafkajs": "^2.2.4"
-  },
-  "overrides": {
-    "protobufjs": "8.7.0"
+    "kafkajs": "^2.2.4",
+    "pino": "^10.4.0"
   }
 }

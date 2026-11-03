@@ -3,44 +3,15 @@ import os
 import json
 import logging
 
-logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
+logger = logging.getLogger("consumer")
 
-# --- OpenTelemetry setup (must run before Flask app creation) ---
+# The OpenTelemetry distro reads Aspire's OTEL_* settings, exports traces,
+# metrics, and logs, and instruments Flask and confluent-kafka. Run it first.
 if os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT"):
-    from opentelemetry import trace, metrics
-    from opentelemetry.sdk.trace import TracerProvider
-    from opentelemetry.sdk.trace.export import BatchSpanProcessor
-    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
-    from opentelemetry.sdk.resources import Resource
-    from opentelemetry.instrumentation.flask import FlaskInstrumentor
-    from opentelemetry.sdk.metrics import MeterProvider
-    from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
-    from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import OTLPMetricExporter
-    from opentelemetry.sdk._logs import LoggerProvider, LoggingHandler
-    from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
-    from opentelemetry.exporter.otlp.proto.grpc._log_exporter import OTLPLogExporter
-    import logging
+    from opentelemetry.instrumentation.auto_instrumentation import initialize
 
-    resource = Resource.create({
-        "service.name": os.environ.get("OTEL_SERVICE_NAME", "python-consumer"),
-    })
-
-    # Traces
-    trace_provider = TracerProvider(resource=resource)
-    trace_provider.add_span_processor(BatchSpanProcessor(OTLPSpanExporter()))
-    trace.set_tracer_provider(trace_provider)
-
-    # Metrics
-    metric_reader = PeriodicExportingMetricReader(OTLPMetricExporter())
-    meter_provider = MeterProvider(resource=resource, metric_readers=[metric_reader])
-    metrics.set_meter_provider(meter_provider)
-    logger_provider = LoggerProvider(resource=resource)
-    logger_provider.add_log_record_processor(BatchLogRecordProcessor(OTLPLogExporter()))
-    handler = LoggingHandler(logger_provider=logger_provider)
-    logging.getLogger().addHandler(handler)
-    logging.getLogger().setLevel(logging.INFO)
-
-    _flask_instrumentor = FlaskInstrumentor()
+    initialize()
 
 import threading
 from collections import defaultdict, deque
@@ -49,10 +20,6 @@ from flask import Flask, jsonify
 from waitress import serve
 
 app = Flask(__name__)
-
-# Instrument Flask app if OTel is enabled
-if os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT"):
-    _flask_instrumentor.instrument_app(app)
 
 # Rolling aggregates: store last 5 minutes of readings per sensor
 aggregates = defaultdict(lambda: {
@@ -122,9 +89,8 @@ def consume_events():
             sensor_data['last_update'] = timestamp
             sensor_data['location'] = location
             
-            logger.info("Processed %s at %s: %.1f°C, %.1f%% "
-                  "(avg: %.1f°C, %.1f%%)", sensor_id, location, temperature, humidity,
-                  sensor_data['avg_temperature'], sensor_data['avg_humidity'])
+            logger.info("Processed %s at %s: %.1f°C, %.1f%% (avg: %.1f°C, %.1f%%)", sensor_id, location,
+                        temperature, humidity, sensor_data['avg_temperature'], sensor_data['avg_humidity'])
             
             # Detect anomalies
             if temperature > 35 or humidity > 90:

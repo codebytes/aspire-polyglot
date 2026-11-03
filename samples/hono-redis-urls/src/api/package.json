@@ -11,8 +11,10 @@
   },
   "dependencies": {
     "@hono/node-server": "^2.1.6",
-    "@opentelemetry/auto-instrumentations-node": "^0.82.0",
     "@opentelemetry/instrumentation": "^0.300.0",
+    "@opentelemetry/instrumentation-http": "^0.300.0",
+    "@opentelemetry/instrumentation-ioredis": "^0.72.0",
+    "@opentelemetry/instrumentation-pino": "^0.70.0",
     "@opentelemetry/sdk-node": "^0.300.0",
     "hono": "^4.13.16",
     "ioredis": "^6.0.0",

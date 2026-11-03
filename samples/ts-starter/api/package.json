@@ -6,8 +6,10 @@
     "start": "node --import tsx --import ./src/otel.ts src/index.ts"
   },
   "dependencies": {
-    "@opentelemetry/auto-instrumentations-node": "^0.82.0",
     "@opentelemetry/instrumentation": "^0.300.0",
+    "@opentelemetry/instrumentation-express": "^0.72.0",
+    "@opentelemetry/instrumentation-http": "^0.300.0",
+    "@opentelemetry/instrumentation-pino": "^0.70.0",
     "@opentelemetry/sdk-node": "^0.300.0",
     "express": "^5.3.0",
     "pino": "^10.4.0",

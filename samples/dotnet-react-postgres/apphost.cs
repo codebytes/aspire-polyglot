@@ -1,8 +1,8 @@
-#:sdk Aspire.AppHost.Sdk@13.6.1
+#:sdk Aspire.AppHost.Sdk@13.6.4
 #:property AspireUseCliBundle=true
 #:property TreatProjectReferencesAsResources=false
-#:package Aspire.Hosting.PostgreSQL@13.6.1
-#:package Aspire.Hosting.JavaScript@13.6.1
+#:package Aspire.Hosting.PostgreSQL@13.6.4
+#:package Aspire.Hosting.JavaScript@13.6.4
 #:project Api/Api.csproj
 
 using System.Net.Http.Headers;

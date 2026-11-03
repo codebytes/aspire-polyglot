@@ -1,8 +1,10 @@
-require('./instrumentation');
+require('./otel');
 
 const express = require('express');
 const { Kafka } = require('kafkajs');
 const path = require('path');
+// pino records become dashboard structured logs, linked to the active trace.
+const log = require('pino')();
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -45,9 +47,9 @@ async function startConsumers() {
                     if (recentAlerts.length > MAX_ALERTS) {
                         recentAlerts.pop();
                     }
-                    console.log(`Alert received: ${alert.sensorId} - ${alert.reason}`);
+                    log.warn({ sensorId: alert.sensorId, reason: alert.reason }, 'alert received');
                 } catch (err) {
-                    console.error('Error processing alert:', err);
+                    log.error({ err }, 'error processing alert');
                 }
             }
         });
@@ -88,14 +90,14 @@ async function startConsumers() {
                     }
                     
                 } catch (err) {
-                    console.error('Error processing reading:', err);
+                    log.error({ err }, 'error processing reading');
                 }
             }
         });
         
-        console.log('Kafka consumers started successfully');
+        log.info('Kafka consumers started');
     } catch (err) {
-        console.error('Error starting consumers:', err);
+        log.warn({ err }, 'Kafka consumers not ready; retrying in 5s');
         await Promise.all([consumer.disconnect(), readingsConsumer.disconnect()]);
         // Retry after delay
         setTimeout(startConsumers, 5000);
@@ -129,13 +131,12 @@ app.get('/health', (req, res) => {
 
 // Graceful shutdown
 process.on('SIGTERM', async () => {
-    console.log('SIGTERM received, shutting down gracefully');
+    log.info('SIGTERM received, shutting down');
     await consumer.disconnect();
     await readingsConsumer.disconnect();
     process.exit(0);
 });
 
 app.listen(port, () => {
-    console.log(`Dashboard server running on port ${port}`);
-    console.log(`Kafka broker: ${getKafkaConfig().brokers[0]}`);
+    log.info({ port, broker: getKafkaConfig().brokers[0] }, 'dashboard listening');
 });

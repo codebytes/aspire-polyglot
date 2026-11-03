@@ -1,4 +1,4 @@
-#:sdk Aspire.AppHost.Sdk@13.6.1
+#:sdk Aspire.AppHost.Sdk@13.6.4
 #:property AspireUseCliBundle=true
 
 // Single-file C# AppHost that adds two PUBLIC Docker images directly — no
@@ -21,6 +21,9 @@ var db = builder.AddContainer("db", "postgres", "17-alpine")
 // ADMINER_DEFAULT_SERVER points at the "db" container by its resource name,
 // which Aspire resolves to the right host on the shared container network.
 builder.AddContainer("adminer", "adminer", "5")
+    // The image's default command binds [::]:8080, which fails on Docker hosts
+    // without IPv6. Bind IPv4 instead; Aspire's port mapping uses IPv4 anyway.
+    .WithArgs("php", "-S", "0.0.0.0:8080", "-t", "/var/www/html")
     .WithEnvironment("ADMINER_DEFAULT_SERVER", "db")
     .WithHttpEndpoint(targetPort: 8080, name: "http")
     .WithExternalHttpEndpoints()

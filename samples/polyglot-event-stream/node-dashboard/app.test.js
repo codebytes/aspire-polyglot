@@ -35,7 +35,8 @@ test('partial Kafka startup disconnects both consumers before retrying', async (
     const app = { set() {}, get() {}, listen() {} };
     vm.runInNewContext(fs.readFileSync(path.join(__dirname, 'app.js'), 'utf8'), {
         require(name) {
-            if (name === './instrumentation') return {};
+            if (name === './otel') return {};
+            if (name === 'pino') return () => ({ info() {}, warn() {}, error() {} });
             if (name === 'express') return () => app;
             if (name === 'kafkajs') return { Kafka };
             if (name === 'path') return path;

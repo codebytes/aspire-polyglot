@@ -50,8 +50,8 @@ and Celsius. Stop the sample with `aspire stop --apphost apphost.mts`.
 In the dashboard, **Structured logs** shows the API's pino records
 (`served weather forecast`), and **Traces** links the browser's `fetch` span to the
 Express request. `npm start` preloads [`api/src/otel.ts`](api/src/otel.ts), the
-OpenTelemetry Node SDK with auto-instrumentation configured by Aspire's `OTEL_*`
-variables; [`frontend/src/instrumentation.ts`](frontend/src/instrumentation.ts)
+OpenTelemetry Node SDK with the HTTP, Express, and pino instrumentations, configured
+by Aspire's `OTEL_*` variables; [`frontend/src/instrumentation.ts`](frontend/src/instrumentation.ts)
 traces page loads and `fetch` calls over OTLP/HTTP.
 
 ## Build checks

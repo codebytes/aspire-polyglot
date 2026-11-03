@@ -35,15 +35,15 @@ aspire run
 Open **web**, shorten a URL, and click the short link. In the dashboard:
 
 - **Structured logs**: pino records such as `shortened URL` and `redirected`.
-- **Traces**: `POST /api/shorten` with child spans for the Redis `MULTI`/`EXEC`.
+- **Traces**: `POST /api/shorten` with a child span for each Redis command.
 
 ## How it is wired
 
 - `withReference(cache)` injects `CACHE_URI`; `new Redis(process.env.CACHE_URI)` connects.
 - `withReference(api)` gives Vite `API_HTTP`; `vite.config.ts` proxies `/api` and `/r`.
 - `npm start` preloads [`src/otel.ts`](src/api/src/otel.ts): the OpenTelemetry Node
-  SDK with auto-instrumentation, configured entirely by Aspire's `OTEL_*` variables.
-  Its loader hook instruments ES module imports (ioredis, pino, HTTP).
+  SDK with the HTTP, ioredis, and pino instrumentations, configured entirely by
+  Aspire's `OTEL_*` variables. Its loader hook lets them patch ES module imports.
 
 ## Checks
 

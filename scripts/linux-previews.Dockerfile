@@ -21,7 +21,7 @@ RUN ln -s /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm \
 
 WORKDIR /workspace
 COPY samples/preview/svelte-go-bookmarks/NuGet.config /tmp/NuGet.config
-RUN dotnet tool install Aspire.Cli --version 13.6.1 --tool-path /opt/aspire --configfile /tmp/NuGet.config \
+RUN dotnet tool install Aspire.Cli --version 13.6.4 --tool-path /opt/aspire --configfile /tmp/NuGet.config \
     && rm /tmp/NuGet.config
 
 COPY scripts/smoke-samples.mjs scripts/

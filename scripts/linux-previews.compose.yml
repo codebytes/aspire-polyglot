@@ -20,7 +20,7 @@ services:
       start_period: 2s
 
   runner:
-    image: aspire-polyglot-linux-previews:13.6.1
+    image: aspire-polyglot-linux-previews:13.6.4
     init: true
     network_mode: service:docker
     environment:

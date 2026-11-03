@@ -45,7 +45,7 @@ This sample demonstrates **event streaming** using Kafka with a polyglot archite
 
 ### Prerequisites
 
-- Aspire CLI 13.6.1 and .NET 10 SDK
+- Aspire CLI 13.6.4 and .NET 10 SDK
 - Python 3.12+
 - Node.js 22+
 - Docker (for Kafka)
@@ -170,8 +170,15 @@ Monitor:
 - Metrics and resource usage
 - OpenTelemetry data
 
-The Node dashboard exports over HTTP/protobuf so it also works with Node 25's
-TLS restrictions on IP-address gRPC collectors; certificate validation stays enabled.
+All three services report to the same dashboard:
+
+- **.NET producer**: ServiceDefaults (OpenTelemetry) plus Confluent.Kafka tracing.
+- **Python consumer**: the OpenTelemetry distro reads Aspire's `OTEL_*` settings and
+  instruments Flask and confluent-kafka; `Processed sensor-01 …` and `ALERT` logs.
+- **Node.js dashboard**: [`otel.js`](node-dashboard/otel.js) loads the Node SDK with
+  HTTP, Express, kafkajs, and pino instrumentations; pino `alert received` logs.
+  It exports over HTTP/protobuf, which avoids Node's TLS limits for gRPC collectors
+  on IP-address endpoints; certificate validation stays enabled.
 
 ## Extending the Sample
 
