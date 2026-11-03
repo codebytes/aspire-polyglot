@@ -124,6 +124,7 @@ const samples = [
   { name: "ts-starter", apphost: "apphost.mts", wait: ["app", "frontend"], otel: ["app"], check: weather },
   { name: "postgres-adminer", apphost: "apphost.cs", wait: ["db", "adminer"], otel: [], check: adminer },
   { name: "go-redis-compose", apphost: "apphost.cs", wait: ["cache", "api"], otel: ["api"], check: hits },
+  { name: "rust-axum-postgres", apphost: "apphost.cs", wait: ["pg", "guestbookdb", "api"], otel: ["api"], check: guestbook },
   { name: "java-javalin-redis", apphost: "apphost.cs", wait: ["cache", "api"], otel: ["api"], check: leaderboard },
   { name: "hono-redis-urls", apphost: "apphost.mts", wait: ["cache", "api", "web"], otel: ["api"], check: shortener },
   { name: "vite-react-api", apphost: "apphost.mts", wait: ["cache", "api", "web"], otel: ["api"], check: todos },
@@ -259,6 +260,19 @@ async function hits({ endpoint }) {
   const first = await json(base, "/api/hits");
   const second = await json(base, "/api/hits");
   assert.equal(second.hits, first.hits + 1);
+}
+
+async function guestbook({ endpoint, container }) {
+  const base = endpoint("api");
+  assert.match(await (await request(base)).text(), /Rust Guestbook/);
+  const created = await json(base, "/api/entries", { name: marker, message: "Hello from the smoke suite" }, 201);
+  assert(Number.isSafeInteger(created.id));
+  assert((await json(base, "/api/entries")).some(item => item.id === created.id && item.name === marker));
+  const stored = await psql(container, "pg", "guestbookdb", `SELECT name FROM entries WHERE id = ${created.id}`);
+  assert.equal(stored.trim(), marker);
+  await request(`${base}/api/entries`, {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: " ", message: "x" }),
+  }, 400);
 }
 
 async function leaderboard({ endpoint }) {

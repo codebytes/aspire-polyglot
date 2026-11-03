@@ -1,0 +1,21 @@
+[package]
+name = "guestbook"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+axum = "0.8"
+serde = { version = "1", features = ["derive"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "signal"] }
+tokio-postgres = "0.7"
+tower-http = { version = "0.7", features = ["trace"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# OpenTelemetry: tracing spans -> OTLP traces, tracing events -> OTLP logs.
+opentelemetry = "0.33"
+opentelemetry_sdk = "0.33"
+opentelemetry-appender-tracing = "0.33"
+opentelemetry-otlp = { version = "0.33", default-features = false, features = ["grpc-tonic", "tls-ring", "tls-roots", "trace", "metrics", "logs", "internal-logs"] }
+tracing-opentelemetry = "0.34"
