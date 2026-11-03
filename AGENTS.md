@@ -6,7 +6,7 @@ This repository holds the slides and demos for Chris Ayers' talk **Aspire 13: On
 
 - `slides/`: Marp deck, images in `slides/img/`, themes in `slides/themes/` (including the Aspire light/dark themes and `aspire-motion.css`).
 - `samples/<name>/`: one runnable sample per folder, each with its own AppHost (`apphost.cs`, `apphost.ts`, or an `AppHost/` project). The catalog is in `docs/samples-and-development.md`.
-- `scripts/`: `Test-Samples.ps1` and `smoke-samples.mjs` validate every sample end to end; the Linux preview Dockerfile/compose files support it.
+- `scripts/`: `Test-Samples.ps1` and `smoke-samples.mjs` validate every sample end-to-end; the Linux preview Dockerfile/compose files support it.
 - `.squad/`: Squad agent-team state. Leave it alone unless the task is about the Squad setup.
 
 ## Slides
@@ -34,7 +34,7 @@ This repository holds the slides and demos for Chris Ayers' talk **Aspire 13: On
 
 ## Shared skills
 
-Use the shared skills from [codebytes/skills](https://github.com/codebytes/skills) (for Copilot CLI: `copilot plugin install https://github.com/codebytes/skills`). Don't copy their instructions or scripts into this repo.
+Use the shared skills from [codebytes/skills](https://github.com/codebytes/skills) (for Copilot CLI: `copilot plugin install https://github.com/codebytes/skills`). Don't copy their instructions or scripts into this repository.
 
 | Task                                                                          | Skill               |
 | ----------------------------------------------------------------------------- | ------------------- |
