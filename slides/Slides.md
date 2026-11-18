@@ -82,7 +82,7 @@ Source: https://docs.docker.com/compose/how-tos/startup-order/
 
 <p style="color:#ffffff; font-weight:500; max-width:1000px; margin:0.5em auto 0;">Aspire is an agent-ready, code-first tool to compose, debug, and deploy any distributed app.</p>
 
-<!-- Use the official positioning sentence verbatim. Promise a concrete outcome: run a mixed-language app, follow one request, and understand the model that wires it together. The next slides preview that workflow and its four building blocks. -->
+<!-- Use the official positioning sentence verbatim. Promise a concrete outcome: run a mixed-language app, follow one request, and understand the model that wires it together. The next slide turns that promise into the five questions this talk answers in order. -->
 
 ---
 
@@ -107,6 +107,152 @@ Source: https://docs.docker.com/compose/how-tos/startup-order/
 ---
 
 <!-- _class: compact -->
+
+# From One Laptop to a Platform
+
+**Five questions every polyglot team asks, in this order:**
+
+<div class="journey">
+<div><span class="num">1</span><span class="step">Run it</span><span class="ask">Can I start everything with one command?</span></div>
+<div><span class="num">2</span><span class="step">Model it</span><span class="ask">What produced that running app?</span></div>
+<div><span class="num">3</span><span class="step">Share it</span><span class="ask">How does my team repeat it?</span></div>
+<div><span class="num">4</span><span class="step">Grow it</span><span class="ask">Does it hold up with more services?</span></div>
+<div><span class="num">5</span><span class="step">Ship it</span><span class="ask">Where does it run in production?</span></div>
+</div>
+
+**Aspire 17's theme:** from running apps to building platforms on top of them.
+
+<!--
+This is the map for the rest of the talk; the section header in the corner tracks where we are. Each step ends with something concrete: a live request, the code that modeled it, a team command, an event pipeline, and published artifacts.
+Aspire 17 shipped on November 17, 2026 under the headline "ready for primetime". The team's framing: people were running dozens of services in one AppHost, sharing internal integrations, onboarding teammates, and deploying to infrastructure another team owns. They were not just running apps; they were building platforms on Aspire. Steps one and two are what Aspire has always done. Steps three to five are where 17 moved the most: team configuration sources, a dashboard redesigned for bigger apps, and stable Kubernetes deployment.
+The version jumped from 13.6 straight to 17; there is no 14, 15, or 16.
+Source: https://devblogs.microsoft.com/aspire/whats-new-aspire-17/
+-->
+
+---
+
+<!-- _class: code-reference -->
+<!-- header: 'Run it' -->
+
+# Run It: One Command
+
+**Install with a familiar package manager:** [get.aspire.dev](https://get.aspire.dev)
+
+```bash
+npm install -g @microsoft/aspire-cli
+aspire new aspire-ts-starter -n my-app
+cd my-app
+aspire run
+```
+
+**Starters:** `aspire-ts-starter` · `aspire-starter` (C#) · `aspire-py-starter` · `aspire-go-starter` (new in 17)
+
+**One coherent path:** install → scaffold → run.
+
+<!--
+First question: can I start everything with one command? Yes: aspire run starts every resource in the model and prints the dashboard URL.
+npm is convenient for Node/TypeScript teams; Homebrew, WinGet, and the install script are also supported. Keep the workload's own toolchain installed.
+Aspire 17 adds aspire-go-starter (Go API, React frontend, optional Redis, Go AppHost) and aspire-go-empty. aspire new without a template name lists every starter.
+This is the audience's on-ramp, not a live project creation. The live proof is the FastAPI demo two slides ahead; the starter is the suggested first experiment after the talk.
+Aspire 17 also adds shell completion (aspire completions script bash|fish|pwsh|zsh) and, in preview, a tray companion: aspire tray start keeps every running AppHost in the menu bar or notification area.
+Sources: https://aspire.dev/get-started/install-cli/ and https://aspire.dev/reference/cli/commands/aspire-new/
+-->
+
+---
+
+<!-- _class: compact release-slide dashboard-slide -->
+
+# The Dashboard: Is It Running?
+
+<figure class="release-screenshot">
+<img src="./img/aspire-dashboard-home-17.png" alt="Aspire 17 dashboard home page listing PostgreSQL, Redis, and project resources with state, source, endpoints, incoming request counts, and p95 latency">
+<figcaption>Source: <a href="https://aspire.dev/whats-new/aspire-17/">aspire.dev: What's new in Aspire 17.0</a></figcaption>
+</figure>
+
+**Redesigned in 17:** it opens on your resources: state, endpoints, requests, p95.
+
+**Then follow one request:** browser → API → backing service.
+
+<!--
+Core: the first thing people do after aspire run is wait for everything to turn green, then open an endpoint. The Aspire 17 dashboard opens on exactly that: a full-width resource table with state, source, endpoint links, incoming request counts, and p95 latency. Select a resource to bring its health, endpoints, logs, and telemetry into one view. Select the application name in the header to return to the table.
+Console logs capture stdout/stderr; structured logs, traces, and metrics require OpenTelemetry SDK/exporter setup. Aspire supplies OTEL_EXPORTER_OTLP_ENDPOINT; it does not instrument every workload automatically. In 17, empty telemetry pages offer an Add telemetry dialog with the OTLP endpoints.
+The new experience is still evolving. Settings > Dashboard experience switches back to the Previous dashboard when a distribution includes it.
+Still there from 13.6: run history. The dashboard keeps resource snapshots and telemetry after the AppHost stops; the run selector switches between live and read-only past runs, up to 10 per application. Persisted telemetry can contain sensitive values and has no separate encryption or authorization layer. The dashboard remains a development and short-term diagnostics tool, not a production telemetry backend.
+Repository samples still pin Aspire 13.6.1 and show the previous dashboard. Upgrade them with aspire update and rerun the smoke suite before presenting the 17 dashboard live.
+Screenshot is the official release-notes example (AspireShop), not a capture of this repository's demos.
+Transition: prove the polyglot promise with a TypeScript AppHost running React, FastAPI, and Redis.
+Sources: https://aspire.dev/whats-new/aspire-17/ and https://aspire.dev/dashboard/explore/ and https://aspire.dev/dashboard/data-persistence/
+Image: https://aspire.dev/_astro/dashboard-home.DpnZBDoN_ZT63Im.webp (footer row cropped).
+-->
+
+---
+
+<!-- _class: compact -->
+<!-- _transition: aspire-aperture -->
+
+# Demo: Vite React + FastAPI
+
+<div class="chips"><span class="host">TypeScript AppHost</span><span>React</span><span>FastAPI</span><span>Redis</span></div>
+
+![w:1120px center](./img/vite-react-api-architecture.drawio.svg)
+
+**Live:** Add a TODO → reload → follow its browser-to-API trace.
+
+<!--
+Question: can a TypeScript AppHost run a Python API and a React frontend without changing their languages or toolchains?
+From samples/vite-react-api, start aspire run --apphost apphost.mts and open web from aspire describe. For a background worktree run, use aspire start --apphost apphost.mts --isolated.
+Create a TODO with the Add button, create another with Enter, reload to show Redis-backed storage, then delete the test TODO. Inspect the trace that links a browser client span to the FastAPI server span.
+Payoff: the AppHost language and workload languages are independent; one model wires the stack and one dashboard exposes the request.
+Keep this stack running while explaining the model and basic CLI operations. Stop it before the Quotes Board demo.
+Optional troubleshooting detail: the current/legacy container-hostname mapping in vite.config.ts gives the browser a reachable HTTP collector, not a container-only name or the gRPC port.
+Transition: before explaining what produced that graph, show how to operate the running stack from the terminal.
+-->
+
+---
+
+<!-- _class: code-reference -->
+
+# Work with a Running Stack
+
+**Inspect the model and its resources; do not guess ports or processes.**
+
+```bash
+aspire start     # Background
+aspire ps        # AppHost summaries
+aspire describe  # Resource details
+aspire describe --format mermaid   # The running graph
+aspire logs      # Console output
+aspire stop      # Stop the app
+```
+
+`ps` summarizes **AppHosts**. `describe` shows **resources**, and in 17 exports their graph.
+
+<!--
+aspire ps summarizes AppHosts; use aspire describe for resource-level details. In 17 the Type column shows friendly labels such as Redis or PostgreSQL Server, and finished resources show their exit code.
+New in 17: aspire describe --format mermaid prints the running resource graph as an unfenced Mermaid flowchart. Paste it into a pull request or design doc to show what is actually running. Parameters, endpoints, and resource state are not exported, and it cannot be combined with --follow. The dashboard graph has the same Export as Mermaid action.
+Before the talk, run aspire doctor. In VS Code the dashboard no longer auto-opens by default: open it explicitly, or opt in with Aspire: Dashboard Browser / dashboardBrowser in launch.json.
+Use ordinary aspire stop during the demo. aspire stop --force permanently deletes persistent resource data without an extra confirmation; it is not a harmless "stop harder" option.
+In a worktree, prefer aspire start --isolated. When several AppHosts exist, specify --apphost rather than stopping or inspecting a different stack.
+Use the running FastAPI stack for this inspect/log workflow. That answers the first question: one command runs it and one view shows it. Transition: the second question is what produced that running graph.
+Sources: https://aspire.dev/reference/cli/commands/aspire-describe/ and https://aspire.dev/whats-new/aspire-17/
+-->
+
+---
+
+<!-- _class: invert -->
+<!-- _header: '' -->
+<!-- _transition: reveal 450ms -->
+
+# <!--fit--> How It Works
+
+From AppHost code to running resources and connected services
+
+<!-- Second question: what produced that running app? The mixed-language demo showed the result. Start with the four pieces, then explain cause before effect: author the model, add resources, wire relationships, then inspect the configuration received by each workload. -->
+
+---
+
+<!-- _class: compact -->
+<!-- header: 'Model it' -->
 
 # The Four Pillars
 
@@ -162,7 +308,7 @@ Source: https://docs.docker.com/compose/how-tos/startup-order/
 </div>
 </div>
 
-<!-- Four pillars hold up the whole model: the CLI drives it, the AppHost declares it, the Dashboard shows it, and Integrations plug into it. Same four regardless of language. -->
+<!-- Name the four pieces before opening any of them. Four pillars hold up the whole model: the CLI drives it, the AppHost declares it, the Dashboard shows it, and Integrations plug into it. Same four regardless of language. -->
 
 ---
 
@@ -184,7 +330,7 @@ Source: https://docs.docker.com/compose/how-tos/startup-order/
 ## Aspire AppHost
 
 **C# · TypeScript**<br>
-<small>Python · Go · Java · Rust (preview)</small>
+<small>Go (preview) · Python · Java · Rust (experimental)</small>
 
 one run · one model
 
@@ -200,74 +346,11 @@ one run · one model
 </div>
 </div>
 
-<!-- Polyglot has two independent axes: the language used to author the AppHost and the languages used by its workloads. Six languages funnel into one orchestrator, and out come the same three capabilities: orchestration, service discovery, and observability. In 13.6, Java and Rust hosting became first-party (preview), and Rust joined Python, Go, and Java as a preview AppHost language behind an experimental feature flag. -->
-
----
-
-<!-- _class: compact release-slide dashboard-slide -->
-
-# The Dashboard: One View for Everything
-
-<figure class="release-screenshot">
-<img src="./img/aspire-dashboard-run-history-13-6.png" alt="Aspire 13.6 dashboard showing structured logs with the run selector open on an earlier run">
-<figcaption>Source: <a href="https://devblogs.microsoft.com/aspire/whats-new-aspire-13-6/">Microsoft Aspire 13.6 announcement</a></figcaption>
-</figure>
-
-**Follow one request:** browser → API → backing service.
-
-Resource state, endpoints, logs, and traces share one view.
-
-<!--
-Core: show resources, their endpoints, and one request's trace. Console logs capture stdout/stderr; structured logs, traces, and metrics require OpenTelemetry SDK/exporter setup. Aspire supplies OTEL_EXPORTER_OTLP_ENDPOINT; it does not instrument every workload automatically.
-Transition: prove the polyglot promise with a TypeScript AppHost running React, FastAPI, and Redis. Save the release details below for questions rather than delaying the first demo.
-Optional 13.6 callout: the dashboard keeps resource snapshots and telemetry after the AppHost stops. Each start begins a new run, and the run selector switches between live and read-only past runs. Filtering, search, paging, and aggregation work on past runs. It keeps up to 10 runs per application and prunes the oldest; pin a run to keep it. Runs are SQLite databases on disk, so a coding agent can compare them. Default limits rose to 100,000 entries each for console logs, structured logs, and traces.
-Persisted telemetry can contain sensitive values, and the on-disk database has no separate encryption or authorization layer. The dashboard remains a development and short-term diagnostics tool, not a production telemetry backend.
-Run history requires Aspire 13.6. This repository's samples run on 13.6.1, so restart any sample to show the run selector live.
-Optional: demonstrate a case-insensitive console-log search, then narrow logs or traces by timestamp and exact numeric comparisons (added in 13.5).
-Screenshot is the official release-post example, not a capture of this repository's demos.
-Sources: https://devblogs.microsoft.com/aspire/whats-new-aspire-13-6/ and https://aspire.dev/dashboard/data-persistence/
-Image: https://devblogs.microsoft.com/aspire/wp-content/uploads/sites/90/2026/09/dashboard-run-history.webp (cropped to the run selector and logs).
--->
-
----
-
-<!-- _class: compact -->
-<!-- _transition: aspire-aperture -->
-
-# Demo: Vite React + FastAPI
-
-<div class="chips"><span class="host">TypeScript AppHost</span><span>React</span><span>FastAPI</span><span>Redis</span></div>
-
-![w:1120px center](./img/vite-react-api-architecture.drawio.svg)
-
-**Live:** Add a TODO → reload → follow its browser-to-API trace.
-
-<!--
-Question: can a TypeScript AppHost run a Python API and a React frontend without changing their languages or toolchains?
-From samples/vite-react-api, start aspire run --apphost apphost.mts and open web from aspire describe. For a background worktree run, use aspire start --apphost apphost.mts --isolated.
-Create a TODO with the Add button, create another with Enter, reload to show Redis-backed storage, then delete the test TODO. Inspect the trace that links a browser client span to the FastAPI server span.
-Payoff: the AppHost language and workload languages are independent; one model wires the stack and one dashboard exposes the request.
-Keep this stack running while explaining the model and basic CLI operations. Stop it before the Quotes Board demo.
-Optional troubleshooting detail: the current/legacy container-hostname mapping in vite.config.ts gives the browser a reachable HTTP collector, not a container-only name or the gRPC port.
-Transition: now explain what produced that running graph, starting with AppHost code rather than environment-variable conventions.
--->
-
----
-
-<!-- _class: invert -->
-<!-- _header: '' -->
-<!-- _transition: reveal 450ms -->
-
-# <!--fit--> How It Works
-
-From AppHost code to running resources and connected services
-
-<!-- The mixed-language demo showed the result. Explain cause before effect: author the model, add resources, wire relationships, then inspect the configuration received by each workload. -->
+<!-- Polyglot has two independent axes: the language used to author the AppHost and the languages used by its workloads. Six languages funnel into one orchestrator, and out come the same three capabilities: orchestration, service discovery, and observability. C# and TypeScript AppHosts are generally available. In Aspire 17, Go AppHosts moved from experimental to preview: no feature flag, and Go templates appear in aspire new and aspire init. Python, Java, and Rust AppHosts stay experimental behind the renamed experimentalPolyglotPython, experimentalPolyglotJava, and experimentalPolyglotRust feature keys. Separately, the Java and Rust workload hosting packages remain preview. -->
 
 ---
 
 <!-- _class: apphost-morph -->
-<!-- header: 'How it works' -->
 <!-- _transition: slide 600ms -->
 
 # The AppHost: C#
@@ -315,11 +398,45 @@ await builder.build().run();
 **Generated SDK. Familiar resources, references, and endpoints.**
 
 <!--
-TypeScript AppHosts became GA in 13.4, when ASPIREATS001 was retired. Aspire 13.5 closes more parity gaps with C#. This does not make every experimental AppHost authoring language GA: keep Python, Go, Java, and Rust preview labels separate from workload support.
+TypeScript AppHosts became GA in 13.4, when ASPIREATS001 was retired. Aspire 13.5 closes more parity gaps with C#. This does not make every AppHost authoring language GA: Go is in preview in 17, while Python, Java, and Rust remain experimental. Keep those labels separate from workload support.
 Custom checks use builder.addHealthCheck(name, check) and resource.withHealthCheck(key). withContainerFiles and withContainerFilesCallback copy or generate container files. Keep these as examples of parity, not another API walkthrough.
 Current entry points use apphost.mts. aspire update --migrate can migrate older apphost.ts projects.
-Transition: the generated import raises one question: how does a TypeScript AppHost call the hosting APIs? Answer it with the next paired ATS/DCP slides, then return to choosing and wiring resources.
+Advance directly to Go: the title and code stay anchored while the authoring language changes a second time.
 Sources: https://aspire.dev/whats-new/aspire-13-4/ and https://aspire.dev/whats-new/aspire-13-5/
+-->
+
+---
+
+<!-- _class: code-focus apphost-morph -->
+
+# The AppHost: Go
+
+**New in 17 (preview): no feature flag, a starter template, F5 debugging.**
+
+```go
+func main() {
+    builder, _ := aspire.CreateBuilder() // error checks trimmed
+
+    cache := builder.AddRedis("cache")
+    api := builder.AddUvicornApp("api", "./api", "main:app").
+        WithReference(cache)
+    builder.AddViteApp("web", "./web").WithReference(api)
+
+    app, _ := builder.Build() // reports every resource error
+    app.Run()
+}
+```
+
+**Same resources and references.** Start it with `aspire run`, not `go run .`
+
+<!--
+Go AppHosts moved from experimental to preview in Aspire 17. The experimentalPolyglotGo flag is gone, aspire new offers aspire-go-starter and aspire-go-empty, and aspire init --language go adds a Go AppHost to an existing app. It is not generally available yet.
+The slide trims error handling to fit. Real code checks the errors from CreateBuilder, Build, and Run, usually with log.Fatal(aspire.FormatError(err)). You do not check each resource: errors from the Add and With calls are collected and reported together by Build.
+It needs Go 1.26 or later; aspire doctor checks that. The CLI generates a Go package into .aspire/modules/, mapped in go.mod as apphost/modules/aspire, and the starter's .gitignore keeps it out of source control. Start with aspire run because the CLI supplies the connection that the generated SDK uses.
+Debugging: with the Go extension and Delve in VS Code, F5 steps through apphost.go, and the Aspire view can attach to running Go and .NET resources without restarting them.
+This repository's samples/preview/svelte-go-bookmarks is a Go AppHost that still targets 13.6.1 and its experimental flag.
+Transition: three languages, one generated import each. How does a non-C# AppHost call the hosting APIs? Answer it with the next paired ATS/DCP slides, then return to choosing and wiring resources.
+Sources: https://aspire.dev/app-host/go-apphost/ and https://aspire.dev/whats-new/aspire-17/
 -->
 
 ---
@@ -336,8 +453,8 @@ The **Aspire Type System** exposes hosting APIs to guest AppHost languages.
 
 ## Guest AppHost
 
-**TypeScript**<br>
-<small>Python · Go · Java · Rust (preview)</small>
+**TypeScript · Go**<br>
+<small>Python · Java · Rust (experimental)</small>
 
 </div>
 <div class="flow-hub">
@@ -359,8 +476,9 @@ Resources<br>integrations
 **Generated SDKs live in `.aspire/modules/`.**
 
 <!--
-The previous slide imported a generated SDK. This slide answers one question: how can a non-C# AppHost use the hosting APIs? Keep this explanation brief; it supports the model rather than opening a separate internals chapter.
+The TypeScript and Go slides both imported a generated SDK. This slide answers one question: how can a non-C# AppHost use the hosting APIs? Keep this explanation brief; it supports the model rather than opening a separate internals chapter.
 C# uses those APIs directly. Guest AppHosts use generated SDKs and a local JSON-RPC transport. Available API surfaces vary by integration and AppHost language; do not imply every package has complete cross-language parity.
+New in 17, both in preview: hosting integrations can be authored in TypeScript, starting with @aspire/nuxt, and the CLI bundle includes an opt-in AppHost Server v2 (features.appHostServerV2).
 Pause before the next question: who actually starts the resources?
 Advance: the model panel slides left to become DCP's input, because DCP runs the model that the hosting APIs build.
 -->
@@ -428,7 +546,7 @@ Transition: put those pieces back into the architecture we just ran, then show h
 * 🐍 Python / ASGI → `AddPythonApp()` · `AddUvicornApp()`
 * 🟦 JavaScript / TypeScript → `AddJavaScriptApp()` · `AddNodeApp()`
 * ⚡ Vite frontend → `AddViteApp()`
-* 💜 .NET project → `AddProject<T>()`
+* 💜 .NET project → `AddDotnetProject()` (by path, new in 17)
 * 🐹 Go / Bun → `AddGoApp()` · `AddBunApp()`
 * ☕ Java · 🦀 Rust → `AddSpringBootApp()` · `AddRustApp()` (preview)
 
@@ -436,9 +554,12 @@ Transition: put those pieces back into the architecture we just ran, then show h
 
 <!--
 Each workload appears on its own click.
-This is a choice map, not a list to memorize. Start with the workload the team already has and select its typed integration. Go (Aspire.Hosting.Go) and Bun (Aspire.Hosting.JavaScript) graduated into core in 13.4.
-In 13.6, Java and Rust hosting moved from the Community Toolkit into first-party preview packages. Aspire.Hosting.Java adds AddSpringBootApp, AddQuarkusApp, and AddJavaApp (Maven or Gradle wrapper builds, or a prebuilt JAR); Aspire.Hosting.Rust adds AddRustApp for Cargo apps. Both get VS Code debugging and a generated Dockerfile at publish time. Java apps receive the OpenTelemetry exporter settings; add WithOtelAgent() for the Java agent's automatic instrumentation.
-Pause here: these are helpers for running familiar tools, not replacement language runtimes. Next, show how community integrations and the general-purpose resource types cover the rest of a real stack.
+This is a choice map, not a list to memorize. Start with the workload the team already has and select its typed integration.
+New in 17: AddDotnetProject from the stable Aspire.Hosting.Dotnet package adds a .NET project by path, with no ProjectReference from the AppHost and no generated Projects.* type. That is the polyglot payoff: C#, TypeScript, and Go AppHosts register a .NET service the same way, and the service can live in another solution. It accepts SDK-style C#, F#, and Visual Basic projects and file-based C# apps. Aspire coordinates the service builds, and the resource's Rebuild action picks up source changes without restarting the AppHost.
+AddProject, AddCSharpApp, and the Aspire.AppHost.Sdk MSBuild SDK are obsolete but still work. aspire run --watch does not support the new resource model yet, so keep watch-dependent services on the legacy API for now. This repository's samples still use the 13.6.1 APIs.
+Java and Rust hosting remain first-party preview packages: Aspire.Hosting.Java adds AddSpringBootApp, AddQuarkusApp, and AddJavaApp; Aspire.Hosting.Rust adds AddRustApp for Cargo apps.
+Pause here: these are helpers for running familiar tools, not replacement language runtimes. Next, show how more integrations and the general-purpose resource types cover the rest of a real stack.
+Source: https://aspire.dev/integrations/dotnet/migrate-dotnet-project-resource/
 -->
 
 ---
@@ -453,9 +574,9 @@ Pause here: these are helpers for running familiar tools, not replacement langua
 ## More integrations
 
 * Deno: `AddDenoApp()`
-* Blazor WASM: `AddBlazorWasmProject()`
+* Next.js: `AddNextJsApp()`
 
-Deno: **experimental** (13.6).<br>Blazor hosting: **preview**.
+Both **stable in 17**.<br>TS/JS Azure Functions: **experimental**.
 
 </div>
 <div>
@@ -475,7 +596,7 @@ Infrastructure joins the same graph: **Redis · PostgreSQL · Kafka · Cosmos DB
 
 <!--
 Five clicks: the two integrations, then the three universal options.
-13.6 moved Spring Boot into first-party Java hosting, so it now lives on the workload slide. Deno also gained a first-party, experimental AddDenoApp in Aspire.Hosting.JavaScript (ASPIREDENO001), with task and serve modes; it differs from the Community Toolkit's Deno integration and its AddDenoTask.
+Aspire 17 retires the experimental diagnostics for the Deno hosting APIs (ASPIREDENO001) and for AddNextJsApp and the JavaScript publish helpers (ASPIREJAVASCRIPT001), so they no longer need suppressions. First-party AddDenoApp lives in Aspire.Hosting.JavaScript and differs from the Community Toolkit's Deno integration and its AddDenoTask. AddAzureFunctionsApp now hosts TypeScript and JavaScript Azure Functions; that API is experimental (ASPIREAZUREFUNCTIONS001).
 Keep this separate from the first-party workload slide so the audience can see the escape hatches without losing the primary recommendation.
 The backing-service APIs include AddRedis, AddPostgres(...).AddDatabase(...), AddKafka, and AddAzureCosmosDB. Our recipe demo uses RunAsEmulator, which selects the Linux-based vNext emulator in 13.6, for its local Cosmos DB instance. Hosting packages and preview status vary by integration.
 The repository demonstrates both typed integrations and raw Dockerfile/container/executable resources. A raw container still needs explicit connection configuration and any health checks the application requires.
@@ -499,7 +620,8 @@ The repository demonstrates both typed integrations and raw Dockerfile/container
 
 <!--
 The resources are in the model; now describe their relationships. A reference passes configuration, a wait gates startup, and a health check defines readiness. The next slide shows those decisions over the resource's lifecycle.
-Other useful helpers include WithUv and WithNpm for package managers. WithMcpServer describes a resource's own MCP endpoint; it is separate from the Aspire CLI's runtime MCP server discussed later.
+Other useful helpers include WithUv and WithNpm for package managers. WithMcpServer describes a resource's own MCP endpoint; it is separate from the Aspire CLI's runtime MCP server discussed later. WithMcpServer and WithHttpProbe are stable in 17.
+New in 17: AddParameter(...).AsOptional() marks a parameter that may be unset, while required parameters now reject empty values. Endpoints also expose PrimaryBrowserOrigin and BrowserOrigins, so CORS policies and sign-in redirects do not hard-code development URLs.
 -->
 
 ---
@@ -570,7 +692,7 @@ client = redis.Redis.from_url(os.environ["CACHE_URI"])
 <!--
 Service discovery and connection strings share one universal interface: environment variables. Use the exact ConnectionStrings__ casing; Linux environment lookups are case-sensitive.
 AddRedis("cache") plus WithReference exposes CACHE_URI and individual connection properties. CACHE_URI preserves the scheme, host, port, and credentials. Prefixing a StackExchange-style connection string with redis:// does not convert it to a valid URI. A preconfigured AddConnectionString resource exposes the connection string rather than the typed Redis properties.
-Close the model-to-runtime loop: AppHost code produces configuration that a workload reads using its normal tools. Next move from how the app is wired to how a developer operates it.
+Close the model-to-runtime loop: AppHost code produces configuration that a workload reads using its normal tools. That answers the second question. Next: how does a whole team repeat what one developer just did?
 Source: https://aspire.dev/integrations/caching/redis/redis-connect/
 -->
 
@@ -580,68 +702,16 @@ Source: https://aspire.dev/integrations/caching/redis/redis-connect/
 <!-- _header: '' -->
 <!-- _transition: reveal 450ms -->
 
-# Practical Setup
+# From My Laptop to My Team
 
-Run and inspect. Automate team tasks. Connect agents.
+Automate team tasks. Open terminals. Connect agents. Pave the path.
 
-<!-- Build from basic operation to advanced workflows: scaffold and run, inspect a running stack, replace README steps with resource commands, then extend those workflows with terminals and agents. -->
-
----
-
-<!-- _class: code-reference -->
-<!-- header: 'Practical setup' -->
-
-# Create Your First App
-
-**Install with a familiar package manager:** [get.aspire.dev](https://get.aspire.dev)
-
-```bash
-npm install -g @microsoft/aspire-cli
-aspire new aspire-ts-starter -n my-app
-cd my-app
-aspire run
-```
-
-**One coherent path:** install → scaffold → run.
-
-<!--
-npm is convenient for Node/TypeScript teams; Homebrew, WinGet, mise, Nix, NuGet, and the install script are also supported. Package-manager distribution started in the 13.4 timeframe; do not present every installation option as new in 13.5. Keep the workload's own toolchain installed.
-For C# use aspire-starter; aspire-py-starter is an experimental Python AppHost path. Show just one scaffold command rather than three competing project creations.
-This is the audience's on-ramp, not a required live project creation. Keep the opening FastAPI demo running and use it to explain the operating commands next. The starter remains the suggested first experiment after the talk, rather than a second frontend/API demo.
-Source: https://aspire.dev/get-started/install-cli/
--->
+<!-- Third question: how does my team repeat it? Build from one workflow to a shared platform: replace README steps with resource commands, extend them with terminals, give coding agents the same runtime context, then share the starting point itself. -->
 
 ---
 
 <!-- _class: code-reference -->
-
-# Work with a Running Stack
-
-**Inspect the model and its resources; do not guess ports or processes.**
-
-```bash
-aspire start     # Background
-aspire ps        # AppHost summaries
-aspire describe  # Resource details
-aspire doctor    # Environment
-aspire logs      # Console output
-aspire stop      # Stop the app
-```
-
-`ps` summarizes **AppHosts**. `describe` shows **resources**.
-
-<!--
-In 13.5, aspire ps summarizes AppHosts; use aspire describe for resource-level details. The old aspire ps --resources and --include-hidden options were removed.
-Before the talk, run aspire doctor. In VS Code the dashboard no longer auto-opens by default: open it explicitly, or opt in with Aspire: Dashboard Browser / dashboardBrowser in launch.json.
-Use ordinary aspire stop during the demo. aspire stop --force permanently deletes persistent resource data without an extra confirmation; it is not a harmless "stop harder" option.
-In a worktree, prefer aspire start --isolated. When several AppHosts exist, specify --apphost rather than stopping or inspecting a different stack.
-Use the existing FastAPI stack for the basic inspect/log workflow. Transition: inspecting is useful, but the next example turns a team's manual README steps into repeatable resource actions.
-Source: https://aspire.dev/whats-new/aspire-13-5/
--->
-
----
-
-<!-- _class: code-reference -->
+<!-- header: 'Share it' -->
 
 # Turn README Steps into Resource Commands
 
@@ -660,7 +730,7 @@ aspire resource api seed --count 5
 <div><strong>CLI</strong><span>accepts named options</span></div>
 </div>
 
-**Stable in 13.5:** command arguments and core prompts.
+**Stable since 13.5:** command arguments and core prompts.
 
 <!--
 Connect this to the 15-step README problem: an integration author can make import, seed, or reset actions part of the resource model.
@@ -744,7 +814,7 @@ Payoff: the same modeled resource exposes repeatable team actions through both t
 
 # Not Everything Is an HTTP Service
 
-**Experimental since 13.5:** REPLs, shells, and TUIs are resources too.
+**`WithTerminal()` is stable in 17:** REPLs, shells, and TUIs are resources too.
 
 <figure class="release-screenshot">
 <img src="./img/aspire-terminal-13-5.png" alt="Interactive JavaScript guessing game accepting input in the Aspire dashboard terminal">
@@ -754,7 +824,7 @@ Payoff: the same modeled resource exposes repeatable team actions through both t
 <div class="columns dashboard-columns">
 <div>
 
-Enable `.WithTerminal()` / `.withTerminal()` on a resource.
+Add `.WithTerminal()`. Find it on the **Terminals** page.
 
 **Real input and output. One session, multiple viewers.**
 
@@ -773,9 +843,10 @@ aspire terminal attach node-repl
 <!--
 Core: this is a capability callout, not a required AppHost switch. Keep the normal route focused on the Quotes Board workflow; resources can also expose an interactive session.
 Optional demo: the screenshot shows Microsoft's JavaScript guessing-game playground. The commands use this repository's terminal-demo instead. Stop the Quotes Board AppHost before switching stacks, start terminal-demo with aspire run, evaluate 6 * 7 and process.stdin.isTTY in node-repl, and attach from another terminal to see the same session. Ctrl+B then D detaches without ending the process. Stop terminal-demo before starting the event-stream demo.
-WithTerminal() and the terminal hosting APIs are experimental (introduced in 13.5). C# callers must suppress ASPIRETERMINAL001. Aspire CLI 13.5 also required features.terminalCommandsEnabled for the terminal commands; 13.6 removes that requirement, so terminal-demo no longer sets it. The AppHost still needs the terminals.v1 capability (Aspire.Hosting 13.4 or later). The dashboard terminal never required the CLI flag. 13.6 also adds aspire terminal tape play for scripting repeatable terminal interactions.
+In Aspire 17, WithTerminal and TerminalOptions are stable and no longer report ASPIRETERMINAL001. AppHost-owned terminals, TerminalService, and the terminal automation APIs remain experimental. The 17 dashboard gives interactive terminals their own Terminals page instead of sharing Console logs; its selector lists only terminal-capable resources and their replicas. Terminal host resources are always hidden.
+This repository's terminal-demo still targets 13.6.1, where C# callers suppress ASPIRETERMINAL001 and the terminal appears under Console logs. aspire terminal tape play (13.6) scripts repeatable terminal interactions.
 Terminal-enabled resources run as plain processes and do not get automatic debugger attachment. Attach the debugger manually from your IDE when needed.
-Sources: https://aspire.dev/app-host/with-terminal/ and https://aspire.dev/reference/cli/commands/aspire-terminal/ and https://aspire.dev/whats-new/aspire-13-6/
+Sources: https://aspire.dev/app-host/with-terminal/ and https://aspire.dev/reference/cli/commands/aspire-terminal/ and https://aspire.dev/whats-new/aspire-17/
 Image: https://devblogs.microsoft.com/aspire/wp-content/uploads/sites/90/2026/08/aspire-terminal-guessing-game.webp (cropped to the interactive content).
 -->
 
@@ -785,7 +856,7 @@ Image: https://devblogs.microsoft.com/aspire/wp-content/uploads/sites/90/2026/08
 
 # A Database Shell, Already Signed In
 
-**New in 13.6 (preview):** `WithRepl()` adds a **REPL** command to data resources.
+**Since 13.6:** `WithRepl()` adds a **REPL** command to data resources.
 
 <figure class="release-screenshot">
 <img src="./img/aspire-redis-repl-13-6.png" alt="Aspire dashboard with a running Redis cache resource and a docked redis-cli tab showing PING and PONG">
@@ -811,12 +882,12 @@ builder.AddPostgres("postgres")
 </div>
 
 <!--
-New in 13.6 and in preview: WithRepl() / withRepl() adds a REPL command to PostgreSQL, MySQL, SQL Server, MongoDB, Redis, and Valkey resources. Selecting it runs the client bundled in the container (psql, sqlcmd, mongosh, redis-cli, and so on) in the dashboard's new terminal dock, with connection details and credentials already configured, so nothing installs locally.
+Introduced in 13.6: WithRepl() / withRepl() adds a REPL command to PostgreSQL, MySQL, SQL Server, MongoDB, Redis, and Valkey resources. Selecting it runs the client bundled in the container (psql, sqlcmd, mongosh, redis-cli, and so on) in the dashboard's new terminal dock, with connection details and credentials already configured, so nothing installs locally.
 It is opt-in because the session uses the resource's real credentials with full write access, and it works only in run mode. Only share dashboard access with trusted users.
 Press backtick to show or hide the dock. Hiding the dock leaves sessions running: exit the client before closing its tab.
 This complements the previous slide: WithTerminal() gives a console app its own terminal, while the dock and its experimental APIs let you open terminals into container and executable resources.
 Live companion: samples/dotnet-react-postgres already enables .WithRepl() on postgres. Open postgres > Actions > REPL, then run \connect quotesdb and SELECT id, text, author FROM quotes ORDER BY id DESC LIMIT 5; to inspect the quotes just imported. Exit with \q before closing the tab. This continues the same Quotes Board demo without starting another stack.
-The reference screenshot shows Redis; the live sample demonstrates the same feature with PostgreSQL. Requires Aspire 13.6, which the repository samples use (13.6.1).
+The reference screenshot shows Redis on the 13.6 dashboard; the live sample demonstrates the same feature with PostgreSQL. Requires Aspire 13.6 or later; the repository samples use 13.6.1. In 17, the SQL Server REPL no longer discovers older sqlcmd paths: select SqlServerReplCommand.Version17 for images that only ship the older client.
 Transition: the same discoverable resource state and actions can also give a coding agent useful runtime context.
 Sources: https://devblogs.microsoft.com/aspire/whats-new-aspire-13-6/ and https://aspire.dev/dashboard/terminals/
 Image: https://aspire.dev/_astro/redis-repl-dock.OdVXcskn_1CLwQQ.webp (cropped to the resource and the docked REPL).
@@ -828,18 +899,18 @@ Image: https://aspire.dev/_astro/redis-repl-dock.OdVXcskn_1CLwQQ.webp (cropped t
 
 # Agent-Ready CLI
 
-### Skills for workflow. MCP for runtime context.
+### A plugin for workflow. MCP for runtime context.
 
-**Start with Aspire skills. Add MCP when the agent needs live application data.**
+**Start with the Aspire plugin. Add MCP when the agent needs live application data.**
 
 <div class="columns">
 <div>
 
-## 🧭 Aspire skills
+## 🧭 Aspire plugin
 
-Teach agents the CLI, AppHost conventions, and debugging workflows.
+Skills teach agents the CLI, AppHost conventions, and debugging workflows.
 
-Install project guidance with `aspire agent init`.
+**New in 17:** `aspire agent init` enables it in your agent's marketplace. No skill files copied into the repo.
 
 </div>
 <div>
@@ -856,11 +927,13 @@ Read resource state, logs, and traces; execute resource commands.
 **One runtime view** across Python, Go, Java, Rust, Node.js, and .NET.
 
 <!--
-Current guidance recommends Aspire skills first and MCP when live runtime context is needed. VS Code, Claude Code, Copilot CLI, and OpenCode can use the CLI-hosted MCP server.
-The former dashboard-hosted MCP server has been removed: do not look for a dashboard MCP button, HTTP endpoint, or API key. aspire agent init configures the stdio command aspire agent mcp.
-Separately, the dashboard AI Assistant chat UI was removed in 13.5. The supported story is an external coding agent using skills and the CLI/MCP, not an embedded dashboard chat.
-Tools include list_resources, list_console_logs, list_structured_logs, list_traces, execute_resource_command, search_docs, and doctor.
-Sources: https://aspire.dev/get-started/aspire-mcp-server/ and https://aspire.dev/get-started/aspire-skills/ and https://aspire.dev/whats-new/aspire-13-5/
+Current guidance recommends the Aspire skills first and MCP when live runtime context is needed.
+New in 17: aspire agent init asks which agents you use (GitHub Copilot, Claude Code, or OpenCode) and whether to configure them at project or global scope. It enables the aspire plugin from the microsoft/aspire-skills marketplace in each agent's own settings file instead of copying a skills folder into the repository, so guidance updates without waiting for a new CLI. The CLI no longer ships an embedded skills bundle, and it offers to remove stale copies written by older versions; that prompt defaults to No.
+MCP is opt-in: choose it at the setup prompt or pass --mcp. The former dashboard-hosted MCP server was removed; there is no dashboard MCP button, HTTP endpoint, or API key. The dashboard AI Assistant chat UI was removed in 13.5.
+MCP tools include list_resources, list_console_logs, list_structured_logs, list_traces, execute_resource_command, search_docs, and doctor.
+In VS Code, extension 1.25 or later can attach a debugger to a running .NET or Go resource without restarting it, and agents can request the same through the aspire_resource_debug tool with your confirmation. The extension's tools return summarized state, not raw logs, environment variables, or dashboard login URLs.
+Enabling the plugin does not run its workflows: review and approve migration or wiring changes before an agent applies them.
+Sources: https://aspire.dev/get-started/aspire-skills/ and https://aspire.dev/reference/cli/commands/aspire-agent-init/ and https://aspire.dev/get-started/aspire-mcp-server/
 -->
 
 ---
@@ -870,7 +943,7 @@ Sources: https://aspire.dev/get-started/aspire-mcp-server/ and https://aspire.de
 
 # Wire It Up in 30 Seconds
 
-**Install skills first; select the MCP server when you need runtime access.**
+**Enable the plugin first; opt in to MCP when you need runtime access.**
 
 <div class="columns">
 <div>
@@ -878,12 +951,12 @@ Sources: https://aspire.dev/get-started/aspire-mcp-server/ and https://aspire.de
 **In your AppHost directory**
 
 ```bash
-aspire agent init
-# Select skills; optionally MCP
-aspire run
+aspire agent init        # agents + scope
+aspire agent init --mcp  # add MCP
+aspire describe --format mermaid
 ```
 
-Open your configured coding agent; it launches MCP on demand.
+Hand the agent a map: the running graph as Mermaid.
 
 </div>
 <div>
@@ -903,7 +976,37 @@ Open your configured coding agent; it launches MCP on demand.
 </div>
 </div>
 
-<!-- Show this as setup guidance, not another required live initialization or AppHost launch; the Quotes Board is already running. aspire agent init creates configuration for the detected agent. This is .vscode/mcp.json; Claude Code uses .mcp.json instead. MCP configuration is only needed when MCP is selected; skills do not require it. The agent launches aspire agent mcp over stdio, not an HTTP connection to the dashboard. Source: https://aspire.dev/get-started/aspire-mcp-server/ -->
+<!-- Show this as setup guidance, not another required live initialization or AppHost launch; the Quotes Board is already running. aspire agent init edits the selected agent's settings file: .github/copilot/settings.json, .claude/settings.json, or opencode.jsonc at project scope. The MCP configuration shown is .vscode/mcp.json; Claude Code uses .mcp.json instead. It is only written when MCP is selected; the plugin does not require it. The agent launches aspire agent mcp over stdio, not an HTTP connection to the dashboard. aspire describe --format mermaid gives an agent a compact view of the topology that is actually running. Transition: the agent setup is one of three things a team can now share from a single source. Sources: https://aspire.dev/get-started/aspire-mcp-server/ and https://aspire.dev/reference/cli/commands/aspire-agent-init/ -->
+
+---
+
+<!-- _class: code-reference -->
+
+# A Paved Path for the Whole Team
+
+**New in 17:** share starters, integrations, and agent skills from Git, not a wiki.
+
+```bash
+# Try a starter straight from a Git repository
+aspire new --template-repository https://github.com/Azure/aspire-templates
+
+# Offer your team's defaults; the CLI asks before adopting them
+ASPIRE_INIT_SOURCE_URL=https://github.com/example-org/aspire-init.git aspire init
+```
+
+<div class="chips sources"><span>templates → <code>aspire new</code></span><span>integrations → <code>aspire add</code></span><span>skills → <code>aspire agent init</code></span></div>
+
+**Shared defaults, not enforced policy.** Developers still choose what to trust.
+
+<!--
+This is the headline theme of Aspire 17: teams are building platforms on top of Aspire, so a new teammate should find the service starter, the internal hosting integrations, and the agent skills that explain the infrastructure without piecing them together from a wiki.
+One Git-backed configuration source holds an aspire.config.json. templateSources feed aspire new, integrationSources point aspire add at an internal NuGet feed with optional package patterns such as Team.Hosting.*, and skillSources configure the team's agent plugins. Named sources add to the built-in choices; they do not replace them.
+ASPIRE_INIT_SOURCE_URL proposes a source and never silently applies it. The CLI displays it and asks for consent; pass --use-config-source to accept or --use-config-source false to decline in non-interactive runs. Refresh an adopted configuration with aspire update --config-source.
+Security: templates and agent plugins can contain executable code, so only use sources you trust. Pin a branch, tag, or full commit SHA with --template-repository-ref or ASPIRE_INIT_SOURCE_REF. example-org is a placeholder; Azure/aspire-templates is a real repository to explore.
+Polyglot angle: a platform team can publish a Go, TypeScript, or C# starter through the same commands every developer already uses.
+That answers the third question. Transition: a shared starting point means more services. Does the model hold up as the app grows?
+Sources: https://devblogs.microsoft.com/aspire/whats-new-aspire-17/ and https://aspire.dev/whats-new/aspire-17/
+-->
 
 ---
 
@@ -911,43 +1014,22 @@ Open your configured coding agent; it launches MCP on demand.
 <!-- _header: '' -->
 <!-- _transition: reveal 450ms -->
 
-# <!--fit--> More Polyglot Demos
+# <!--fit--> When the App Grows
 
 From HTTP requests to event-driven workflows: **16 verified samples**
 
 <!--
-The opening React/FastAPI/Redis demo proved the basic polyglot workflow, and the Quotes Board made resource commands concrete. Now ask a different question: can the same model coordinate an event bus and consumers in multiple runtimes? The event-stream demo is the only required live stack in this section; artifact publishing follows later.
-The samples in this branch align the AppHost SDK, core packages, client integrations, and every Aspire.Hosting.* integration on 13.6.1. Keep every Aspire package on one release: mixing package families across releases can cause MissingMethodException or TypeLoadException, including in the Go, JavaScript, and Python hosting integrations.
-The screenshots are official reference captures; the repository demos exercise the same resource model across C#, TypeScript, Python, Go, and Java AppHosts.
+Fourth question: does it hold up with more services? The opening React/FastAPI/Redis demo proved the basic polyglot workflow, and the Quotes Board made resource commands concrete. Now ask whether the same model can coordinate an event bus and consumers in multiple runtimes, and whether one dashboard stays readable. The event-stream demo is the only required live stack in this section; artifact publishing follows later.
+The repository's 16 samples were validated end to end on Aspire 13.6.1, with the AppHost SDK, core packages, client integrations, and every Aspire.Hosting.* integration aligned on that release. They have not been revalidated on 17.0: upgrade with aspire update, review the breaking changes, and rerun scripts/Test-Samples.ps1 before claiming 17. Keep every Aspire package on one release: mixing package families across releases can cause MissingMethodException or TypeLoadException.
+The repository demos exercise the same resource model across C#, TypeScript, Python, Go, and Java AppHosts.
 Open the dashboard explicitly if VS Code does not auto-launch it. Use aspire describe to inspect resources and ordinary aspire stop to preserve persistent demo data.
-Source: https://aspire.dev/whats-new/aspire-13-5/
+Source: https://aspire.dev/whats-new/aspire-17/
 -->
 
 ---
 
 <!-- _class: compact -->
-<!-- header: 'More demos' -->
-
-# Five Languages, One Dashboard
-
-**Across 16 samples: an authored AppHost or workload in each language**
-
-<div class="chart">
-<div class="hbars">
-<div class="metric"><div class="name">JavaScript / TS</div><div class="group"><div class="bar solo" style="width:100%">9</div></div></div>
-<div class="metric"><div class="name">C# / .NET</div><div class="group"><div class="bar solo" style="width:88.8889%">8</div></div></div>
-<div class="metric"><div class="name">Python</div><div class="group"><div class="bar solo" style="width:66.6667%">6</div></div></div>
-<div class="metric"><div class="name">Go</div><div class="group"><div class="bar solo" style="width:33.3333%">3</div></div></div>
-<div class="metric"><div class="name">Java</div><div class="group"><div class="bar solo" style="width:22.2222%">2</div></div></div>
-</div>
-<div class="caption"><strong>5</strong> languages · <strong>16</strong> samples · <strong>1</strong> dashboard experience</div>
-</div>
-
-<!-- Count each sample once per language used by its authored AppHost or demo workload, not the languages inside prebuilt infrastructure images. Samples can count toward multiple bars. terminal-demo adds one to JavaScript/TS (Node REPL) and one to C# (AppHost), making 16 samples and counts 9, 8, 6, 3, 2. The bars are normalized to the maximum count, 9. Run the demos sequentially; "one dashboard experience" does not mean all 16 AppHosts must run together. -->
-
----
-
-<!-- _class: compact -->
+<!-- header: 'Grow it' -->
 
 # Demo: Polyglot Event Stream
 
@@ -1020,22 +1102,49 @@ Stop the Quotes Board AppHost, or the optional terminal demo if used, before sta
 From samples/polyglot-event-stream, start aspire run --apphost AppHost/AppHost.csproj. Show the five live sensors and Kafka topics, then publish a custom reading through the producer's POST /api/events with a unique sensorId, temperature 42.5, humidity 95, location "Demo laboratory", and the current UTC timestamp.
 The Python consumer receives sensor-readings, calculates aggregates, and publishes the anomaly to sensor-alerts. The Node dashboard consumes both topics. Its browser fetches /api/readings and /api/alerts every five seconds; it does not use WebSockets.
 Show the alert's two threshold reasons and the consumer's /api/aggregates endpoint. This proves the cross-language event pipeline; do not imply every Kafka hop is automatically part of one propagated trace. Stop this AppHost when done.
-Payoff: one modeled graph coordinates more than HTTP request/response. Transition to production without another internals detour: DCP runs this graph locally; a production target needs its own explicit configuration.
+Payoff: one modeled graph coordinates more than HTTP request/response. Transition: five resources still fit on one screen. The next slide shows what Aspire 17 adds for apps with dozens.
+-->
+
+---
+
+<!-- _class: compact release-slide dashboard-slide tags-slide -->
+
+# Keep a Growing App Readable
+
+<figure class="release-screenshot">
+<img src="./img/aspire-dashboard-tags-17.png" alt="Aspire 17 dashboard with TestShop resources and parameters grouped under API, Backend, Checkout, Development, Frontend, and Storefront tags">
+<figcaption>Source: <a href="https://devblogs.microsoft.com/aspire/whats-new-aspire-17/">Microsoft Aspire 17 announcement</a></figcaption>
+</figure>
+
+**New in 17 (experimental):** `.WithTags("Checkout")` groups services and their parameters.
+
+Group by tag, type, or state. Select resources once; keep them across logs, traces, and metrics.
+
+<!--
+The dashboard redesign targets apps with dozens of services in one AppHost. Tags group resources by team or subsystem: give a checkout service and its signing-key parameter the same tag, then choose Group resources to group by tags, resource type, or state.
+WithTags, WithTrait, and WithDisplayOrder are experimental in 17 (ASPIRERESOURCETRAITS001). You can also add personal tags in the dashboard without editing the AppHost: shared tags give everyone a starting point, and personal tags organize the app around the work in progress.
+The shared resource pane keeps a selection as you move between pages. Ctrl-click (Command-click on macOS) to add a resource in Structured logs, then switch to Traces or Metrics and the selection comes with you. All resources shows a health summary: resource states, live request activity, error rate, p95 latency, the slowest endpoints, and the busiest resources. Metrics appear as cards with sparklines that you can pin.
+Switch to Graph to see how services and dependencies connect, and export that graph as Mermaid for a pull request or design doc.
+Optional crowd-pleaser: select Play Aspire Outage at the bottom left of the resource graph (or press O three times) for an arcade game where your resources are the enemies. Do not choose hardcore mode during a demo: destroying an enemy really stops its resource.
+The screenshot is Microsoft's TestShop playground, not this repository's demos, which are untagged.
+That answers the fourth question. Transition to production without another internals detour: DCP runs this graph locally; a production target needs its own explicit configuration.
+Sources: https://devblogs.microsoft.com/aspire/whats-new-aspire-17/ and https://aspire.dev/dashboard/explore/
+Image: https://devblogs.microsoft.com/aspire/wp-content/uploads/sites/90/2026/11/dashboard-summary.webp (cropped to the first tag groups).
 -->
 
 ---
 
 <!-- _class: code-reference -->
-<!-- header: 'Deploy' -->
+<!-- header: 'Ship it' -->
 
 # Same Model. Explicit Deployment Target.
 
-**Add a target integration and resource to the AppHost:**
+**Add the target your platform already uses to the AppHost:**
 
 ```csharp
-#:package Aspire.Hosting.Docker@13.6.1
 // Alongside the API, cache, and their references:
-builder.AddDockerComposeEnvironment("compose");
+builder.AddDockerComposeEnvironment("compose");  // Aspire.Hosting.Docker
+builder.AddKubernetesEnvironment("k8s");         // Aspire.Hosting.Kubernetes
 ```
 
 <div class="command-row">
@@ -1043,12 +1152,13 @@ builder.AddDockerComposeEnvironment("compose");
 <div><code>aspire deploy</code><span>configured target</span></div>
 </div>
 
-**Reuse the app model; select where it runs.**
+**Stable in 17:** the Kubernetes and AKS deployment packages.
 
 <!--
-The target package and compute-environment resource contribute deployment pipeline steps. Only compatible workloads attach to that target.
+Fifth question: where does it run in production? The target package and compute-environment resource contribute deployment pipeline steps. Only compatible workloads attach to that target. Most apps add one environment; the slide shows two to compare the choices.
+New in 17: Aspire.Hosting.Kubernetes and Aspire.Hosting.Azure.Kubernetes graduate to stable. The Kubernetes target deploys to an existing cluster, local or in any cloud: aspire publish generates a Helm chart for your pipeline, or aspire deploy installs it with your current kubectl context. Helm 4.0.0 or later is required, and a vanilla cluster needs a container registry configured with WithContainerRegistry. The AKS package can provision a cluster or target one your platform team already owns without reconfiguring it. Some Kubernetes APIs, including persistent volumes, remain experimental.
 Keep this slide focused on the one addition to the model. The next slide makes the production decisions explicit before showing the tested publish path.
-Source: https://aspire.dev/deployment/deploy-with-aspire/
+Sources: https://aspire.dev/deployment/deploy-with-aspire/ and https://aspire.dev/deployment/kubernetes/clusters/
 -->
 
 ---
@@ -1076,15 +1186,21 @@ Source: https://aspire.dev/deployment/deploy-with-aspire/
 </div>
 </div>
 
-**13.5 preview:** Kubernetes persistent-volume APIs (`ASPIRECOMPUTE002`).
+**New in 17:** each environment gets its own secrets.
 
-`aspire publish` emits artifacts; `aspire do` runs named pipeline steps.
+```bash
+aspire secret set Parameters:api_key --envvar API_KEY --environment Staging
+aspire deploy --environment Staging
+```
 
 <!--
 Four clicks: two placement decisions, then two runtime needs.
-The AppHost is the contract, but deployment is not configuration-free. Add the relevant target package/resource; only compatible workloads are attached to its compute environment. Docker Compose, Kubernetes/AKS, and Azure targets have different infrastructure, image, parameter, and credential requirements.
-Persistent-volume APIs are experimental in 13.5. cert-manager, Gateway API, and AGC require the corresponding target-specific configuration. Existing Azure resources can be referenced across scopes when explicitly modeled and authorized; they are not all created automatically.
-Sources: https://aspire.dev/deployment/deploy-with-aspire/ and https://devblogs.microsoft.com/aspire/whats-new-aspire-13-5/
+The AppHost is the contract, but deployment is not configuration-free. Docker Compose, Kubernetes/AKS, and Azure targets have different infrastructure, image, parameter, and credential requirements.
+New in 17: aspire secret commands accept --environment. --envvar reads the value from an environment variable, and omitting the value opens a masked prompt, so the secret never lands in shell history. Non-interactive calls must supply a value or --envvar. Secret commands default to Development; aspire publish, aspire deploy, and aspire do default to Production.
+aspire publish emits artifacts; aspire do runs named pipeline steps. The core pipeline APIs are stable in 17.
+Cost and identity watch-outs for AKS clusters that Aspire creates: the default control-plane tier is now Standard, which has a cluster-management charge, and clusters use separate user-assigned identities. Upgrading the package alone does not change an existing cluster, but redeploying its infrastructure can.
+Kubernetes persistent-volume APIs remain experimental (ASPIRECOMPUTE002). cert-manager supports ACME external account binding in 17; the Let's Encrypt shortcut methods were removed in favor of WithAcmeServer. Existing Azure resources can be referenced when explicitly modeled and authorized; they are not all created automatically.
+Sources: https://aspire.dev/deployment/environments/ and https://devblogs.microsoft.com/aspire/whats-new-aspire-17/
 -->
 
 ---
@@ -1109,7 +1225,7 @@ Open `/api/hits` on the reported host port. Refresh → the Redis counter increa
 **Verified:** generated artifacts, working API, and counter retention across API restart.
 
 <!--
-This is the tested publish handoff, not an Azure deployment transcript or a timing benchmark. First verify the development run, then stop the AppHost before running the Compose output. aspire publish creates docker-compose.yaml and .env with an API_IMAGE placeholder; Docker builds and runs the image here.
+This is the tested publish handoff, not an Azure deployment transcript or a timing benchmark. It was verified on Aspire 13.6.1; rerun it after upgrading the sample to 17. First verify the development run, then stop the AppHost before running the Compose output. aspire publish creates docker-compose.yaml and .env with an API_IMAGE placeholder; Docker builds and runs the image here.
 Validation used a session-specific Compose project name and a separate localhost-only port override; the generated Compose file was not edited. Redis retained the counter across an API restart. Redis data persistence across its own recreation is a separate storage choice.
 The host port is dynamic and can change on restart: rediscover it with docker compose port api 8080. Tear down with API_IMAGE=hitcounter-api:local docker compose down. Add --volumes only when intentionally deleting the demo's volume data.
 aspire deploy is the alternative target-driven build/apply path after the required target configuration; it does not consume the files from this publish handoff. No cloud deployment or elapsed-time claim is being made.
@@ -1155,7 +1271,7 @@ The sample README contains the complete walkthrough and generated-file map. Do n
 
 # <!--fit--> Wrap-Up
 
-<!-- We have followed the model from a mixed-language request to team workflows, messaging, and publishing. Close with a low-commitment adoption route and one concrete first experiment. -->
+<!-- Five questions answered: run it, model it, share it, grow it, ship it. Close with a low-commitment adoption route and one concrete first experiment. -->
 
 ---
 
@@ -1170,7 +1286,7 @@ The sample README contains the complete walkthrough and generated-file map. Do n
 docker run --rm -d --name aspire-demo-dashboard \
   -p 127.0.0.1:18888:18888 \
   -p 127.0.0.1:4317:18889 -p 127.0.0.1:4318:18890 \
-  mcr.microsoft.com/dotnet/aspire-dashboard:latest
+  mcr.microsoft.com/aspire/dashboard:latest
 
 docker logs aspire-demo-dashboard
 ```
@@ -1184,24 +1300,56 @@ Offer this as the incremental adoption route: observability first, orchestration
 The detached Docker command prints a container ID, not its browser login URL; docker logs retrieves the authenticated URL.
 The standalone container retains browser-token authentication. Incoming OTLP is unauthenticated by default, so these mappings intentionally bind only to loopback for a local demo. Applications still need their OpenTelemetry SDK/exporter configured. Use docker stop aspire-demo-dashboard to clean up; --rm removes the stopped container.
 The AppHost, not the dashboard, adds service discovery and resource lifecycle. This repository's standalone-dashboard sample supplies three language workers if a complete telemetry demo is useful.
-13.6 run history also works without an AppHost, but a standalone dashboard must opt in with a stable name, for example aspire dashboard run --application-name my-app --persistence Resume, so the same run survives restarts.
-Sources: https://aspire.dev/dashboard/standalone/ and https://aspire.dev/dashboard/security-considerations/ and https://devblogs.microsoft.com/aspire/whats-new-aspire-13-6/
+The dashboard image moved: mcr.microsoft.com/aspire/dashboard replaces mcr.microsoft.com/dotnet/aspire-dashboard. The legacy repository's latest tag stays on the Aspire 13 line, so the old command silently keeps the previous dashboard. aspire dashboard run starts the same dashboard from the CLI and prints its login URL directly.
+Run history (13.6) also works without an AppHost, but a standalone dashboard must opt in with a stable name, for example aspire dashboard run --application-name my-app --persistence Resume, so the same run survives restarts.
+Sources: https://aspire.dev/dashboard/standalone/ and https://aspire.dev/dashboard/security-considerations/ and https://aspire.dev/whats-new/aspire-17/
+-->
+
+---
+
+<!-- _class: code-reference -->
+
+# Already on Aspire 13? Upgrade Deliberately
+
+```bash
+aspire update --self   # the CLI
+aspire update          # packages, from the repository root
+aspire agent init      # refresh agent guidance
+```
+
+**Plan for these before you upgrade:**
+
+- **.NET 10** is the minimum for AppHosts and Aspire packages
+- `AddProject` and `Aspire.AppHost.Sdk` are obsolete → `AddDotnetProject`
+- Required parameters reject empty values → `.AsOptional()`
+- Kubernetes deployment needs **Helm 4**
+
+**13.6 → 17.0.** There is no 14, 15, or 16.
+
+<!--
+For the people in the room who already run Aspire 13. The version jumps straight from 13.6 to 17.0, released November 17, 2026; the announcement jokes that 14, 15, and 16 were not ready for primetime.
+The .NET 10 minimum applies to AppHosts and Aspire library packages. Workloads you orchestrate can still target earlier .NET versions if they do not use those packages.
+The obsolete APIs keep working, so migrate in stages. Aspire.AppHost.Sdk reports warning ASPIRE012, and aspire update does not remove it for you. The aspire-project-v2-migration agent skill proposes resource-by-resource edits and requires approval before applying them.
+Other changes worth a look: the experimental polyglot feature keys were renamed (experimentalPolyglotJava, experimentalPolyglotPython, experimentalPolyglotRust) and Go needs no flag; Aspire.Azure.AI.OpenAI and Aspire.Azure.AI.Inference are discontinued in favor of Aspire.Azure.AI.Extensions.OpenAI and Aspire.Azure.AI.Projects; the legacy RabbitMQ v6 and MongoDB v2 client packages are gone; OpenTelemetry 1.18 halves the default maximum OTLP request size to 64 MiB; MongoDB's default image moves to a new major version, 9.0.
+New preview integrations to mention if asked: Microsoft Entra ID application registrations and Azure API Management, which is deployment-only.
+This repository's samples have not been upgraded yet: they pin 13.6.1.
+Sources: https://aspire.dev/whats-new/aspire-17/#breaking-changes and https://aspire.dev/integrations/dotnet/migrate-dotnet-project-resource/
 -->
 
 ---
 
 <!-- _class: takeaways -->
-<!-- header: 'Wrap-up' -->
 
 # Key Takeaways
 
 * 🎯 **Two independent choices, one model**: Pick the AppHost language and workload runtimes separately
-* 📊 **One observability view**: Connect instrumented workloads through OpenTelemetry
+* 📊 **One view that scales**: Follow a request, then group and filter as the app grows
+* 🤝 **Share the workflow, not a README**: Commands, agent skills, and starters travel with the model
 * 🚀 **Reuse the model; choose the target**: Production configuration stays explicit
 
 **Start with one service. Follow one request. Automate one team task.**
 
-<!-- Return to the opening pain: separate languages do not need separate orchestration stories. Each takeaway appears on its own click. For a concrete next step, run aspire new aspire-ts-starter, inspect one request in the dashboard, then model one existing service and its dependencies. Reusing the model does not erase the production target or turn publishing into deployment. -->
+<!-- Return to the opening pain: separate languages do not need separate orchestration stories. Each takeaway appears on its own click and maps to the journey: model it, run and grow it, share it, ship it. For a concrete next step, run aspire new aspire-ts-starter (or aspire-go-starter), inspect one request in the dashboard, then model one existing service and its dependencies. Reusing the model does not erase the production target or turn publishing into deployment. -->
 
 ---
 
@@ -1215,9 +1363,9 @@ Sources: https://aspire.dev/dashboard/standalone/ and https://aspire.dev/dashboa
 - 🌐 [Aspire docs](https://aspire.dev)
 - 🐙 [Aspire source](https://github.com/microsoft/aspire)
 - 🧪 [Polyglot demos](https://github.com/codebytes/aspire-polyglot)
-- 🆕 [Aspire 13.6](https://aspire.dev/whats-new/aspire-13-6/)
+- 🆕 [Aspire 17](https://aspire.dev/whats-new/aspire-17/)
 - 🧰 [Aspire Community Toolkit](https://github.com/CommunityToolkit/Aspire)
-- 💬 [Aspire Discord](https://aka.ms/dotnet-discord)
+- 💬 [Aspire Discord](https://aka.ms/aspire-discord)
 
 </div>
 <div>
